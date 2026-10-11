@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,6 +16,7 @@ import '../data/kirtan_downloads_index.dart';
 import '../data/kirtan_repository.dart';
 import '../domain/kirtan.dart';
 import 'kirtan_screen.dart';
+import 'widgets/kirtan_actions.dart';
 import 'widgets/kirtan_download_button.dart';
 import 'widgets/kirtan_tile.dart';
 
@@ -39,19 +39,6 @@ class _KirtanDownloadsScreenState extends ConsumerState<KirtanDownloadsScreen> {
       Future<void>.microtask(() async {
         if (mounted) await ref.read(kirtanDownloadsProvider.notifier).prune();
       }),
-    );
-  }
-
-  void _play(List<Kirtan> list, int index) {
-    unawaited(HapticFeedback.selectionClick());
-    if (ref.read(currentKirtanProvider)?.id == list[index].id) {
-      unawaited(context.push<void>(Routes.player));
-      return;
-    }
-    unawaited(
-      ref
-          .read(kirtanPlayerProvider.notifier)
-          .playKirtans(list, startIndex: index),
     );
   }
 
@@ -106,7 +93,7 @@ class _KirtanDownloadsScreenState extends ConsumerState<KirtanDownloadsScreen> {
                 return KirtanTile(
                   key: ValueKey<String>(kirtan.id),
                   kirtan: kirtan,
-                  onTap: () => _play(kirtans, i - 1),
+                  onTap: () => playKirtanFromList(context, ref, kirtans, i - 1),
                   trailing: IconButton(
                     tooltip: l10n.kirtanRemoveDownload,
                     icon: const Icon(Icons.delete_outline_rounded),

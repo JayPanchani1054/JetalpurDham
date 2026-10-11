@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -14,6 +11,7 @@ import '../../application/kirtan_player_controller.dart';
 import '../../data/kirtan_repository.dart';
 import '../../domain/kirtan.dart';
 import 'equalizer_indicator.dart';
+import 'kirtan_actions.dart';
 import 'kirtan_artwork.dart';
 
 /// Home section: header + horizontal list of featured kirtans (tap to play).
@@ -56,7 +54,7 @@ class HomeFeaturedKirtans extends ConsumerWidget {
                   key: ValueKey<String>(kirtans[index].id),
                   kirtan: kirtans[index],
                   width: _cardWidth,
-                  onTap: () => _play(context, ref, kirtans, index),
+                  onTap: () => playKirtanFromList(context, ref, kirtans, index),
                 ),
               ),
             ),
@@ -77,17 +75,6 @@ class HomeFeaturedKirtans extends ConsumerWidget {
         line(text.titleSmall) * 2 +
         line(text.bodySmall) +
         AppSpacing.sm;
-  }
-
-  void _play(BuildContext context, WidgetRef ref, List<Kirtan> list, int i) {
-    unawaited(HapticFeedback.selectionClick());
-    if (ref.read(currentKirtanProvider)?.id == list[i].id) {
-      unawaited(context.push<void>(Routes.player));
-      return;
-    }
-    unawaited(
-      ref.read(kirtanPlayerProvider.notifier).playKirtans(list, startIndex: i),
-    );
   }
 }
 

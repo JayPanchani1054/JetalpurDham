@@ -16,6 +16,7 @@ import '../application/kirtan_player_controller.dart';
 import '../data/kirtan_repository.dart';
 import '../domain/kirtan.dart';
 import '../domain/kirtan_queries.dart';
+import 'widgets/kirtan_actions.dart';
 import 'widgets/kirtan_tile.dart';
 
 /// Kirtan tab: search, category chips, Play all / Shuffle and the full list.
@@ -77,21 +78,6 @@ class _KirtanScreenState extends ConsumerState<KirtanScreen> {
       _filtered = filterKirtans(all, query: _query, categoryId: categoryId);
     }
     return _filtered;
-  }
-
-  void _play(List<Kirtan> list, int index) {
-    final Kirtan tapped = list[index];
-    unawaited(HapticFeedback.selectionClick());
-    // Tapping the kirtan that is already loaded opens the player.
-    if (ref.read(currentKirtanProvider)?.id == tapped.id) {
-      unawaited(context.push<void>(Routes.player));
-      return;
-    }
-    unawaited(
-      ref
-          .read(kirtanPlayerProvider.notifier)
-          .playKirtans(list, startIndex: index),
-    );
   }
 
   @override
@@ -180,7 +166,12 @@ class _KirtanScreenState extends ConsumerState<KirtanScreen> {
                           return KirtanTile(
                             key: ValueKey<String>(kirtan.id),
                             kirtan: kirtan,
-                            onTap: () => _play(visible, i - 1),
+                            onTap: () => playKirtanFromList(
+                              context,
+                              ref,
+                              visible,
+                              i - 1,
+                            ),
                           );
                         },
                       ),
