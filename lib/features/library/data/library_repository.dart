@@ -53,6 +53,20 @@ final ProviderFamily<AsyncValue<Book?>, String> bookProvider =
 DownloadKey bookDownloadKey(String bookId) =>
     DownloadKey(folder: DownloadFolders.books, id: bookId, extension: '.pdf');
 
+/// Syncs the "downloaded" state of [bookIds] with the files on disk (for
+/// example after "Remove all" in Settings). Never throws: a storage hiccup
+/// must not surface as an unhandled error.
+Future<void> syncBookDownloads(
+  DownloadManager manager,
+  Iterable<String> bookIds,
+) async {
+  try {
+    await manager.refresh(bookIds.map(bookDownloadKey).toList());
+  } catch (error, stack) {
+    AppLogger.error('Could not check downloaded books', error, stack);
+  }
+}
+
 /// Ids of the books whose PDF is saved on this device. Rebuilds only when the
 /// set changes (not on every progress tick of a running download).
 final Provider<Set<String>> downloadedBookIdsProvider = Provider<Set<String>>((

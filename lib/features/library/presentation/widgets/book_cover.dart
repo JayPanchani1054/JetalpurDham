@@ -25,14 +25,18 @@ class BookCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool dark = Theme.of(context).brightness == Brightness.dark;
+    final Widget generated = GeneratedBookCover(title: book.title.of(context));
     Widget cover = ClipRRect(
       borderRadius: borderRadius,
+      // A broken or unreachable cover image falls back to the generated
+      // cover instead of a generic icon.
       child: book.hasCover
           ? AppNetworkImage(
               url: book.coverUrl,
               placeholderIcon: Icons.menu_book_rounded,
+              fallback: generated,
             )
-          : GeneratedBookCover(title: book.title.of(context)),
+          : generated,
     );
     cover = DecoratedBox(
       decoration: BoxDecoration(

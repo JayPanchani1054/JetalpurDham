@@ -227,11 +227,14 @@ void main() {
   });
 
   test('viewerDecodeSize stays within sensible bounds', () {
-    expect(viewerDecodeSize(844, 3), 3200);
+    // Capped so one decoded photo stays around 20 MB on large screens.
+    expect(viewerDecodeSize(844, 3), 2560);
+    expect(viewerDecodeSize(1366, 2), 2560);
     expect(viewerDecodeSize(640, 2), 1920);
     expect(viewerDecodeSize(300, 1), 1440);
     expect(viewerDecodeSize(0, 3), 2048);
     expect(viewerDecodeSize(double.nan, 3), 2048);
+    expect(viewerDecodeSize(double.infinity, 3), 2048);
   });
 
   group('sniffImageType', () {

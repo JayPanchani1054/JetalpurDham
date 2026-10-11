@@ -130,51 +130,55 @@ class BookGridCard extends StatelessWidget {
     final String? subtitle = author.isNotEmpty
         ? author
         : bookLanguageLabel(l10n, book.languageCode);
+    // One announcement per book ("title, author, downloaded, button").
     return MergeSemantics(
-      child: Stack(
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Stack(
-                children: <Widget>[
-                  BookCover(book: book, heroTag: bookCoverHeroTag(book.id)),
-                  if (downloaded)
-                    const Positioned(
-                      top: AppSpacing.sm,
-                      right: AppSpacing.sm,
-                      child: DownloadedBadge(),
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                book.title.of(context),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall,
-              ),
-              if (subtitle != null) ...<Widget>[
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+      child: Semantics(
+        button: true,
+        child: Stack(
+          children: <Widget>[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Stack(
+                  children: <Widget>[
+                    BookCover(book: book, heroTag: bookCoverHeroTag(book.id)),
+                    if (downloaded)
+                      const Positioned(
+                        top: AppSpacing.sm,
+                        right: AppSpacing.sm,
+                        child: DownloadedBadge(),
+                      ),
+                  ],
                 ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  book.title.of(context),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall,
+                ),
+                if (subtitle != null) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ],
-            ],
-          ),
-          // On top so the ripple is visible over the cover image.
-          Positioned.fill(
-            child: Material(
-              type: MaterialType.transparency,
-              child: InkWell(borderRadius: AppRadius.smAll, onTap: onTap),
             ),
-          ),
-        ],
+            // On top so the ripple is visible over the cover image.
+            Positioned.fill(
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(borderRadius: AppRadius.smAll, onTap: onTap),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

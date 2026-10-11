@@ -71,7 +71,7 @@ class _BookDetailView extends ConsumerWidget {
   final Book book;
 
   void _read(BuildContext context) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     unawaited(context.push(Routes.reader(book.id)));
   }
 

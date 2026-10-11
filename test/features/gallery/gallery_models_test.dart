@@ -118,6 +118,22 @@ void main() {
       expect(photo.caption, const LocalizedText.empty());
     });
 
+    test('falls back to the Storage path when url is missing', () {
+      final AlbumPhoto photo = AlbumPhoto.fromMap('p', const <String, Object?>{
+        'url': '  ',
+        'storagePath': 'gallery/avsar-200/p.jpg',
+      });
+      expect(photo.hasImage, isTrue);
+      expect(photo.url, 'gallery/avsar-200/p.jpg');
+      expect(
+        AlbumPhoto.fromMap('p', const <String, Object?>{
+          'url': 'https://example.com/p.jpg',
+          'storagePath': 'gallery/avsar-200/p.jpg',
+        }).url,
+        'https://example.com/p.jpg',
+      );
+    });
+
     test('a document without url has no image', () {
       expect(
         AlbumPhoto.fromMap('p', const <String, Object?>{'url': 12}).hasImage,

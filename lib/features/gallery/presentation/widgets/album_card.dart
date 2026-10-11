@@ -26,61 +26,69 @@ class AlbumCard extends StatelessWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
     return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1,
-              child: Hero(
-                tag: albumCoverHeroTag(album.id),
-                flightShuttleBuilder: galleryHeroShuttle,
-                child: AppNetworkImage(
-                  url: album.coverUrl,
-                  placeholderIcon: Icons.photo_library_outlined,
+      // The ink sits on top so the ripple also shows over the cover photo.
+      child: Stack(
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              AspectRatio(
+                aspectRatio: 1,
+                child: Hero(
+                  tag: albumCoverHeroTag(album.id),
+                  flightShuttleBuilder: galleryHeroShuttle,
+                  child: AppNetworkImage(
+                    url: album.coverUrl,
+                    placeholderIcon: Icons.photo_library_outlined,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  if (count != null) ...<Widget>[
-                    const SizedBox(height: AppSpacing.xs),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
                     Text(
-                      context.l10n.galleryPhotoCount(count),
-                      maxLines: 1,
+                      title,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: meta,
+                      style: theme.textTheme.titleMedium,
                     ),
+                    if (count != null) ...<Widget>[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        context.l10n.galleryPhotoCount(count),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: meta,
+                      ),
+                    ],
+                    if (date.isNotEmpty) ...<Widget>[
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        date,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: meta,
+                      ),
+                    ],
                   ],
-                  if (date.isNotEmpty) ...<Widget>[
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      date,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: meta,
-                    ),
-                  ],
-                ],
+                ),
               ),
+            ],
+          ),
+          Positioned.fill(
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(onTap: onTap),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

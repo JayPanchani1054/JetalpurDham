@@ -10,6 +10,7 @@ import 'package:jetalpur_dham/core/firebase/media_url.dart';
 import 'package:jetalpur_dham/core/l10n/app_language.dart';
 import 'package:jetalpur_dham/core/l10n/l10n.dart';
 import 'package:jetalpur_dham/core/router/routes.dart';
+import 'package:jetalpur_dham/core/services/connectivity_service.dart';
 import 'package:jetalpur_dham/core/services/preferences.dart';
 import 'package:jetalpur_dham/core/theme/app_theme.dart';
 import 'package:jetalpur_dham/features/gallery/data/gallery_repository.dart';
@@ -17,6 +18,7 @@ import 'package:jetalpur_dham/features/gallery/domain/gallery_models.dart';
 import 'package:jetalpur_dham/features/gallery/presentation/album_screen.dart';
 import 'package:jetalpur_dham/features/gallery/presentation/gallery_screen.dart';
 import 'package:jetalpur_dham/features/gallery/presentation/photo_viewer_screen.dart';
+import 'package:jetalpur_dham/features/gallery/presentation/widgets/album_card.dart';
 import 'package:jetalpur_dham/features/gallery/presentation/widgets/home_gallery_preview.dart';
 import 'package:jetalpur_dham/features/gallery/presentation/widgets/photo_tile.dart';
 import 'package:material_ui/material_ui.dart';
@@ -143,6 +145,7 @@ Future<GoRouter> _pumpApp(WidgetTester tester, String location) async {
         mediaUrlProvider.overrideWith(
           (Ref ref, String raw) => Completer<String>().future,
         ),
+        isOnlineProvider.overrideWith((Ref ref) => Stream<bool>.value(true)),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light(AppLanguage.en),
@@ -173,7 +176,7 @@ void main() {
     final GoRouter router = await _pumpApp(tester, Routes.gallery);
     expect(find.text('Photo Gallery'), findsOneWidget);
 
-    await tester.tap(find.text('Avsar 200'));
+    await tester.tap(find.widgetWithText(AlbumCard, 'Avsar 200'));
     await _frames(tester);
     expect(
       router.routerDelegate.currentConfiguration.uri.path,
@@ -211,6 +214,30 @@ void main() {
     await tester.tap(find.text('See all').first);
     await _frames(tester);
     expect(find.text('Select'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('closing twice only closes the viewer', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(tester, Routes.home);
+    await tester.tap(find.byType(PhotoTile).at(1));
+    await _frames(tester);
+    expect(find.text('2 / 30'), findsOneWidget);
+
+    // Two close requests before the next frame (a screen-reader double
+    // activation, or a swipe-down ending as the button is pressed). Taps
+    // are absorbed by the Navigator, semantic actions are not. The second
+    // request must not re-route the app to the album.
+    final IconButton close = tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, Icons.close_rounded),
+    );
+    close.onPressed!();
+    close.onPressed!();
+    await _frames(tester);
+    expect(find.text('2 / 30'), findsNothing);
+    expect(find.text('Avsar 200 Photos'), findsOneWidget);
+    expect(find.text('Select'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

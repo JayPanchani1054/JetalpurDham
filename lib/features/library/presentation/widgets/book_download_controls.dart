@@ -24,7 +24,7 @@ Future<void> startBookDownload(
   WidgetRef ref,
   Book book,
 ) async {
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   // Captured up front: the widget may be gone when the download finishes.
   final ProviderContainer container = ProviderScope.containerOf(
     context,
@@ -35,12 +35,20 @@ Future<void> startBookDownload(
   final bool offline = !(ref.read(isOnlineProvider).value ?? true);
   final DownloadKey key = bookDownloadKey(book.id);
 
-  final File? file = await container
-      .read(downloadManagerProvider.notifier)
-      .download(key, book.pdfUrl);
-  final DownloadStatus status =
-      (container.read(downloadManagerProvider)[key] ?? DownloadState.none)
-          .status;
+  File? file;
+  DownloadStatus status;
+  try {
+    file = await container
+        .read(downloadManagerProvider.notifier)
+        .download(key, book.pdfUrl);
+    status =
+        (container.read(downloadManagerProvider)[key] ?? DownloadState.none)
+            .status;
+  } catch (error, stack) {
+    // E.g. the documents folder is unavailable. Never an unhandled error.
+    AppLogger.error('Could not download book ${book.id}', error, stack);
+    status = DownloadStatus.failed;
+  }
   final String? message = file != null
       ? l10n.libraryDownloadComplete
       : status == DownloadStatus.failed
@@ -54,7 +62,7 @@ Future<void> startBookDownload(
 
 /// Stops a running download of [bookId].
 void cancelBookDownload(WidgetRef ref, String bookId) {
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   ref.read(downloadManagerProvider.notifier).cancel(bookDownloadKey(bookId));
 }
 
@@ -88,7 +96,7 @@ Future<void> confirmRemoveBookDownload(
     ),
   );
   if (!(confirmed ?? false)) return;
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   try {
     await container
         .read(downloadManagerProvider.notifier)
@@ -116,9 +124,9 @@ class _BookDownloadSectionState extends ConsumerState<BookDownloadSection> {
     super.initState();
     // Sync with the file system (e.g. after "Remove all" in Settings).
     unawaited(
-      ref
-          .read(downloadManagerProvider.notifier)
-          .localFile(bookDownloadKey(widget.book.id)),
+      syncBookDownloads(ref.read(downloadManagerProvider.notifier), <String>[
+        widget.book.id,
+      ]),
     );
   }
 

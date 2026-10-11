@@ -12,6 +12,7 @@ import '../../../core/firebase/media_url.dart';
 import '../../../core/l10n/app_language.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/app_logger.dart';
@@ -94,6 +95,23 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
       _themeLanguage = language;
       _theme = AppTheme.dark(language);
     }
+  }
+
+  @override
+  void didUpdateWidget(covariant PhotoViewerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A link to another photo of the same album can reuse this screen
+    // (only `?i=` changed): move to the requested photo.
+    if (oldWidget.initialIndex == widget.initialIndex || _photos.isEmpty) {
+      return;
+    }
+    final int target = clampIndex(widget.initialIndex, _photos.length);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final PageController? pages = _pages;
+      if (mounted && pages != null && pages.hasClients) {
+        pages.jumpToPage(target);
+      }
+    });
   }
 
   @override
@@ -266,9 +284,15 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
       case PhotoSaveOutcome.denied:
         context.showSnack(l10n.galleryPermissionDenied);
       case PhotoSaveOutcome.failed:
-        context.showSnack(l10n.gallerySaveFailed);
+        context.showSnack(
+          _isOffline ? l10n.errorNetwork : l10n.gallerySaveFailed,
+        );
     }
   }
+
+  /// True when the device has no connection (a likely reason a photo that
+  /// was not on screen yet could not be saved or shared).
+  bool get _isOffline => !(ref.read(isOnlineProvider).value ?? true);
 
   Future<void> _share(AlbumPhoto photo, String albumTitle, Rect? origin) async {
     if (_sharing) return;
@@ -285,7 +309,9 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
         );
     if (!mounted) return;
     setState(() => _sharing = false);
-    if (!shared) context.showSnack(l10n.errorGeneric);
+    if (!shared) {
+      context.showSnack(_isOffline ? l10n.errorNetwork : l10n.errorGeneric);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -300,10 +326,13 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
       albumLookupProvider(widget.albumId)
           .select((AsyncValue<AlbumLookup> value) => value.value?.album),
     );
-    ref.listen<AsyncValue<LiveList<AlbumPhoto>>>(
-      albumPhotosProvider(widget.albumId),
-      _onPhotosChanged,
-    );
+    ref
+      ..listen<AsyncValue<LiveList<AlbumPhoto>>>(
+        albumPhotosProvider(widget.albumId),
+        _onPhotosChanged,
+      )
+      // Keeps the connection state current for the save/share messages.
+      ..listen<AsyncValue<bool>>(isOnlineProvider, (_, _) {});
 
     final LiveList<AlbumPhoto>? list = photosAsync.value;
     final Widget content;
@@ -373,9 +402,16 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
 
   Widget _viewer(List<AlbumPhoto> photos, Album? album) {
     _photos = photos;
-    if (_pages == null) {
-      _index = clampIndex(widget.initialIndex, photos.length);
+    final PageController? previous = _pages;
+    if (previous == null || !previous.hasClients) {
+      // First build, or the pager was removed while the album was briefly
+      // empty: start at the requested photo (or the one last shown).
+      final int found = indexOfPhoto(photos, _currentId);
+      _index = previous == null
+          ? clampIndex(widget.initialIndex, photos.length)
+          : (found >= 0 ? found : clampIndex(_index, photos.length));
       _currentId = photos[_index].id;
+      previous?.dispose();
       _pages = PageController(initialPage: _index);
     } else if (_index >= photos.length) {
       _index = photos.length - 1;
@@ -485,12 +521,19 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
             ? AsyncData<String>(photo.url)
             : const AsyncLoading<String>());
     final String? resolved = url.value;
+    // Taps toggle the controls on every page state, not only once the photo
+    // is zoomable.
+    Widget tappable(Widget child) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _toggleChrome,
+      child: child,
+    );
     if (resolved == null) {
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _toggleChrome,
-        child: url.hasError
-            ? const _PhotoError()
+      return tappable(
+        // Settled failures only: while Riverpod retries on its own (or after
+        // "Retry") the loading placeholder is shown instead.
+        url.hasError && !url.isLoading
+            ? _PhotoError(onRetry: () => _retryPhoto(photo, null))
             : _PhotoPlaceholder(raw: photo.previewUrl),
       );
     }
@@ -499,9 +542,10 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
       index + 1,
       _photos.length,
     );
+    final int attempt = _attempts[photo.id] ?? 0;
     return ClipRect(
       child: PhotoView(
-        key: ValueKey<String>('${photo.id}|$resolved'),
+        key: ValueKey<String>('${photo.id}|$resolved|$attempt'),
         imageProvider: _fullImage(resolved),
         semanticLabel: caption.isEmpty ? label : '$label. $caption',
         heroAttributes: PhotoViewHeroAttributes(
@@ -520,12 +564,14 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
           PhotoViewControllerValue value,
         ) => _toggleChrome(),
         loadingBuilder: (BuildContext context, ImageChunkEvent? event) =>
-            _PhotoPlaceholder(
-              raw: photo.previewUrl,
-              progress: _fraction(event),
+            tappable(
+              _PhotoPlaceholder(
+                raw: photo.previewUrl,
+                progress: _fraction(event),
+              ),
             ),
         errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
-            const _PhotoError(),
+            tappable(_PhotoError(onRetry: () => _retryPhoto(photo, resolved))),
       ),
     );
   }
@@ -582,12 +628,16 @@ class _PhotoPlaceholder extends ConsumerWidget {
 }
 
 class _PhotoError extends StatelessWidget {
-  const _PhotoError();
+  const _PhotoError({required this.onRetry});
+
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) => _StatusMessage(
     icon: Icons.broken_image_outlined,
     message: context.l10n.galleryPhotoLoadFailed,
+    actionLabel: context.l10n.retry,
+    onAction: onRetry,
   );
 }
 

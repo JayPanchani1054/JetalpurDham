@@ -88,6 +88,7 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
   bool _failed = false;
   int _attempt = 0;
   int? _loggedErrorAttempt;
+  bool _closing = false;
 
   /// The page to open at (restored, then kept up to date while reading).
   late int _lastPage;
@@ -112,10 +113,6 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
       ..listenManual<AsyncValue<List<Book>>>(booksProvider, (_, _) {});
     // Persist the page if the app goes to the background mid-chapter.
     _lifecycle = AppLifecycleListener(onHide: _flushSave, onPause: _flushSave);
-    // After the first frame: providers must not change while building.
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => unawaited(_progress.markOpened(widget.bookId)),
-    );
     unawaited(_open());
   }
 
@@ -205,7 +202,7 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
   }
 
   void _retry({bool skipLocalFile = false}) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     _flushSave();
     setState(() {
       _attempt++;
@@ -248,6 +245,10 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
     );
     _lastPage = page;
     _position.value = _PagePosition(page, count);
+    // Only a book that really opened becomes "Continue reading": a link to
+    // a removed or unreachable book must not replace the devotee's place.
+    // (Runs in a microtask after layout, so changing providers is safe.)
+    unawaited(_progress.markOpened(widget.bookId));
     unawaited(_progress.savePage(widget.bookId, page, pageCount: count));
   }
 
@@ -329,7 +330,7 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
     final _PagePosition? position = _position.value;
     final int? pageCount = position?.pageCount;
     if (position == null || pageCount == null || !_controller.isReady) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     final int? page = await showGoToPageDialog(
       context,
       currentPage: position.page,
@@ -422,17 +423,41 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
     );
   }
 
+  /// Leaves the reader. Opened straight from a notification or link there is
+  /// nothing underneath on the root navigator, so go to the book's page
+  /// instead of closing the app.
+  void _close() {
+    if (_closing || !mounted) return;
+    final NavigatorState? navigator = Navigator.maybeOf(context);
+    if (navigator != null && navigator.canPop()) {
+      _closing = true;
+      navigator.pop();
+      return;
+    }
+    _closing = true;
+    _flushSave();
+    context.go(Routes.book(widget.bookId));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: _ReaderTitle(bookId: widget.bookId),
-        actions: <Widget>[
-          ReaderDownloadAction(bookId: widget.bookId),
-          const LanguageButton(),
-        ],
+    final bool canPop = Navigator.maybeOf(context)?.canPop() ?? false;
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (!didPop) _close();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: canPop ? null : BackButton(onPressed: _close),
+          title: _ReaderTitle(bookId: widget.bookId),
+          actions: <Widget>[
+            ReaderDownloadAction(bookId: widget.bookId),
+            const LanguageButton(),
+          ],
+        ),
+        body: _buildBody(context),
       ),
-      body: _buildBody(context),
     );
   }
 
@@ -525,9 +550,13 @@ class _PagePill extends StatelessWidget {
         : l10n.readerPageOf(position.page, total);
     return Tooltip(
       message: l10n.readerGoToPage,
+      // excludeSemantics drops the InkWell's own tap action, so it is
+      // provided here for screen readers.
       child: Semantics(
         button: true,
+        enabled: total != null,
         label: '$label. ${l10n.readerGoToPage}',
+        onTap: total == null ? null : onTap,
         excludeSemantics: true,
         child: Material(
           color: scheme.inverseSurface.withValues(alpha: 0.9),

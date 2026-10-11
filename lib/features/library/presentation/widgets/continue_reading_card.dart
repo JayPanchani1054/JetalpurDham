@@ -41,74 +41,80 @@ class ContinueReadingCard extends StatelessWidget {
       ),
       child: Card(
         color: scheme.primaryContainer.withValues(alpha: 0.55),
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 60,
-                  child: BookCover(book: book, elevated: false),
-                ),
-                const SizedBox(width: AppSpacing.lg),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        l10n.libraryContinueReading,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        book.title.of(context),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        pageLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                      if (fraction != null) ...<Widget>[
-                        const SizedBox(height: AppSpacing.sm),
-                        ClipRRect(
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(3),
-                          ),
-                          child: LinearProgressIndicator(
-                            value: fraction,
-                            minHeight: 5,
-                            backgroundColor: scheme.surface.withValues(
-                              alpha: 0.7,
+        // Read as one button: "Continue reading, <title>, Page X of Y".
+        child: MergeSemantics(
+          child: Semantics(
+            button: true,
+            child: InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: <Widget>[
+                    SizedBox(
+                      width: 60,
+                      child: BookCover(book: book, elevated: false),
+                    ),
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            l10n.libraryContinueReading,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: scheme.primary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            book.title.of(context),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            pageLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (fraction != null) ...<Widget>[
+                            const SizedBox(height: AppSpacing.sm),
+                            ClipRRect(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(3),
+                              ),
+                              child: LinearProgressIndicator(
+                                value: fraction,
+                                minHeight: 5,
+                                backgroundColor: scheme.surface.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Container(
+                      width: AppSpacing.minTouchTarget,
+                      height: AppSpacing.minTouchTarget,
+                      decoration: BoxDecoration(
+                        color: scheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.auto_stories_rounded,
+                        color: scheme.onPrimary,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Container(
-                  width: AppSpacing.minTouchTarget,
-                  height: AppSpacing.minTouchTarget,
-                  decoration: BoxDecoration(
-                    color: scheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.auto_stories_rounded,
-                    color: scheme.onPrimary,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

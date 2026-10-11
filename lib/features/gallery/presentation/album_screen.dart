@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_logger.dart';
@@ -130,10 +131,18 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
     }
 
     final SaveAccess target = access;
+    final Set<String> savedIds = <String>{};
     final BulkSaveJob job = BulkSaveJob(
       photos: chosen,
-      save: (AlbumPhoto photo) =>
-          saver.save(photo, albumId: widget.albumId, access: target),
+      save: (AlbumPhoto photo) async {
+        final PhotoSaveOutcome outcome = await saver.save(
+          photo,
+          albumId: widget.albumId,
+          access: target,
+        );
+        if (outcome == PhotoSaveOutcome.saved) savedIds.add(photo.id);
+        return outcome;
+      },
     );
     setState(() {
       _job = job;
@@ -148,9 +157,14 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
     setState(() {
       _job = null;
       _progress = null;
-      if (!result.denied) {
+      // Photos that could not be saved (no internet, cancelled, permission)
+      // stay selected, so trying again is a single tap.
+      final Set<String> remaining = _selected.difference(savedIds);
+      if (remaining.isEmpty) {
         _selecting = false;
         _selected = const <String>{};
+      } else {
+        _selected = remaining;
       }
     });
 
@@ -158,14 +172,25 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
       _snack(l10n.galleryPermissionDenied);
       return;
     }
-    final int notSaved = result.cancelled ? 0 : result.total - result.saved;
-    final List<String> parts = <String>[
-      if (result.saved > 0) l10n.gallerySavedCount(result.saved),
-      if (notSaved > 0) l10n.galleryNotSavedCount(notSaved),
-    ];
-    if (parts.isEmpty) return; // cancelled before anything was saved
+    // After "Cancel" only the photos that were tried count as not saved.
+    final int notSaved = result.cancelled
+        ? result.failed
+        : result.total - result.saved;
+    if (result.saved == 0 && notSaved == 0) return; // cancelled at once
     if (result.saved > 0) unawaited(HapticFeedback.mediumImpact());
-    _snack(result.saved == 0 ? l10n.gallerySaveFailed : parts.join(' · '));
+    final bool offline = !(ref.read(isOnlineProvider).value ?? true);
+    if (result.saved == 0 && result.total == 1) {
+      _snack(offline ? l10n.errorNetwork : l10n.gallerySaveFailed);
+      return;
+    }
+    // "N photos saved · M photos couldn't be saved" (+ why, when offline).
+    _snack(
+      <String>[
+        if (result.saved > 0) l10n.gallerySavedCount(result.saved),
+        if (notSaved > 0) l10n.galleryNotSavedCount(notSaved),
+        if (notSaved > 0 && offline) l10n.errorNetwork,
+      ].join(' · '),
+    );
   }
 
   void _cancelSave() {
@@ -199,6 +224,9 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
             _findAlbum(value.value?.items, albumId),
       ),
     );
+
+    // Keeps the connection state current for the "not saved" message.
+    ref.listen<AsyncValue<bool>>(isOnlineProvider, (_, _) {});
 
     // Photos removed while selecting drop out of the selection.
     ref.listen<AsyncValue<LiveList<AlbumPhoto>>>(albumPhotosProvider(albumId), (

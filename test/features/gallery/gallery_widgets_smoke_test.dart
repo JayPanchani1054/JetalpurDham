@@ -9,6 +9,7 @@ import 'package:jetalpur_dham/core/config/app_config.dart';
 import 'package:jetalpur_dham/core/firebase/media_url.dart';
 import 'package:jetalpur_dham/core/l10n/app_language.dart';
 import 'package:jetalpur_dham/core/l10n/l10n.dart';
+import 'package:jetalpur_dham/core/services/connectivity_service.dart';
 import 'package:jetalpur_dham/core/services/preferences.dart';
 import 'package:jetalpur_dham/core/theme/app_theme.dart';
 import 'package:jetalpur_dham/features/gallery/application/photo_saver.dart';
@@ -70,11 +71,19 @@ final List<AlbumPhoto> _avsarPhotos = <AlbumPhoto>[
 ];
 
 class _FakeSaver extends PhotoSaver {
-  _FakeSaver({this.access = const SaveAccess.album(PhotoSaver.albumName)})
-    : super(resolveUrl: (String raw) async => raw);
+  _FakeSaver({
+    this.access = const SaveAccess.album(PhotoSaver.albumName),
+    this.outcome = PhotoSaveOutcome.saved,
+    this.failIds = const <String>{},
+  }) : super(resolveUrl: (String raw) async => raw);
 
   final SaveAccess? access;
+  final PhotoSaveOutcome outcome;
+
+  /// Photos that fail to save even though [outcome] is `saved`.
+  final Set<String> failIds;
   final List<String> saved = <String>[];
+  final List<String> failed = <String>[];
   final List<String> shared = <String>[];
 
   @override
@@ -87,8 +96,11 @@ class _FakeSaver extends PhotoSaver {
     SaveAccess? access,
   }) async {
     if ((access ?? this.access) == null) return PhotoSaveOutcome.denied;
-    saved.add(photo.id);
-    return PhotoSaveOutcome.saved;
+    final PhotoSaveOutcome result = failIds.contains(photo.id)
+        ? PhotoSaveOutcome.failed
+        : outcome;
+    (result == PhotoSaveOutcome.saved ? saved : failed).add(photo.id);
+    return result;
   }
 
   @override
@@ -114,6 +126,8 @@ Future<void> _pump(
   double textScale = 1,
   AppLanguage language = AppLanguage.en,
   ThemeMode themeMode = ThemeMode.light,
+  bool online = true,
+  Future<String> Function(String raw)? resolveUrl,
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{
     PrefKeys.language: language.code,
@@ -161,8 +175,10 @@ Future<void> _pump(
         ),
         // No network in tests: Storage links never resolve.
         mediaUrlProvider.overrideWith(
-          (Ref ref, String raw) => Completer<String>().future,
+          (Ref ref, String raw) =>
+              resolveUrl?.call(raw) ?? Completer<String>().future,
         ),
+        isOnlineProvider.overrideWith((Ref ref) => Stream<bool>.value(online)),
         photoSaverProvider.overrideWithValue(saver ?? _FakeSaver()),
       ],
       child: MaterialApp(
@@ -334,6 +350,66 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('photos that failed stay selected for another try', (
+      WidgetTester tester,
+    ) async {
+      final _FakeSaver saver = _FakeSaver(failIds: <String>{'p1', 'p3'});
+      await _pump(
+        tester,
+        const AlbumScreen(albumId: 'avsar-200'),
+        saver: saver,
+      );
+      await tester.longPress(find.byType(PhotoTile).first);
+      await _settle(tester);
+      await tester.tap(find.byTooltip('Select all'));
+      await _settle(tester);
+      await tester.tap(find.text('Save 40 photos'));
+      await _settle(tester);
+      expect(saver.saved, hasLength(38));
+      expect(saver.failed, <String>['p1', 'p3']);
+      expect(
+        find.text("38 photos saved · 2 photos couldn't be saved"),
+        findsOneWidget,
+      );
+      expect(find.text('2 selected'), findsOneWidget);
+
+      // One tap retries just those two.
+      await tester.tap(find.text('Save 2 photos'));
+      await _settle(tester);
+      expect(saver.failed, <String>['p1', 'p3', 'p1', 'p3']);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('saving while offline explains why photos were not saved', (
+      WidgetTester tester,
+    ) async {
+      final _FakeSaver saver = _FakeSaver(outcome: PhotoSaveOutcome.failed);
+      await _pump(
+        tester,
+        const AlbumScreen(albumId: 'avsar-200'),
+        saver: saver,
+        online: false,
+      );
+      await tester.longPress(find.byType(PhotoTile).first);
+      await _settle(tester);
+      await tester.tap(find.byTooltip('Select all'));
+      await _settle(tester);
+      await tester.tap(find.text('Save 40 photos'));
+      await _settle(tester);
+      // Stops after 5 failures in a row instead of trying all 40.
+      expect(saver.failed, hasLength(5));
+      expect(
+        find.text(
+          "40 photos couldn't be saved · "
+          'No internet connection. Please check your network.',
+        ),
+        findsOneWidget,
+      );
+      // The selection stays so the devotee can try again later.
+      expect(find.text('40 selected'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('missing, hidden and offline albums', (
       WidgetTester tester,
     ) async {
@@ -411,7 +487,7 @@ void main() {
       await _settle(tester);
       await tester.longPress(find.byType(PhotoTile).first);
       await _settle(tester);
-      expect(find.text('૧ તસવીર સાચવો'), findsOneWidget);
+      expect(find.text('1 તસવીર સાચવો'), findsOneWidget);
       expect(find.text('1 પસંદ કરી'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -559,12 +635,114 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('a new index for the same screen moves to that photo', (
+      WidgetTester tester,
+    ) async {
+      final ValueNotifier<int> index = ValueNotifier<int>(2);
+      addTearDown(index.dispose);
+      await _pump(
+        tester,
+        ValueListenableBuilder<int>(
+          valueListenable: index,
+          builder: (BuildContext context, int i, Widget? child) =>
+              PhotoViewerScreen(albumId: 'avsar-200', initialIndex: i),
+        ),
+      );
+      expect(find.text('3 / 40'), findsOneWidget);
+      index.value = 7;
+      await _settle(tester);
+      expect(find.text('8 / 40'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('out-of-range index is clamped', (WidgetTester tester) async {
       await _pump(
         tester,
         const PhotoViewerScreen(albumId: 'avsar-200', initialIndex: 999),
       );
       expect(find.text('40 / 40'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('saving one photo offline says there is no internet', (
+      WidgetTester tester,
+    ) async {
+      final _FakeSaver saver = _FakeSaver(outcome: PhotoSaveOutcome.failed);
+      await _pump(
+        tester,
+        const PhotoViewerScreen(albumId: 'avsar-200'),
+        saver: saver,
+        online: false,
+      );
+      await tester.tap(find.text('Save to Gallery'));
+      await _settle(tester);
+      expect(saver.failed, <String>['p0']);
+      expect(
+        find.text('No internet connection. Please check your network.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a photo that fails to load offers Retry', (
+      WidgetTester tester,
+    ) async {
+      final List<String> requests = <String>[];
+      await _pump(
+        tester,
+        const PhotoViewerScreen(albumId: 'avsar-200'),
+        resolveUrl: (String raw) {
+          requests.add(raw);
+          // The first lookup fails (e.g. no internet), later ones hang.
+          return requests.length == 1
+              ? Future<String>.error(StateError('offline'))
+              : Completer<String>().future;
+        },
+      );
+      expect(find.text("Couldn't load this photo"), findsOneWidget);
+      final int before = requests
+          .where((String r) => r == _avsarPhotos.first.url)
+          .length;
+
+      await tester.tap(find.text('Retry'));
+      await _settle(tester);
+      expect(find.text("Couldn't load this photo"), findsNothing);
+      expect(
+        requests.where((String r) => r == _avsarPhotos.first.url).length,
+        before + 1,
+      );
+      // Tapping the page still shows/hides the controls while loading.
+      final Finder visible = find.ancestor(
+        of: find.text('Save to Gallery'),
+        matching: find.byWidgetPredicate(
+          (Widget w) => w is AnimatedOpacity && w.opacity == 1,
+        ),
+      );
+      expect(visible, findsOneWidget);
+      await tester.tapAt(const Offset(195, 400));
+      await _settle(tester);
+      expect(visible, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a hidden album is not shown from an old link', (
+      WidgetTester tester,
+    ) async {
+      await _pump(
+        tester,
+        const PhotoViewerScreen(albumId: 'hidden', initialIndex: 3),
+        lookups: <String, AlbumLookup>{
+          'hidden': AlbumLookup(
+            Album.fromMap('hidden', const <String, Object?>{'isActive': false}),
+          ),
+        },
+        photos: <String, LiveList<AlbumPhoto>>{
+          'hidden': LiveList<AlbumPhoto>(_avsarPhotos),
+        },
+      );
+      expect(find.text('This album is no longer available.'), findsOneWidget);
+      expect(find.text('Save to Gallery'), findsNothing);
+      expect(find.byTooltip('Close'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

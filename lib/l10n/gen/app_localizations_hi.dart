@@ -452,7 +452,7 @@ class AppLocalizationsHi extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count तस्वीरें',
-      one: '१ तस्वीर',
+      one: '$count तस्वीर',
       zero: 'कोई तस्वीर नहीं',
     );
     return '$_temp0';
@@ -470,7 +470,7 @@ class AppLocalizationsHi extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count तस्वीरें सहेजी गईं',
-      one: '१ तस्वीर सहेजी गई',
+      one: '$count तस्वीर सहेजी गई',
     );
     return '$_temp0';
   }
@@ -509,7 +509,7 @@ class AppLocalizationsHi extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count तस्वीरें सहेजें',
-      one: '१ तस्वीर सहेजें',
+      one: '$count तस्वीर सहेजें',
     );
     return '$_temp0';
   }
@@ -525,7 +525,7 @@ class AppLocalizationsHi extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count तस्वीरें सहेजी नहीं जा सकीं',
-      one: '१ तस्वीर सहेजी नहीं जा सकी',
+      one: '$count तस्वीर सहेजी नहीं जा सकी',
     );
     return '$_temp0';
   }
@@ -604,7 +604,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String readerInvalidPage(int total) {
-    return '१ से $total के बीच पृष्ठ संख्या लिखें';
+    return '1 से $total के बीच पृष्ठ संख्या लिखें';
   }
 
   @override
@@ -647,7 +647,8 @@ class AppLocalizationsHi extends AppLocalizations {
       'इस ग्रंथ को फ़ोन से हटाना है? आप इसे कभी भी फिर से डाउनलोड कर सकते हैं।';
 
   @override
-  String get libraryDownloadComplete => 'ऑफ़लाइन पढ़ने के लिए सहेजा गया';
+  String get libraryDownloadComplete =>
+      'ग्रंथ ऑफ़लाइन पढ़ने के लिए सहेज लिया गया';
 
   @override
   String get libraryDownloadFailed =>

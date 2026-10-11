@@ -56,9 +56,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       final List<Book>? books = next.value;
       if (books == null || identical(books, previous?.value)) return;
       unawaited(
-        ref
-            .read(downloadManagerProvider.notifier)
-            .refresh(books.map((Book b) => bookDownloadKey(b.id))),
+        syncBookDownloads(
+          ref.read(downloadManagerProvider.notifier),
+          books.map((Book b) => b.id),
+        ),
       );
     }, fireImmediately: true);
   }
@@ -87,18 +88,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   void _selectFilter(LibraryFilter filter) {
     if (filter == _filter) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _filter = filter);
   }
 
   void _openBook(Book book) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     FocusManager.instance.primaryFocus?.unfocus();
     context.go(Routes.book(book.id));
   }
 
   void _continueReading(Book book) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     unawaited(context.push(Routes.reader(book.id)));
   }
 

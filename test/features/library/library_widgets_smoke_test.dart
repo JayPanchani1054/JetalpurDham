@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jetalpur_dham/core/firebase/media_url.dart';
 import 'package:jetalpur_dham/core/l10n/app_language.dart';
 import 'package:jetalpur_dham/core/l10n/l10n.dart';
+import 'package:jetalpur_dham/core/router/routes.dart';
 import 'package:jetalpur_dham/core/services/connectivity_service.dart';
 import 'package:jetalpur_dham/core/services/download_service.dart';
 import 'package:jetalpur_dham/core/services/preferences.dart';
@@ -118,6 +120,7 @@ Future<void> _pump(
   double textScale = 1,
   AppLanguage language = AppLanguage.en,
   ThemeMode themeMode = ThemeMode.light,
+  GoRouter? router,
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{
     PrefKeys.language: language.code,
@@ -152,20 +155,28 @@ Future<void> _pump(
         mediaUrlResolverProvider.overrideWithValue(_OfflineResolver()),
         downloadServiceProvider.overrideWithValue(_TempDownloadService(root)),
       ],
-      child: MaterialApp(
-        theme: AppTheme.light(language),
-        darkTheme: AppTheme.dark(language),
-        themeMode: themeMode,
-        locale: language.locale,
-        supportedLocales: AppLanguage.supportedLocales,
-        localizationsDelegates: _delegates,
-        builder: (BuildContext context, Widget? child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child ?? const SizedBox.shrink(),
-        ),
-        home: child,
-      ),
+      child: router == null
+          ? MaterialApp(
+              theme: AppTheme.light(language),
+              darkTheme: AppTheme.dark(language),
+              themeMode: themeMode,
+              locale: language.locale,
+              supportedLocales: AppLanguage.supportedLocales,
+              localizationsDelegates: _delegates,
+              builder: (BuildContext context, Widget? child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(textScale)),
+                child: child ?? const SizedBox.shrink(),
+              ),
+              home: child,
+            )
+          : MaterialApp.router(
+              theme: AppTheme.light(language),
+              locale: language.locale,
+              supportedLocales: AppLanguage.supportedLocales,
+              localizationsDelegates: _delegates,
+              routerConfig: router,
+            ),
     ),
   );
   await _settle(tester);
@@ -202,8 +213,10 @@ void main() {
     expect(find.text('Page 120 of 712'), findsOneWidget);
 
     expect(find.byType(BookGridCard), findsNWidgets(3));
-    // No cover image → generated cover with the title.
-    expect(find.byType(GeneratedBookCover), findsNWidgets(2));
+    // Two books have no cover image and Vachanamrut's cover cannot be
+    // resolved offline: all three grid covers (plus the continue-reading
+    // card's) show the generated cover, never a blank or generic icon.
+    expect(find.byType(GeneratedBookCover), findsNWidgets(4));
     expect(find.text('Premanand Swami'), findsOneWidget);
     expect(find.text('Sanskrit'), findsOneWidget, reason: 'no author');
     expect(tester.takeException(), isNull);
@@ -308,7 +321,10 @@ void main() {
       const BookDetailScreen(bookId: 'vachanamrut'),
       prefsValues: <String, Object>{'library.lastPage.vachanamrut': 12},
     );
-    expect(find.text('Shree Vachanamrut'), findsOneWidget);
+    // Heading plus the generated cover shown because the cover image
+    // cannot be resolved offline.
+    expect(find.text('Shree Vachanamrut'), findsNWidgets(2));
+    expect(find.byType(GeneratedBookCover), findsOneWidget);
     expect(find.text('Bhagwan Shree Swaminarayan'), findsOneWidget);
     expect(find.text('Gujarati'), findsOneWidget);
     expect(find.text('712 pages'), findsOneWidget);
@@ -364,7 +380,11 @@ void main() {
   testWidgets('Reader explains when a book no longer exists', (
     WidgetTester tester,
   ) async {
-    await _pump(tester, const PdfReaderScreen(bookId: 'missing'));
+    await _pump(
+      tester,
+      const PdfReaderScreen(bookId: 'missing'),
+      prefsValues: <String, Object>{'library.lastBookId': 'vachanamrut'},
+    );
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
@@ -372,6 +392,9 @@ void main() {
     expect(find.text('This book is no longer available.'), findsOneWidget);
     expect(find.text('Shastra Library'), findsWidgets);
     expect(tester.takeException(), isNull);
+    // A book that never opened must not replace "Continue reading".
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('library.lastBookId'), 'vachanamrut');
   });
 
   testWidgets('Reader asks for internet when offline and not downloaded', (
@@ -396,5 +419,103 @@ void main() {
     );
     expect(find.text('Retry'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Reader opened from a notification goes back to the book page', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = GoRouter(
+      initialLocation: Routes.reader('vachanamrut'),
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/reader/:bookId',
+          builder: (_, GoRouterState state) =>
+              PdfReaderScreen(bookId: state.pathParameters['bookId']!),
+        ),
+        GoRoute(
+          path: '/library/:bookId',
+          builder: (_, GoRouterState state) =>
+              Text('book:${state.pathParameters['bookId']}'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await _pump(tester, const SizedBox.shrink(), router: router);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await _settle(tester);
+
+    // Nothing underneath on the navigator: a back arrow is still offered.
+    expect(find.byType(BackButton), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await _settle(tester);
+    expect(find.text('book:vachanamrut'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('System back in a deep-linked reader opens the book page', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = GoRouter(
+      initialLocation: Routes.reader('vachanamrut'),
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/reader/:bookId',
+          builder: (_, GoRouterState state) =>
+              PdfReaderScreen(bookId: state.pathParameters['bookId']!),
+        ),
+        GoRoute(
+          path: '/library/:bookId',
+          builder: (_, GoRouterState state) =>
+              Text('book:${state.pathParameters['bookId']}'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await _pump(tester, const SizedBox.shrink(), router: router);
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await _settle(tester);
+
+    // Android back must not close the app from here.
+    final bool handled = await tester.binding.handlePopRoute();
+    await _settle(tester);
+    expect(handled, isTrue);
+    expect(find.text('book:vachanamrut'), findsOneWidget);
+  });
+
+  testWidgets('Reader pushed from the book page simply pops back', (
+    WidgetTester tester,
+  ) async {
+    await _pump(
+      tester,
+      Builder(
+        builder: (BuildContext context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const PdfReaderScreen(bookId: 'missing'),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await _settle(tester);
+    expect(find.byType(PdfReaderScreen), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await _settle(tester);
+    expect(find.byType(PdfReaderScreen), findsNothing);
+    expect(find.text('open'), findsOneWidget);
   });
 }

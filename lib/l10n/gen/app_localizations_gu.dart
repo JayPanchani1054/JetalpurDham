@@ -451,7 +451,7 @@ class AppLocalizationsGu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count તસવીરો',
-      one: '૧ તસવીર',
+      one: '$count તસવીર',
       zero: 'કોઈ તસવીર નથી',
     );
     return '$_temp0';
@@ -469,7 +469,7 @@ class AppLocalizationsGu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count તસવીરો સચવાઈ',
-      one: '૧ તસવીર સચવાઈ',
+      one: '$count તસવીર સચવાઈ',
     );
     return '$_temp0';
   }
@@ -508,7 +508,7 @@ class AppLocalizationsGu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count તસવીરો સાચવો',
-      one: '૧ તસવીર સાચવો',
+      one: '$count તસવીર સાચવો',
     );
     return '$_temp0';
   }
@@ -524,7 +524,7 @@ class AppLocalizationsGu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count તસવીરો સાચવી શકાઈ નહીં',
-      one: '૧ તસવીર સાચવી શકાઈ નહીં',
+      one: '$count તસવીર સાચવી શકાઈ નહીં',
     );
     return '$_temp0';
   }
@@ -603,7 +603,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String readerInvalidPage(int total) {
-    return '૧ થી $total વચ્ચેનો પાના નંબર લખો';
+    return '1 થી $total વચ્ચેનો પાના નંબર લખો';
   }
 
   @override
@@ -646,7 +646,7 @@ class AppLocalizationsGu extends AppLocalizations {
       'આ ગ્રંથ ફોનમાંથી દૂર કરવો છે? તમે તેને ગમે ત્યારે ફરી ડાઉનલોડ કરી શકો છો.';
 
   @override
-  String get libraryDownloadComplete => 'ઑફલાઇન વાંચન માટે સાચવ્યો';
+  String get libraryDownloadComplete => 'ગ્રંથ ઑફલાઇન વાંચન માટે સચવાઈ ગયો';
 
   @override
   String get libraryDownloadFailed =>
