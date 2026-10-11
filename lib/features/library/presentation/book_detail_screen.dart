@@ -222,7 +222,14 @@ class _InfoPill extends StatelessWidget {
           children: <Widget>[
             Icon(icon, size: 18, color: theme.colorScheme.primary),
             const SizedBox(width: AppSpacing.xs + 2),
-            Text(label, style: theme.textTheme.labelLarge),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelLarge,
+              ),
+            ),
           ],
         ),
       ),

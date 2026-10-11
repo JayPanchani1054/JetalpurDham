@@ -105,6 +105,11 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
       1,
       ref.read(readingProgressProvider).pageFor(widget.bookId) ?? 1,
     );
+    // Keep the providers that _open() awaits actively listened, so their
+    // first value arrives even on a cold start (e.g. from a notification).
+    ref
+      ..listenManual<AsyncValue<bool>>(isOnlineProvider, (_, _) {})
+      ..listenManual<AsyncValue<List<Book>>>(booksProvider, (_, _) {});
     // Persist the page if the app goes to the background mid-chapter.
     _lifecycle = AppLifecycleListener(onHide: _flushSave, onPause: _flushSave);
     // After the first frame: providers must not change while building.
@@ -163,7 +168,8 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
       final Book? book = findBook(books, widget.bookId);
       if (book == null) {
         // Offline before the library was ever cached: it may well exist.
-        final bool offline = !(ref.read(isOnlineProvider).value ?? true);
+        final bool offline = await _isOffline();
+        if (!isCurrent()) return;
         setState(() {
           if (offline) {
             _failed = true;
@@ -182,6 +188,19 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
     } catch (error, stack) {
       AppLogger.error('Could not open book ${widget.bookId}', error, stack);
       if (isCurrent()) setState(() => _failed = true);
+    }
+  }
+
+  /// Connectivity, waiting briefly for the first value on a cold start (for
+  /// example when the reader is opened straight from a notification).
+  Future<bool> _isOffline() async {
+    try {
+      final bool online = await ref
+          .read(isOnlineProvider.future)
+          .timeout(const Duration(seconds: 2));
+      return !online;
+    } catch (_) {
+      return false;
     }
   }
 
