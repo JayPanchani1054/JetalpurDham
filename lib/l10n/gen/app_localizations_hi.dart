@@ -413,6 +413,34 @@ class AppLocalizationsHi extends AppLocalizations {
   String get placeCategoryOther => 'पवित्र स्थान';
 
   @override
+  String get placesShowAll => 'सभी स्थान दिखाएँ';
+
+  @override
+  String get placesSatellite => 'सैटेलाइट';
+
+  @override
+  String get placesTapForMahima => 'महिमा पढ़ने के लिए यहाँ दबाएँ';
+
+  @override
+  String get places360Badge => '३६०°';
+
+  @override
+  String get places360Loading => '३६०° दर्शन तैयार हो रहे हैं…';
+
+  @override
+  String get placesMotionControl => 'फ़ोन घुमाकर चारों ओर दर्शन करें';
+
+  @override
+  String placesPanoramaNumber(int number) {
+    return 'दृश्य $number';
+  }
+
+  @override
+  String placesShareMessage(String name) {
+    return 'जय श्री स्वामिनारायण! श्री जेतलपुर धाम का प्रसादी स्थान – $name';
+  }
+
+  @override
   String get galleryTitle => 'फ़ोटो गैलरी';
 
   @override
@@ -630,6 +658,12 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get notificationChannelDesc =>
       'आगामी उत्सव, कथा और मंदिर के समाचारों की सूचनाएँ';
+
+  @override
+  String get eventsBrowseAll => 'सभी उत्सव देखें';
+
+  @override
+  String get eventsDetails => 'विवरण';
 
   @override
   String get donateTitle => 'दान';

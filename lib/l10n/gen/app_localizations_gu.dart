@@ -412,6 +412,34 @@ class AppLocalizationsGu extends AppLocalizations {
   String get placeCategoryOther => 'પવિત્ર સ્થાન';
 
   @override
+  String get placesShowAll => 'બધાં સ્થાનો બતાવો';
+
+  @override
+  String get placesSatellite => 'સેટેલાઇટ';
+
+  @override
+  String get placesTapForMahima => 'મહિમા વાંચવા અહીં દબાવો';
+
+  @override
+  String get places360Badge => '૩૬૦°';
+
+  @override
+  String get places360Loading => '૩૬૦° દર્શન તૈયાર થઈ રહ્યાં છે…';
+
+  @override
+  String get placesMotionControl => 'ફોન ફેરવીને ચારે બાજુ દર્શન કરો';
+
+  @override
+  String placesPanoramaNumber(int number) {
+    return 'દૃશ્ય $number';
+  }
+
+  @override
+  String placesShareMessage(String name) {
+    return 'જય શ્રી સ્વામિનારાયણ! શ્રી જેતલપુર ધામનું પ્રસાદીનું સ્થાન – $name';
+  }
+
+  @override
   String get galleryTitle => 'ફોટો ગેલેરી';
 
   @override
@@ -629,6 +657,12 @@ class AppLocalizationsGu extends AppLocalizations {
   @override
   String get notificationChannelDesc =>
       'આગામી ઉત્સવ, કથા અને મંદિરના સમાચારની સૂચનાઓ';
+
+  @override
+  String get eventsBrowseAll => 'બધા ઉત્સવ જુઓ';
+
+  @override
+  String get eventsDetails => 'વિગત';
 
   @override
   String get donateTitle => 'દાન';

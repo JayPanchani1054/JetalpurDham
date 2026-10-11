@@ -868,6 +868,54 @@ abstract class AppLocalizations {
   /// **'Sacred Place'**
   String get placeCategoryOther;
 
+  /// No description provided for @placesShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all places'**
+  String get placesShowAll;
+
+  /// No description provided for @placesSatellite.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite'**
+  String get placesSatellite;
+
+  /// No description provided for @placesTapForMahima.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to read the mahima'**
+  String get placesTapForMahima;
+
+  /// No description provided for @places360Badge.
+  ///
+  /// In en, this message translates to:
+  /// **'360°'**
+  String get places360Badge;
+
+  /// No description provided for @places360Loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing 360° darshan…'**
+  String get places360Loading;
+
+  /// No description provided for @placesMotionControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Move phone to look around'**
+  String get placesMotionControl;
+
+  /// No description provided for @placesPanoramaNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'View {number}'**
+  String placesPanoramaNumber(int number);
+
+  /// No description provided for @placesShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Jay Shree Swaminarayan! Prasadi place of Shree Jetalpur Dham – {name}'**
+  String placesShareMessage(String name);
+
   /// No description provided for @galleryTitle.
   ///
   /// In en, this message translates to:
@@ -1227,6 +1275,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notifications about upcoming utsav, katha and temple news'**
   String get notificationChannelDesc;
+
+  /// No description provided for @eventsBrowseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all utsav'**
+  String get eventsBrowseAll;
+
+  /// No description provided for @eventsDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get eventsDetails;
 
   /// No description provided for @donateTitle.
   ///

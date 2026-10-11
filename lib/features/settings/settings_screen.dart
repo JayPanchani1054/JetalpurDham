@@ -12,6 +12,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/ui_feedback.dart';
 import '../../core/widgets/language_button.dart';
+import '../events/application/notification_service.dart';
 
 final FutureProviderFamily<int, String> _folderSizeProvider =
     FutureProvider.family<int, String>(
@@ -68,9 +69,13 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(l10n.settingsNotifications),
             subtitle: Text(l10n.settingsNotificationsDesc),
             value: notifications,
-            onChanged: (bool value) => ref
-                .read(notificationsEnabledProvider.notifier)
-                .setEnabled(value),
+            onChanged: (bool value) async {
+              await ref
+                  .read(notificationsEnabledProvider.notifier)
+                  .setEnabled(value);
+              // Someone who tapped "Not now" earlier gets the OS prompt now.
+              if (value) await NotificationService.instance.requestPermission();
+            },
           ),
           header(l10n.settingsStorage),
           _StorageTile(

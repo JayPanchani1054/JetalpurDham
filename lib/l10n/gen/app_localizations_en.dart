@@ -412,6 +412,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placeCategoryOther => 'Sacred Place';
 
   @override
+  String get placesShowAll => 'Show all places';
+
+  @override
+  String get placesSatellite => 'Satellite';
+
+  @override
+  String get placesTapForMahima => 'Tap to read the mahima';
+
+  @override
+  String get places360Badge => '360°';
+
+  @override
+  String get places360Loading => 'Preparing 360° darshan…';
+
+  @override
+  String get placesMotionControl => 'Move phone to look around';
+
+  @override
+  String placesPanoramaNumber(int number) {
+    return 'View $number';
+  }
+
+  @override
+  String placesShareMessage(String name) {
+    return 'Jay Shree Swaminarayan! Prasadi place of Shree Jetalpur Dham – $name';
+  }
+
+  @override
   String get galleryTitle => 'Photo Gallery';
 
   @override
@@ -627,6 +655,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationChannelDesc =>
       'Notifications about upcoming utsav, katha and temple news';
+
+  @override
+  String get eventsBrowseAll => 'See all utsav';
+
+  @override
+  String get eventsDetails => 'Details';
 
   @override
   String get donateTitle => 'Donate';
