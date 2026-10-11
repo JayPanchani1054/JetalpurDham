@@ -252,6 +252,8 @@
   "notificationChannelDesc": "Notifications about upcoming utsav, katha and temple news",
   "eventsBrowseAll": "See all utsav",
   "eventsDetails": "Details",
+  "eventsIndiaTime": "{time} (India time)",
+  "@eventsIndiaTime": {"placeholders": {"time": {"type": "String"}}},
 
   "donateTitle": "Donate",
   "donateHeadline": "Offer Your Seva",

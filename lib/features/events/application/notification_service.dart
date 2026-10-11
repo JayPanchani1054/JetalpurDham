@@ -54,6 +54,10 @@ class NotificationService {
   static const String _androidIcon = '@drawable/ic_notification';
   static const Duration _platformTimeout = Duration(seconds: 20);
 
+  /// [initialize] runs before the first frame (bootstrap gives it 15 s in
+  /// total), so each local platform step gets only a few seconds.
+  static const Duration _initStepTimeout = Duration(seconds: 4);
+
   FlutterLocalNotificationsPlugin get _local =>
       FlutterLocalNotificationsPlugin();
 
@@ -271,7 +275,13 @@ class NotificationService {
       final AppLocalizations strings = _stringsFor(language);
       if (!identical(strings, _strings)) {
         _strings = strings;
-        if (_localReady) await _guard('channel', _createAndroidChannel);
+        if (_localReady) {
+          await _guard(
+            'channel',
+            _createAndroidChannel,
+            timeout: _platformTimeout,
+          );
+        }
       }
 
       if (!_firebaseReady) return;
@@ -473,9 +483,13 @@ class NotificationService {
     AppLogger.error('Notification stream error', error, stack);
   }
 
-  static Future<void> _guard(String step, Future<void> Function() body) async {
+  static Future<void> _guard(
+    String step,
+    Future<void> Function() body, {
+    Duration timeout = _initStepTimeout,
+  }) async {
     try {
-      await body().timeout(_platformTimeout);
+      await body().timeout(timeout);
     } catch (error, stack) {
       AppLogger.error('Notifications: $step failed', error, stack);
     }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleListener;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 
@@ -9,6 +10,7 @@ import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/utils/app_logger.dart';
 import '../domain/event_schedule.dart';
 import '../domain/temple_event.dart';
+import '../domain/temple_time.dart';
 
 /// Every active event, live from Firestore (served from the offline cache
 /// without internet). No server-side ordering or filtering, so a missing
@@ -50,34 +52,64 @@ List<TempleEvent> parseEventDocuments(
   return events;
 }
 
-/// Today's calendar date. Refreshes itself just after midnight so the
-/// Upcoming/Past split and "Today"/"Tomorrow" labels stay correct while the
-/// app is left open.
+/// Today's date in temple time (IST, see [TempleTime]).
+///
+/// Refreshes itself just after midnight and whenever the app comes back to
+/// the foreground, so the Upcoming/Past split and "Today"/"Tomorrow" labels
+/// stay correct while the app is left open. (A timer alone is not enough:
+/// timers pause while the phone sleeps, so after a night in the background
+/// the midnight timer may not have fired yet.)
 final NotifierProvider<EventsToday, DateTime> eventsTodayProvider =
     NotifierProvider<EventsToday, DateTime>(EventsToday.new);
 
 class EventsToday extends Notifier<DateTime> {
+  /// Source of the current instant. Replaced in tests only.
+  @visibleForTesting
+  static DateTime Function() clock = DateTime.now;
+
   Timer? _timer;
+  AppLifecycleListener? _lifecycle;
 
   @override
   DateTime build() {
-    ref.onDispose(() => _timer?.cancel());
-    final DateTime now = DateTime.now();
+    ref.onDispose(_stop);
+    _lifecycle = _listenForResume();
+    final DateTime now = TempleTime.now(clock());
     _scheduleNextDay(now);
     return dateOnly(now);
   }
 
-  void _scheduleNextDay(DateTime now) {
+  /// Re-reads the clock. Notifies listeners only when the date changed.
+  void refresh() {
+    final DateTime now = TempleTime.now(clock());
+    final DateTime today = dateOnly(now);
+    if (today != state) state = today;
+    _scheduleNextDay(now);
+  }
+
+  void _scheduleNextDay(DateTime templeNow) {
     _timer?.cancel();
-    final DateTime nextMidnight = DateTime(now.year, now.month, now.day + 1);
     _timer = Timer(
-      nextMidnight.difference(now) + const Duration(seconds: 2),
-      () {
-        final DateTime later = DateTime.now();
-        state = dateOnly(later);
-        _scheduleNextDay(later);
-      },
+      TempleTime.untilNextMidnight(templeNow) + const Duration(seconds: 2),
+      refresh,
     );
+  }
+
+  AppLifecycleListener? _listenForResume() {
+    try {
+      return AppLifecycleListener(onResume: refresh);
+    } catch (error) {
+      // No Flutter binding (plain Dart tests): the midnight timer still runs.
+      AppLogger.info('Events: no lifecycle binding ($error)');
+      return null;
+    }
+  }
+
+  void _stop() {
+    _timer?.cancel();
+    _timer = null;
+    _lifecycle?.dispose();
+    _lifecycle = null;
   }
 }
 
@@ -139,7 +171,10 @@ final StreamProviderFamily<EventLookup, String> eventLookupProvider =
           .watch(firestoreProvider)
           .collection(FirestorePaths.events)
           .doc(docId)
-          .snapshots()
+          // Metadata changes too: after an offline cache miss, the server's
+          // "does not exist" answer only changes `isFromCache`, and the page
+          // must move on from "No internet" by itself once back online.
+          .snapshots(includeMetadataChanges: true)
           .map((DocumentSnapshot<Map<String, dynamic>> snapshot) {
             final Map<String, dynamic>? data = snapshot.data();
             if (!snapshot.exists || data == null) {

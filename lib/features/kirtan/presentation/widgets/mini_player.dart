@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/l10n.dart';
-import '../../../../core/router/routes.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/ui_feedback.dart';
@@ -14,6 +12,7 @@ import '../../application/kirtan_player_controller.dart';
 import '../../application/kirtan_player_state.dart';
 import '../../application/kirtan_sleep_timer.dart';
 import '../../domain/kirtan.dart';
+import 'kirtan_actions.dart';
 import 'kirtan_artwork.dart';
 
 /// Persistent mini player shown above the bottom navigation bar while a
@@ -72,7 +71,7 @@ class _MiniPlayerBarState extends ConsumerState<_MiniPlayerBar>
 
   void _openPlayer() {
     unawaited(HapticFeedback.selectionClick());
-    unawaited(context.push<void>(Routes.player));
+    openKirtanPlayer(context);
   }
 
   @override
@@ -173,11 +172,17 @@ class _MiniProgressLine extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double fraction = ref.watch(
-      kirtanProgressProvider.select(
-        (AsyncValue<KirtanProgress> p) => p.value?.fraction ?? 0,
-      ),
+    // While a new kirtan loads, the player still reports the previous one.
+    final bool preparing = ref.watch(
+      kirtanPlayerProvider.select((KirtanQueue q) => q.isPreparing),
     );
+    final double fraction = preparing
+        ? 0
+        : ref.watch(
+            kirtanProgressProvider.select(
+              (AsyncValue<KirtanProgress> p) => p.value?.fraction ?? 0,
+            ),
+          );
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return LinearProgressIndicator(
       value: fraction,

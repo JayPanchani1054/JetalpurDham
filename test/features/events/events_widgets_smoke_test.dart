@@ -9,6 +9,7 @@ import 'package:jetalpur_dham/core/services/preferences.dart';
 import 'package:jetalpur_dham/core/theme/app_theme.dart';
 import 'package:jetalpur_dham/features/events/data/events_repository.dart';
 import 'package:jetalpur_dham/features/events/domain/temple_event.dart';
+import 'package:jetalpur_dham/features/events/domain/temple_time.dart';
 import 'package:jetalpur_dham/features/events/presentation/event_detail_screen.dart';
 import 'package:jetalpur_dham/features/events/presentation/events_screen.dart';
 import 'package:jetalpur_dham/features/events/presentation/widgets/home_upcoming_events.dart';
@@ -21,8 +22,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final DateTime _today = DateTime(2026, 10, 11);
 
+/// Timestamp for an India (IST) wall-clock time, as entered by temple staff.
 Timestamp _ts(int month, int day, [int hour = 0, int minute = 0]) =>
-    Timestamp.fromDate(DateTime(2026, month, day, hour, minute));
+    Timestamp.fromDate(
+      DateTime.utc(
+        2026,
+        month,
+        day,
+        hour,
+        minute,
+      ).subtract(TempleTime.utcOffset),
+    );
 
 final List<TempleEvent> _events = <TempleEvent>[
   TempleEvent.fromMap('sharad-purnima', <String, Object?>{
@@ -212,9 +222,13 @@ void main() {
     expect(find.text('Venue'), findsOneWidget);
     expect(find.text('Sabha Mandap, Jetalpur Dham'), findsOneWidget);
     expect(find.text('Sunday, October 11, 2026'), findsOneWidget);
-    // intl may use a narrow no-break space before "PM".
+    // intl may use a narrow no-break space before "PM". Phones outside
+    // India (like the test machine) also get an "(India time)" hint.
+    final String indiaHint = TempleTime.isDeviceOutsideIndia()
+        ? r' \(India time\)'
+        : '';
     expect(
-      find.textContaining(RegExp(r'^7:30\sPM – 10:00\sPM$')),
+      find.textContaining(RegExp('^7:30\\sPM – 10:00\\sPM$indiaHint\$')),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);

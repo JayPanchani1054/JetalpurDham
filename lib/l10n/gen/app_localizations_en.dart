@@ -764,6 +764,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eventsDetails => 'Details';
 
   @override
+  String eventsIndiaTime(String time) {
+    return '$time (India time)';
+  }
+
+  @override
   String get donateTitle => 'Donate';
 
   @override

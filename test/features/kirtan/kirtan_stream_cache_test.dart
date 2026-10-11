@@ -120,6 +120,25 @@ void main() {
       );
     });
 
+    test('retries the folder after a failure and never throws', () async {
+      int calls = 0;
+      final KirtanStreamCache cache = KirtanStreamCache(
+        rootDirectory: () async {
+          calls++;
+          if (calls == 1) throw const FileSystemException('unavailable');
+          return root;
+        },
+      );
+      final Kirtan kirtan = _k('k', 'kirtans/k.mp3');
+      // Failure is reported to the caller but not remembered…
+      await expectLater(cache.fileFor(kirtan), throwsA(isA<Exception>()));
+      // …so the next call works.
+      final File file = await cache.fileFor(kirtan);
+      expect(p.dirname(file.path), endsWith('kirtan_stream_cache'));
+      expect(await cache.completedFileFor(kirtan), isNull);
+      expect(await cache.size(), 0);
+    });
+
     test('keeps everything below the limit and prunes only once', () async {
       final KirtanStreamCache cache = KirtanStreamCache(
         rootDirectory: () async => root,

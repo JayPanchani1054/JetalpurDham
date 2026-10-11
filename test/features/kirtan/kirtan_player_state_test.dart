@@ -35,6 +35,21 @@ void main() {
       expect(queue.isPreparing, isFalse);
       expect(queue.errorCount, 2);
       expect(queue.items, hasLength(2));
+      expect(queue.autoplay, isTrue);
+    });
+
+    test('isStarting only while loading a kirtan that will play', () {
+      final KirtanQueue loading = KirtanQueue(
+        items: <Kirtan>[_k('a')],
+        index: 0,
+        isPreparing: true,
+      );
+      expect(loading.isStarting, isTrue);
+      // Pause tapped while loading: no spinner, play icon instead.
+      expect(loading.copyWith(autoplay: false).isStarting, isFalse);
+      expect(loading.copyWith(autoplay: false).autoplay, isFalse);
+      // Loaded: the player's own state decides.
+      expect(loading.copyWith(isPreparing: false).isStarting, isFalse);
     });
   });
 

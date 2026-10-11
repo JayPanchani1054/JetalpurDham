@@ -22,6 +22,7 @@ import '../../../core/widgets/state_views.dart';
 import '../data/events_repository.dart';
 import '../domain/event_schedule.dart';
 import '../domain/temple_event.dart';
+import '../domain/temple_time.dart';
 import 'event_labels.dart';
 import 'widgets/event_card.dart';
 
@@ -191,7 +192,7 @@ class _EventDetailViewState extends ConsumerState<_EventDetailView> {
     final String body = event.body.resolve(lang);
     final String venue = event.location.resolve(lang);
     final String? dateText = _dateText(event, lang);
-    final String? timeText = _timeText(event, lang);
+    final String? timeText = _timeText(event, lang, l10n);
     // "Watch Live" only while the event is upcoming or happening (undated
     // announcements keep their link too).
     final String? liveUrl = relative.when == EventWhen.past
@@ -389,7 +390,7 @@ class _EventDetailViewState extends ConsumerState<_EventDetailView> {
     final String link =
         ref.read(appConfigValueProvider).shareUrl ?? kDefaultShareUrl;
     final String? date = _dateText(event, lang)?.replaceAll('\n', ' ');
-    final String? time = _timeText(event, lang);
+    final String? time = _timeText(event, lang, l10n);
     final String text = buildEventShareText(
       title: event.titleIn(lang),
       when: <String?>[date, time].whereType<String>().join(', '),
@@ -428,18 +429,28 @@ class _EventDetailViewState extends ConsumerState<_EventDetailView> {
   }
 
   /// "7:30 PM" or "7:30 PM – 10:00 PM"; null when no time was entered.
-  static String? _timeText(TempleEvent event, String locale) {
+  /// Times are temple (India) time: phones set to another time zone get an
+  /// "(India time)" hint so devotees abroad are not misled.
+  static String? _timeText(
+    TempleEvent event,
+    String locale,
+    AppLocalizations l10n,
+  ) {
     final DateTime? start = event.startAt;
-    if (!hasTimeOfDay(start)) return null;
-    final String from = Formatters.time(start, locale);
+    if (start == null || !hasTimeOfDay(start)) return null;
+    String text = Formatters.time(start, locale);
+    if (text.isEmpty) return null;
     final DateTime? end = event.endAt;
     if (end != null &&
         !event.isMultiDay &&
         hasTimeOfDay(end) &&
-        end.isAfter(start!)) {
-      return '$from – ${Formatters.time(end, locale)}';
+        end.isAfter(start)) {
+      final String until = Formatters.time(end, locale);
+      if (until.isNotEmpty) text = '$text – $until';
     }
-    return from.isEmpty ? null : from;
+    return TempleTime.isDeviceOutsideIndia()
+        ? l10n.eventsIndiaTime(text)
+        : text;
   }
 }
 

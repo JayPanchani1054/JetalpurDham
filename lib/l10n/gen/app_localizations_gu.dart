@@ -681,14 +681,14 @@ class AppLocalizationsGu extends AppLocalizations {
   String get eventsUpcoming => 'આગામી';
 
   @override
-  String get eventsPast => 'પૂર્વ';
+  String get eventsPast => 'અગાઉના';
 
   @override
   String get eventsEmptyUpcoming =>
       'હાલ કોઈ આગામી ઉત્સવ નથી. અમે તમને જાણ કરીશું!';
 
   @override
-  String get eventsEmptyPast => 'હજુ કોઈ પૂર્વ કાર્યક્રમ નથી.';
+  String get eventsEmptyPast => 'હજુ સુધી અગાઉનો કોઈ કાર્યક્રમ નથી.';
 
   @override
   String get eventDate => 'તારીખ';
@@ -765,6 +765,11 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get eventsDetails => 'વિગત';
+
+  @override
+  String eventsIndiaTime(String time) {
+    return '$time (ભારતીય સમય)';
+  }
 
   @override
   String get donateTitle => 'દાન';

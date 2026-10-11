@@ -25,6 +25,7 @@ import '../domain/kirtan.dart';
 import '../domain/kirtan_queries.dart';
 import 'kirtan_downloads_controller.dart';
 import 'kirtan_player_state.dart';
+import 'kirtan_shuffle_order.dart';
 import 'kirtan_stream_cache.dart';
 
 /// Bundled image of Shree Revati Baldevji Harikrushna Maharaj, used as the
@@ -69,20 +70,25 @@ final StreamProvider<PlayerState> kirtanPlayerStateProvider =
       (Ref ref) => ref.watch(kirtanAudioPlayerProvider).playerStateStream,
     );
 
-/// True while playback is requested (also while buffering).
-final Provider<bool> kirtanIsPlayingProvider = Provider<bool>(
-  (Ref ref) => ref.watch(
+/// True while playback is requested: playing, buffering, or a tapped kirtan
+/// that is still loading and will start by itself.
+final Provider<bool> kirtanIsPlayingProvider = Provider<bool>((Ref ref) {
+  final bool starting = ref.watch(
+    kirtanPlayerProvider.select((KirtanQueue q) => q.isStarting),
+  );
+  final bool playing = ref.watch(
     kirtanPlayerStateProvider.select(
       (AsyncValue<PlayerState> s) => s.value?.playing ?? false,
     ),
-  ),
-);
+  );
+  return starting || playing;
+});
 
-/// True while the current kirtan is being prepared, or is buffering while
-/// playback is requested (shown as a spinner on the play button).
+/// True while the current kirtan is being prepared to play, or is buffering
+/// while playback is requested (shown as a spinner on the play button).
 final Provider<bool> kirtanIsLoadingProvider = Provider<bool>((Ref ref) {
   final bool preparing = ref.watch(
-    kirtanPlayerProvider.select((KirtanQueue q) => q.isPreparing),
+    kirtanPlayerProvider.select((KirtanQueue q) => q.isStarting),
   );
   final bool buffering = ref.watch(
     kirtanPlayerStateProvider.select((AsyncValue<PlayerState> s) {
@@ -144,13 +150,16 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
   StreamSubscription<PlayerException>? _errorSub;
   StreamSubscription<ProcessingState>? _processingSub;
 
+  /// How long a queue waits for slow link lookups (gs:// or Storage paths)
+  /// once the chosen kirtan is ready. Kirtans still unresolved are left out
+  /// of that queue (their links are cached, so the next queue includes them).
+  static const Duration _queueGracePeriod = Duration(seconds: 3);
+
   int _generation = 0;
   int _loadedGeneration = -1;
   int _consecutiveErrors = 0;
-
-  /// Cleared when the user taps pause while a queue is still loading.
-  bool _autoplay = true;
   DateTime _lastErrorAt = DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime _lastManualChangeAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Cache-while-streaming needs just_audio's localhost proxy. If the platform
   /// blocks it (cleartext policy), playback falls back to direct streaming for
@@ -205,22 +214,35 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
   Future<void> togglePlayPause() async {
     if (state.isEmpty) return;
     if (state.isPreparing) {
-      // Still loading: don't start once ready.
-      _autoplay = false;
+      // Still loading: toggle whether it starts once ready.
+      state = state.copyWith(autoplay: !state.autoplay);
       return;
     }
     if (_player.playing &&
         _player.processingState != ProcessingState.completed) {
       return _guard('pause', _player.pause);
     }
+    await resume();
+  }
+
+  /// Starts or resumes the current kirtan. Never pauses, so repeated taps
+  /// (e.g. a double tap on a row that is still loading) are harmless.
+  Future<void> resume() async {
+    if (state.isEmpty) return;
+    if (state.isPreparing) {
+      if (!state.autoplay) state = state.copyWith(autoplay: true);
+      return;
+    }
+    if (_player.playing &&
+        _player.processingState != ProcessingState.completed) {
+      return;
+    }
     if (_needsReload) {
       await _load(
         state.items,
         startIndex: state.index ?? 0,
         strict: true,
-        position: _player.processingState == ProcessingState.idle
-            ? _player.position
-            : null,
+        position: _resumePosition,
       );
       return;
     }
@@ -230,7 +252,12 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
     _startPlayback();
   }
 
-  Future<void> pause() => _guard('pause', _player.pause);
+  Future<void> pause() async {
+    if (state.isPreparing && state.autoplay) {
+      state = state.copyWith(autoplay: false);
+    }
+    await _guard('pause', _player.pause);
+  }
 
   Future<void> skipToNext() async {
     if (state.isPreparing) return;
@@ -241,7 +268,7 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       }
       return;
     }
-    await _guard('next', _player.seekToNext);
+    await _changeKirtan('next', _player.seekToNext);
   }
 
   /// Restarts the kirtan when more than 3 s in (or when there is no previous
@@ -257,7 +284,7 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       );
       return;
     }
-    await _guard('previous', () async {
+    await _changeKirtan('previous', () async {
       if (_player.position > const Duration(seconds: 3) ||
           !_player.hasPrevious) {
         await _player.seek(Duration.zero);
@@ -274,12 +301,18 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       await _load(state.items, startIndex: index, strict: true);
       return;
     }
-    await _guard('skip', () => _player.seek(Duration.zero, index: index));
+    await _changeKirtan(
+      'skip',
+      () => _player.seek(Duration.zero, index: index),
+    );
     _startPlayback();
   }
 
-  Future<void> seek(Duration position) =>
-      _guard('seek', () => _player.seek(position));
+  Future<void> seek(Duration position) async {
+    // While a new queue loads, the player still holds the previous kirtan.
+    if (state.isPreparing || state.isEmpty) return;
+    await _guard('seek', () => _player.seek(position));
+  }
 
   Future<void> toggleShuffle() => _guard('shuffle', () async {
     final bool enable = !_player.shuffleModeEnabled;
@@ -329,12 +362,29 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
     );
   }
 
+  /// True while a new queue loads and for a moment after the app itself
+  /// changed the kirtan (new queue, next/previous, Up next, end of queue).
+  /// The sleep timer uses it to tell those changes apart from a kirtan that
+  /// simply finished and advanced to the next one.
+  bool get changedKirtanRecently =>
+      state.isPreparing ||
+      DateTime.now().difference(_lastManualChangeAt) <
+          const Duration(seconds: 2);
+
   // ---------------------------------------------------------------------------
   // Loading.
 
   bool get _needsReload =>
       _loadedGeneration != _generation ||
       _player.processingState == ProcessingState.idle;
+
+  /// Where to resume after the player stopped on an error: the position it
+  /// reached, but only if it still holds the current queue.
+  Duration? get _resumePosition =>
+      _loadedGeneration == _generation &&
+          _player.processingState == ProcessingState.idle
+      ? _player.position
+      : null;
 
   bool _isCurrent(int generation) => generation == _generation && ref.mounted;
 
@@ -358,9 +408,10 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       items: requested,
       index: start,
       isPreparing: true,
+      // A retry keeps the user's choice; a new request always plays.
+      autoplay: allowDirectRetry || state.autoplay,
       errorCount: state.errorCount,
     );
-    if (allowDirectRetry) _autoplay = true;
     if (_player.playing) await _guard('pause previous', _player.pause);
 
     bool startUsesProxy = false;
@@ -368,10 +419,19 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       final bool offline = !(ref.read(isOnlineProvider).value ?? true);
       await ref.read(kirtanStreamCacheProvider).pruneOnce();
       final _TagBuilder tags = await _tagBuilder();
+      // All lookups run in parallel (none of them throws). Playback waits for
+      // the chosen kirtan, then gives the rest a short grace period, so one
+      // slow link lookup never holds up the start.
+      final List<Future<AudioSource?>> pending = <Future<AudioSource?>>[
+        for (final Kirtan k in requested)
+          _sourceFor(k, tags: tags, offline: offline),
+      ];
+      await pending[start];
       final List<AudioSource?> sources = await Future.wait(
-        requested.map(
-          (Kirtan k) => _sourceFor(k, tags: tags, offline: offline),
-        ),
+        <Future<AudioSource?>>[
+          for (final Future<AudioSource?> source in pending)
+            source.timeout(_queueGracePeriod, onTimeout: () => null),
+        ],
       );
       if (!_isCurrent(generation)) return false;
 
@@ -395,24 +455,30 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
         return false;
       }
       startUsesProxy = playable[index] is LockCachingAudioSource;
-      state = KirtanQueue(
+      state = state.copyWith(
         items: List<Kirtan>.unmodifiable(items),
         index: index,
-        isPreparing: true,
-        errorCount: state.errorCount,
       );
       if (shuffle != null) await _player.setShuffleModeEnabled(shuffle);
-      await _player.setAudioSources(
-        playable,
-        initialIndex: index,
-        initialPosition: position ?? Duration.zero,
+      await _changeKirtan(
+        'load',
+        () => _player.setAudioSources(
+          playable,
+          initialIndex: index,
+          initialPosition: position ?? Duration.zero,
+          // With shuffle on, the chosen kirtan plays first and every other
+          // kirtan follows once.
+          shuffleOrder: KirtanShuffleOrder(first: index),
+        ),
+        rethrowErrors: true,
       );
       if (!_isCurrent(generation)) return false;
       _loadedGeneration = generation;
       _consecutiveErrors = 0;
-      state = state.copyWith(isPreparing: false);
+      final bool play = state.autoplay;
+      state = state.copyWith(isPreparing: false, autoplay: true);
       _markPlayed();
-      if (_autoplay) _startPlayback();
+      if (play) _startPlayback();
       return true;
     } on PlayerInterruptedException {
       // Replaced by a newer request.
@@ -460,7 +526,10 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
 
   void _failLoad(int generation) {
     if (!_isCurrent(generation)) return;
-    state = state.copyWith(isPreparing: false);
+    state = state.copyWith(isPreparing: false, autoplay: true);
+    // The player may still hold the previous queue: stop it, so the lock
+    // screen can never resume a kirtan other than the one shown in the app.
+    unawaited(_guard('stop after failed load', _player.stop));
     _reportError();
   }
 
@@ -507,9 +576,18 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       if (!_streamCacheEnabled) {
         return AudioSource.uri(uri, tag: tags.build(kirtan));
       }
+      File cacheFile;
+      try {
+        cacheFile = await cache.fileFor(kirtan);
+      } catch (error, stack) {
+        // No usable cache folder: stream without caching rather than not at
+        // all.
+        AppLogger.error('Kirtan stream cache unavailable', error, stack);
+        return AudioSource.uri(uri, tag: tags.build(kirtan));
+      }
       final LockCachingAudioSource source = LockCachingAudioSource(
         uri,
-        cacheFile: await cache.fileFor(kirtan),
+        cacheFile: cacheFile,
         tag: tags.build(kirtan),
       );
       _cachingSources[cacheKey] = source;
@@ -541,8 +619,9 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
     try {
       final Directory dir = await getApplicationSupportDirectory();
       final File file = File(p.join(dir.path, 'kirtan_art', 'murti.jpg'));
-      if (!await file.exists()) {
-        final ByteData data = await rootBundle.load(kKirtanFallbackArtAsset);
+      final ByteData data = await rootBundle.load(kKirtanFallbackArtAsset);
+      // Rewritten when an app update ships a different murti image.
+      if (!await file.exists() || await file.length() != data.lengthInBytes) {
         await file.parent.create(recursive: true);
         await file.writeAsBytes(
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
@@ -591,7 +670,7 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
         // End of the queue: rewind to its first kirtan, paused.
         if (_loadedGeneration == _generation && !state.isPreparing) {
           unawaited(
-            _guard('completed', () async {
+            _changeKirtan('completed', () async {
               await _player.pause();
               final List<int> order = _player.effectiveIndices;
               await _player.seek(
@@ -634,7 +713,7 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
     _reportError();
     if (_consecutiveErrors < 3 && _player.hasNext) {
       _consecutiveErrors++;
-      unawaited(_guard('skip after error', _player.seekToNext));
+      unawaited(_changeKirtan('skip after error', _player.seekToNext));
     } else {
       _consecutiveErrors = 0;
       unawaited(_guard('pause after error', _player.pause));
@@ -658,6 +737,27 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
       // Superseded by another action.
     } catch (error, stack) {
       AppLogger.error('Kirtan $action failed', error, stack);
+    }
+  }
+
+  /// Runs an action that changes the current kirtan, remembering when it
+  /// happened (see [changedKirtanRecently]). Errors are logged, or rethrown
+  /// with [rethrowErrors] so [_load] can handle them.
+  Future<void> _changeKirtan(
+    String action,
+    Future<void> Function() body, {
+    bool rethrowErrors = false,
+  }) async {
+    _lastManualChangeAt = DateTime.now();
+    try {
+      await body();
+    } on PlayerInterruptedException {
+      if (rethrowErrors) rethrow;
+    } catch (error, stack) {
+      if (rethrowErrors) rethrow;
+      AppLogger.error('Kirtan $action failed', error, stack);
+    } finally {
+      _lastManualChangeAt = DateTime.now();
     }
   }
 }

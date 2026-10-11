@@ -1420,6 +1420,12 @@ abstract class AppLocalizations {
   /// **'Details'**
   String get eventsDetails;
 
+  /// No description provided for @eventsIndiaTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{time} (India time)'**
+  String eventsIndiaTime(String time);
+
   /// No description provided for @donateTitle.
   ///
   /// In en, this message translates to:

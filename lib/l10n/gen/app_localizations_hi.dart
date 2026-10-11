@@ -768,6 +768,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get eventsDetails => 'विवरण';
 
   @override
+  String eventsIndiaTime(String time) {
+    return '$time (भारतीय समय)';
+  }
+
+  @override
   String get donateTitle => 'दान';
 
   @override

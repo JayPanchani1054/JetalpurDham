@@ -252,6 +252,8 @@
   "notificationChannelDesc": "आगामी उत्सव, कथा और मंदिर के समाचारों की सूचनाएँ",
   "eventsBrowseAll": "सभी उत्सव देखें",
   "eventsDetails": "विवरण",
+  "eventsIndiaTime": "{time} (भारतीय समय)",
+  "@eventsIndiaTime": {"placeholders": {"time": {"type": "String"}}},
 
   "donateTitle": "दान",
   "donateHeadline": "अपनी सेवा अर्पित करें",

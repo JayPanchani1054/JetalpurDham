@@ -3,6 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jetalpur_dham/core/models/localized_text.dart';
 import 'package:jetalpur_dham/features/events/data/events_repository.dart';
 import 'package:jetalpur_dham/features/events/domain/temple_event.dart';
+import 'package:jetalpur_dham/features/events/domain/temple_time.dart';
+
+/// A Firestore timestamp for the given India (IST) wall-clock time, the way
+/// temple staff enter it in the Firebase console. Independent of the time
+/// zone of the machine running the tests.
+Timestamp _ist(int y, int m, int d, [int h = 0, int min = 0]) =>
+    Timestamp.fromDate(
+      DateTime.utc(y, m, d, h, min).subtract(TempleTime.utcOffset),
+    );
 
 void main() {
   group('EventType.parse', () {
@@ -30,8 +39,8 @@ void main() {
         'description': <String, Object?>{'en': 'Long text'},
         'location': 'Sabha Mandap',
         'bannerUrl': 'events/annakut.jpg',
-        'startAt': Timestamp.fromDate(start),
-        'endAt': Timestamp.fromDate(end),
+        'startAt': _ist(2026, 10, 20, 18, 30),
+        'endAt': _ist(2026, 10, 22, 21),
         'type': 'utsav',
         'albumId': 'avsar-200',
         'liveUrl': 'https://youtube.com/live/abc',
@@ -91,22 +100,33 @@ void main() {
     });
 
     test('accepts ISO strings and epoch millis for dates', () {
-      final TempleEvent iso = TempleEvent.fromMap('i', <String, Object?>{
-        'startAt': '2026-11-01T07:00:00',
-      });
-      expect(iso.startAt, DateTime(2026, 11, 1, 7));
+      DateTime? start(Object? value) =>
+          TempleEvent.fromMap('x', <String, Object?>{'startAt': value}).startAt;
+      // No zone: already temple wall-clock time.
+      expect(start('2026-11-01T07:00:00'), DateTime(2026, 11, 1, 7));
+      // With a zone: converted to India time.
+      expect(start('2026-11-01T01:30:00Z'), DateTime(2026, 11, 1, 7));
+      expect(start('2026-11-01T07:00:00+05:30'), DateTime(2026, 11, 1, 7));
+      expect(
+        start(_ist(2026, 12, 25, 9).millisecondsSinceEpoch),
+        DateTime(2026, 12, 25, 9),
+      );
+    });
 
-      final DateTime when = DateTime(2026, 12, 25, 9);
-      final TempleEvent millis = TempleEvent.fromMap('m', <String, Object?>{
-        'startAt': when.millisecondsSinceEpoch,
+    test('shows dates in India time, whatever the phone time zone', () {
+      // Midnight IST is still the previous evening in UTC (and earlier in
+      // America); the utsav must stay on its Indian date with no time.
+      final TempleEvent event = TempleEvent.fromMap('x', <String, Object?>{
+        'startAt': Timestamp.fromDate(DateTime.utc(2026, 10, 19, 18, 30)),
       });
-      expect(millis.startAt, when);
+      expect(event.startAt, DateTime(2026, 10, 20));
+      expect(event.startAt!.hour, 0);
     });
 
     test('ignores an end before the start', () {
       final TempleEvent event = TempleEvent.fromMap('x', <String, Object?>{
-        'startAt': Timestamp.fromDate(DateTime(2026, 10, 20)),
-        'endAt': Timestamp.fromDate(DateTime(2026, 10, 2)),
+        'startAt': _ist(2026, 10, 20),
+        'endAt': _ist(2026, 10, 2),
       });
       expect(event.startAt, DateTime(2026, 10, 20));
       expect(event.endAt, isNull);
@@ -114,7 +134,7 @@ void main() {
 
     test('uses endAt as the start when startAt is missing', () {
       final TempleEvent event = TempleEvent.fromMap('x', <String, Object?>{
-        'endAt': Timestamp.fromDate(DateTime(2026, 10, 20)),
+        'endAt': _ist(2026, 10, 20),
       });
       expect(event.startAt, DateTime(2026, 10, 20));
       expect(event.endAt, isNull);
@@ -123,8 +143,8 @@ void main() {
 
     test('same-day end is not multi-day', () {
       final TempleEvent event = TempleEvent.fromMap('x', <String, Object?>{
-        'startAt': Timestamp.fromDate(DateTime(2026, 10, 20, 9)),
-        'endAt': Timestamp.fromDate(DateTime(2026, 10, 20, 21)),
+        'startAt': _ist(2026, 10, 20, 9),
+        'endAt': _ist(2026, 10, 20, 21),
       });
       expect(event.isMultiDay, isFalse);
     });
@@ -135,8 +155,11 @@ void main() {
       expect(live('https://youtu.be/x'), 'https://youtu.be/x');
       expect(live('http://example.org/live'), 'http://example.org/live');
       expect(live('youtube.com/live/abc'), 'https://youtube.com/live/abc');
+      expect(live('//youtube.com/live/abc'), 'https://youtube.com/live/abc');
       expect(live('javascript:alert(1)'), isNull);
+      expect(live('https://'), isNull);
       expect(live('not a link'), isNull);
+      expect(live('live'), isNull);
       expect(live(''), isNull);
     });
 
@@ -150,7 +173,7 @@ void main() {
     test('equality compares every field', () {
       final Map<String, Object?> data = <String, Object?>{
         'title': 'Sabha',
-        'startAt': Timestamp.fromDate(DateTime(2026, 10, 20)),
+        'startAt': _ist(2026, 10, 20),
         'type': 'katha',
       };
       expect(TempleEvent.fromMap('a', data), TempleEvent.fromMap('a', data));

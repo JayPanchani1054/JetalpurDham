@@ -69,8 +69,15 @@ class KirtanDownloadsController extends Notifier<KirtanDownloadsIndex> {
   /// the kirtan was already heard completely, so no data is spent twice.
   Future<KirtanDownloadResult> download(Kirtan kirtan) async {
     final DownloadKey key = keyFor(kirtan);
-    File? file = await _importFromStreamCache(kirtan, key);
-    file ??= await _manager.download(key, kirtan.audioUrl);
+    File? file;
+    try {
+      file = await _importFromStreamCache(kirtan, key);
+      file ??= await _manager.download(key, kirtan.audioUrl);
+    } catch (error, stack) {
+      // e.g. the storage folder is unavailable: report, never crash a tap.
+      AppLogger.error('Kirtan download failed ${kirtan.id}', error, stack);
+      return KirtanDownloadResult.failed;
+    }
     if (!ref.mounted) return KirtanDownloadResult.failed;
     if (file == null) {
       final DownloadStatus status =

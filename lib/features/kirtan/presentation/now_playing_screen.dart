@@ -36,6 +36,9 @@ class NowPlayingScreen extends ConsumerWidget {
 
     final AppBar appBar = AppBar(
       backgroundColor: Colors.transparent,
+      // Stays see-through over the gradient when the controls scroll.
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       centerTitle: true,
       leading: IconButton(
         tooltip: l10n.close,
@@ -234,14 +237,26 @@ class _ProgressSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final KirtanProgress progress =
-        ref.watch(kirtanProgressProvider).value ?? KirtanProgress.zero;
+    // While a new kirtan loads, the player still reports the previous one.
+    final bool preparing = ref.watch(
+      kirtanPlayerProvider.select((KirtanQueue q) => q.isPreparing),
+    );
+    final KirtanProgress progress = preparing
+        ? KirtanProgress.zero
+        : ref.watch(kirtanProgressProvider).value ?? KirtanProgress.zero;
+    // Until the file reports its length, show the duration from Firestore.
+    final Duration? expected = ref.watch(
+      currentKirtanProvider.select((Kirtan? k) => k?.duration),
+    );
+    final Duration total = progress.total > Duration.zero
+        ? progress.total
+        : expected ?? Duration.zero;
     final ThemeData theme = Theme.of(context);
     final Color primary = theme.colorScheme.primary;
     return ProgressBar(
       progress: progress.position,
       buffered: progress.buffered,
-      total: progress.total,
+      total: total,
       onSeek: (Duration position) =>
           ref.read(kirtanPlayerProvider.notifier).seek(position),
       thumbRadius: 8,

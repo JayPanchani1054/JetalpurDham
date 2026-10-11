@@ -47,7 +47,11 @@ class KirtanSleepTimerController extends Notifier<KirtanSleepTimer> {
     _advanceSub = player.positionDiscontinuityStream
         .where(
           (PositionDiscontinuity d) =>
-              d.reason == PositionDiscontinuityReason.autoAdvance,
+              d.reason == PositionDiscontinuityReason.autoAdvance &&
+              // just_audio also reports "auto-advance" when a newly tapped
+              // queue replaces the old one; that kirtan must keep playing
+              // (the timer then applies to it).
+              !ref.read(kirtanPlayerProvider.notifier).changedKirtanRecently,
         )
         .listen((_) => unawaited(_pauseNow(rewind: true)));
     _completedSub = player.processingStateStream
@@ -64,7 +68,12 @@ class KirtanSleepTimerController extends Notifier<KirtanSleepTimer> {
   void _fadeOutAndPause() {
     final AudioPlayer player = _player;
     if (!player.playing) {
-      cancel();
+      // A tapped kirtan that is still loading must not start afterwards.
+      if (ref.read(kirtanPlayerProvider).isStarting) {
+        unawaited(_pauseNow());
+      } else {
+        cancel();
+      }
       return;
     }
     final double startVolume = player.volume;
@@ -92,10 +101,13 @@ class KirtanSleepTimerController extends Notifier<KirtanSleepTimer> {
     final double? restore = _volumeToRestore;
     _volumeToRestore = null;
     _cancelAll();
-    if (ref.mounted) state = const KirtanSleepTimer.off();
+    if (!ref.mounted) return;
+    state = const KirtanSleepTimer.off();
     final AudioPlayer player = _player;
     try {
-      await player.pause();
+      // Through the controller, so a kirtan that is still loading is kept
+      // from starting too.
+      await ref.read(kirtanPlayerProvider.notifier).pause();
       // The next kirtan has just started: keep it at the beginning.
       if (rewind) await player.seek(Duration.zero);
       if (restore != null) await player.setVolume(restore);

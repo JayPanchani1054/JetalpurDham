@@ -32,17 +32,18 @@ class KirtanArtwork extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? cover = kirtan.coverUrl;
-    final Widget child;
-    if (cover != null && cover.isNotEmpty) {
-      child = AppNetworkImage(
-        url: cover,
-        placeholderIcon: Icons.music_note_rounded,
-      );
-    } else if (useMurtiFallback) {
-      child = const _MurtiArtwork();
-    } else {
-      child = _MusicTile(size: size);
-    }
+    final Widget fallback = useMurtiFallback
+        ? const _MurtiArtwork()
+        : _MusicTile(size: size);
+    // A cover that cannot be loaded (offline, deleted file) shows the same
+    // calm fallback as a kirtan without one.
+    final Widget child = cover != null && cover.isNotEmpty
+        ? AppNetworkImage(
+            url: cover,
+            placeholderIcon: Icons.music_note_rounded,
+            fallback: fallback,
+          )
+        : fallback;
     return ClipRRect(
       borderRadius: borderRadius,
       child: SizedBox(width: size, height: size, child: child),

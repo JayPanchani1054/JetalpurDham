@@ -226,9 +226,9 @@
 
   "eventsTitle": "ઉત્સવ અને કાર્યક્રમો",
   "eventsUpcoming": "આગામી",
-  "eventsPast": "પૂર્વ",
+  "eventsPast": "અગાઉના",
   "eventsEmptyUpcoming": "હાલ કોઈ આગામી ઉત્સવ નથી. અમે તમને જાણ કરીશું!",
-  "eventsEmptyPast": "હજુ કોઈ પૂર્વ કાર્યક્રમ નથી.",
+  "eventsEmptyPast": "હજુ સુધી અગાઉનો કોઈ કાર્યક્રમ નથી.",
   "eventDate": "તારીખ",
   "eventTime": "સમય",
   "eventLocation": "સ્થળ",
@@ -252,6 +252,8 @@
   "notificationChannelDesc": "આગામી ઉત્સવ, કથા અને મંદિરના સમાચારની સૂચનાઓ",
   "eventsBrowseAll": "બધા ઉત્સવ જુઓ",
   "eventsDetails": "વિગત",
+  "eventsIndiaTime": "{time} (ભારતીય સમય)",
+  "@eventsIndiaTime": {"placeholders": {"time": {"type": "String"}}},
 
   "donateTitle": "દાન",
   "donateHeadline": "આપની સેવા અર્પણ કરો",

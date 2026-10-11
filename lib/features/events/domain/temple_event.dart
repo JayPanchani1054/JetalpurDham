@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/firebase/firestore_parsing.dart';
 import '../../../core/models/localized_text.dart';
+import 'temple_time.dart';
 
 /// Kind of temple event (`events/{id}.type`).
 enum EventType {
@@ -42,8 +43,10 @@ class TempleEvent {
 
   /// Parses a Firestore document. Never throws.
   factory TempleEvent.fromMap(String id, Map<String, Object?> map) {
-    final DateTime? start = Fs.dateTime(map['startAt']);
-    DateTime? end = Fs.dateTime(map['endAt']);
+    // Dates are kept in temple time (IST) so every devotee, in India or
+    // abroad, sees the utsav on the same day as the temple's invitations.
+    final DateTime? start = TempleTime.parse(map['startAt']);
+    DateTime? end = TempleTime.parse(map['endAt']);
     // An end before the start is a data-entry slip: ignore it.
     if (start != null && end != null && end.isBefore(start)) end = null;
     final LocalizedText title = LocalizedText.fromValue(map['title']);
@@ -76,10 +79,11 @@ class TempleEvent {
   /// 16:9 banner (https URL, `gs://` URL or Storage path).
   final String? bannerUrl;
 
-  /// Local date-time the event begins. Null only for undated documents.
+  /// Temple (IST) wall-clock time the event begins, see [TempleTime].
+  /// Null only for undated documents.
   final DateTime? startAt;
 
-  /// Optional local end (multi-day utsav). Never before [startAt].
+  /// Optional temple-time end (multi-day utsav). Never before [startAt].
   final DateTime? endAt;
   final EventType type;
 
@@ -114,13 +118,22 @@ class TempleEvent {
 
   static String? _httpUrlOrNull(Object? value) {
     final String? raw = Fs.stringOrNull(value);
-    if (raw == null) return null;
+    if (raw == null || raw.contains(RegExp(r'\s'))) return null;
     final Uri? uri = Uri.tryParse(raw);
-    if (uri == null || !uri.hasScheme) {
-      // Admins often paste "youtube.com/live/…" without the scheme.
-      return raw.contains('.') && !raw.contains(' ') ? 'https://$raw' : null;
+    if (uri == null) return null;
+    if (uri.hasScheme) {
+      return (uri.scheme == 'https' || uri.scheme == 'http') &&
+              uri.host.isNotEmpty
+          ? raw
+          : null;
     }
-    return uri.scheme == 'https' || uri.scheme == 'http' ? raw : null;
+    // Admins often paste "youtube.com/live/…" (or "//youtube.com/…")
+    // without the scheme.
+    final String bare = raw.replaceFirst(RegExp('^/+'), '');
+    final Uri? withScheme = Uri.tryParse('https://$bare');
+    return withScheme != null && withScheme.host.contains('.')
+        ? 'https://$bare'
+        : null;
   }
 
   @override

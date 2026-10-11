@@ -35,7 +35,15 @@ class KirtanStreamCache {
   Future<Directory>? _dir;
   Future<void>? _pruned;
 
-  Future<Directory> directory() => _dir ??= _createDirectory();
+  /// The cache folder, created on demand. A failure is not remembered, so a
+  /// later call tries again.
+  Future<Directory> directory() => _dir ??= _createDirectory().then(
+    (Directory dir) => dir,
+    onError: (Object error, StackTrace stack) {
+      _dir = null;
+      return Future<Directory>.error(error, stack);
+    },
+  );
 
   Future<Directory> _createDirectory() async {
     final Directory dir = Directory(
