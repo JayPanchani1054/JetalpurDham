@@ -82,7 +82,7 @@
 
   "kirtanTitle": "કીર્તન",
   "kirtanSearchHint": "કીર્તન, રચયિતા કે ગાયક શોધો",
-  "kirtanCount": "{count, plural, =0{કોઈ કીર્તન નથી} =1{૧ કીર્તન} other{{count} કીર્તન}}",
+  "kirtanCount": "{count, plural, =0{કોઈ કીર્તન નથી} =1{1 કીર્તન} other{{count} કીર્તન}}",
   "@kirtanCount": {"placeholders": {"count": {"type": "int"}}},
   "kirtanNoResults": "કોઈ કીર્તન મળ્યું નથી",
   "kirtanEmpty": "કીર્તન ટૂંક સમયમાં ઉમેરવામાં આવશે.",
@@ -237,7 +237,7 @@
   "eventToday": "આજે",
   "eventTomorrow": "આવતીકાલે",
   "eventOngoing": "ચાલુ છે",
-  "eventInDays": "{days, plural, =1{૧ દિવસમાં} other{{days} દિવસમાં}}",
+  "eventInDays": "{days, plural, =1{1 દિવસમાં} other{{days} દિવસમાં}}",
   "@eventInDays": {"placeholders": {"days": {"type": "int"}}},
   "eventTypeUtsav": "ઉત્સવ",
   "eventTypeKatha": "કથા",

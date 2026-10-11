@@ -82,7 +82,7 @@
 
   "kirtanTitle": "कीर्तन",
   "kirtanSearchHint": "कीर्तन, रचयिता या गायक खोजें",
-  "kirtanCount": "{count, plural, =0{कोई कीर्तन नहीं} =1{१ कीर्तन} other{{count} कीर्तन}}",
+  "kirtanCount": "{count, plural, =0{कोई कीर्तन नहीं} =1{1 कीर्तन} other{{count} कीर्तन}}",
   "@kirtanCount": {"placeholders": {"count": {"type": "int"}}},
   "kirtanNoResults": "कोई कीर्तन नहीं मिला",
   "kirtanEmpty": "कीर्तन जल्द ही जोड़े जाएँगे।",
@@ -237,7 +237,7 @@
   "eventToday": "आज",
   "eventTomorrow": "कल",
   "eventOngoing": "जारी है",
-  "eventInDays": "{days, plural, =1{१ दिन में} other{{days} दिनों में}}",
+  "eventInDays": "{days, plural, =1{1 दिन में} other{{days} दिनों में}}",
   "@eventInDays": {"placeholders": {"days": {"type": "int"}}},
   "eventTypeUtsav": "उत्सव",
   "eventTypeKatha": "कथा",

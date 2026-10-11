@@ -245,7 +245,7 @@ class AppLocalizationsHi extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count कीर्तन',
-      one: '१ कीर्तन',
+      one: '1 कीर्तन',
       zero: 'कोई कीर्तन नहीं',
     );
     return '$_temp0';
@@ -722,7 +722,7 @@ class AppLocalizationsHi extends AppLocalizations {
       days,
       locale: localeName,
       other: '$days दिनों में',
-      one: '१ दिन में',
+      one: '1 दिन में',
     );
     return '$_temp0';
   }

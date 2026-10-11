@@ -244,7 +244,7 @@ class AppLocalizationsGu extends AppLocalizations {
       count,
       locale: localeName,
       other: '$count કીર્તન',
-      one: '૧ કીર્તન',
+      one: '1 કીર્તન',
       zero: 'કોઈ કીર્તન નથી',
     );
     return '$_temp0';
@@ -720,7 +720,7 @@ class AppLocalizationsGu extends AppLocalizations {
       days,
       locale: localeName,
       other: '$days દિવસમાં',
-      one: '૧ દિવસમાં',
+      one: '1 દિવસમાં',
     );
     return '$_temp0';
   }
