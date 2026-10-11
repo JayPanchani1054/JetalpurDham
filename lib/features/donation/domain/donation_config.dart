@@ -146,6 +146,48 @@ class DonationConfig {
   }
 }
 
+/// Phone, WhatsApp and e-mail offered next to "Contact Now".
+///
+/// Uses the donation-specific contacts from `config/donation` and falls back
+/// to the temple's general contacts (`config/app`), so devotees can always
+/// reach the office — even before the donation document is filled in.
+@immutable
+class DonationContact {
+  const DonationContact({this.phone, this.whatsapp, this.email});
+
+  factory DonationContact.resolve(
+    DonationConfig? config, {
+    String? fallbackPhone,
+    String? fallbackWhatsapp,
+    String? fallbackEmail,
+  }) => DonationContact(
+    phone: config?.contactPhone ?? _blankToNull(fallbackPhone),
+    whatsapp: config?.contactWhatsapp ?? _blankToNull(fallbackWhatsapp),
+    email: config?.contactEmail ?? _blankToNull(fallbackEmail),
+  );
+
+  final String? phone;
+  final String? whatsapp;
+  final String? email;
+
+  bool get hasAny => phone != null || whatsapp != null || email != null;
+
+  static String? _blankToNull(String? value) {
+    final String text = value?.trim() ?? '';
+    return text.isEmpty ? null : text;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is DonationContact &&
+      other.phone == phone &&
+      other.whatsapp == whatsapp &&
+      other.email == email;
+
+  @override
+  int get hashCode => Object.hash(phone, whatsapp, email);
+}
+
 /// UPI virtual payment address, e.g. `jetalpurdham@sbi`.
 final RegExp _upiIdPattern = RegExp(r'^[\w.\-]{2,256}@[A-Za-z0-9.\-]{2,64}$');
 

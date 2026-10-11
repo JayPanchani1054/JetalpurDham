@@ -21,6 +21,7 @@ class AppNetworkImage extends ConsumerWidget {
     this.alignment = Alignment.center,
     this.placeholderIcon = Icons.temple_hindu_outlined,
     this.decodeAtFullResolution = false,
+    this.fallback,
   });
 
   final String? url;
@@ -33,6 +34,10 @@ class AppNetworkImage extends ConsumerWidget {
 
   /// Set for zoomable/full-screen images that must stay sharp.
   final bool decodeAtFullResolution;
+
+  /// Shown instead of the default icon when there is no URL or the image
+  /// fails to load (e.g. a generated book cover).
+  final Widget? fallback;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +53,7 @@ class AppNetworkImage extends ConsumerWidget {
             : SizedBox(width: width ?? 64, height: height ?? 64, child: w);
 
         if (raw == null || raw.isEmpty) {
-          return fill(_Fallback(icon: placeholderIcon));
+          return fill(fallback ?? _Fallback(icon: placeholderIcon));
         }
         if (MediaUrlResolver.isDirect(raw)) {
           return fill(_image(context, raw, constraints));
@@ -60,7 +65,7 @@ class AppNetworkImage extends ConsumerWidget {
                 data: (String resolved) =>
                     _image(context, resolved, constraints),
                 loading: () => const _Loading(),
-                error: (_, _) => _Fallback(icon: placeholderIcon),
+                error: (_, _) => fallback ?? _Fallback(icon: placeholderIcon),
               ),
         );
       },
@@ -92,7 +97,7 @@ class AppNetworkImage extends ConsumerWidget {
       fadeInDuration: AppDurations.medium,
       fadeOutDuration: AppDurations.fast,
       placeholder: (_, _) => const _Loading(),
-      errorWidget: (_, _, _) => _Fallback(icon: placeholderIcon),
+      errorWidget: (_, _, _) => fallback ?? _Fallback(icon: placeholderIcon),
     );
   }
 }

@@ -907,6 +907,39 @@ class AppLocalizationsGu extends AppLocalizations {
   String get donatePurposeGeneral => 'સામાન્ય સેવા';
 
   @override
+  String get donateInvalidName => 'કૃપા કરી આપનું પૂરું નામ લખો';
+
+  @override
+  String get donateQrLabel => 'દાન માટેનો QR કોડ';
+
+  @override
+  String get donateQrSaved => 'QR કોડ આપના ફોટોમાં સચવાઈ ગયો';
+
+  @override
+  String get donateQrPermissionDenied =>
+      'QR કોડ સાચવવા માટે કૃપા કરી સેટિંગ્સમાં ફોટો ઍક્સેસની મંજૂરી આપો.';
+
+  @override
+  String donateCopyLabel(String label) {
+    return '$label કૉપિ કરો';
+  }
+
+  @override
+  String get donateEmailButton => 'ઇમેઇલ';
+
+  @override
+  String get donateWhatsAppMessage =>
+      'જય શ્રી સ્વામિનારાયણ! શ્રી જેતલપુર ધામમાં સેવા (દાન) અર્પણ કરવા વિશે માહિતી જોઈએ છે.';
+
+  @override
+  String get donateSuccessQueued =>
+      'હાલ આપ ઑફલાઇન છો. આપની વિગતો આ ફોનમાં સચવાઈ ગઈ છે અને ઇન્ટરનેટ મળતાં જ આપોઆપ મોકલાઈ જશે.';
+
+  @override
+  String get donateRememberHint =>
+      'આપનું નામ અને નંબર આગલી વખત માટે આ ફોનમાં યાદ રહેશે.';
+
+  @override
   String get aboutTitle => 'મંદિર વિશે';
 
   @override

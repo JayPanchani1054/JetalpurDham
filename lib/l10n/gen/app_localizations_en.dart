@@ -904,6 +904,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get donatePurposeGeneral => 'General seva';
 
   @override
+  String get donateInvalidName => 'Please enter your full name';
+
+  @override
+  String get donateQrLabel => 'Donation QR code';
+
+  @override
+  String get donateQrSaved => 'QR code saved to your photos';
+
+  @override
+  String get donateQrPermissionDenied =>
+      'Please allow photo access in Settings to save the QR code.';
+
+  @override
+  String donateCopyLabel(String label) {
+    return 'Copy $label';
+  }
+
+  @override
+  String get donateEmailButton => 'Email';
+
+  @override
+  String get donateWhatsAppMessage =>
+      'Jay Shree Swaminarayan! I would like to know about offering seva (donation) at Shree Jetalpur Dham.';
+
+  @override
+  String get donateSuccessQueued =>
+      'You\'re offline right now. Your details are saved on this phone and will be sent automatically once you\'re connected.';
+
+  @override
+  String get donateRememberHint =>
+      'Your name and number are remembered on this phone for next time.';
+
+  @override
   String get aboutTitle => 'About Temple';
 
   @override

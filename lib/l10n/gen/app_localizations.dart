@@ -1690,6 +1690,60 @@ abstract class AppLocalizations {
   /// **'General seva'**
   String get donatePurposeGeneral;
 
+  /// No description provided for @donateInvalidName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your full name'**
+  String get donateInvalidName;
+
+  /// No description provided for @donateQrLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Donation QR code'**
+  String get donateQrLabel;
+
+  /// No description provided for @donateQrSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'QR code saved to your photos'**
+  String get donateQrSaved;
+
+  /// No description provided for @donateQrPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Please allow photo access in Settings to save the QR code.'**
+  String get donateQrPermissionDenied;
+
+  /// No description provided for @donateCopyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy {label}'**
+  String donateCopyLabel(String label);
+
+  /// No description provided for @donateEmailButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get donateEmailButton;
+
+  /// No description provided for @donateWhatsAppMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Jay Shree Swaminarayan! I would like to know about offering seva (donation) at Shree Jetalpur Dham.'**
+  String get donateWhatsAppMessage;
+
+  /// No description provided for @donateSuccessQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline right now. Your details are saved on this phone and will be sent automatically once you\'re connected.'**
+  String get donateSuccessQueued;
+
+  /// No description provided for @donateRememberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name and number are remembered on this phone for next time.'**
+  String get donateRememberHint;
+
   /// No description provided for @aboutTitle.
   ///
   /// In en, this message translates to:

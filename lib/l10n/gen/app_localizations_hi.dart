@@ -908,6 +908,39 @@ class AppLocalizationsHi extends AppLocalizations {
   String get donatePurposeGeneral => 'सामान्य सेवा';
 
   @override
+  String get donateInvalidName => 'कृपया अपना पूरा नाम लिखें';
+
+  @override
+  String get donateQrLabel => 'दान के लिए QR कोड';
+
+  @override
+  String get donateQrSaved => 'QR कोड आपकी फ़ोटो में सहेज लिया गया';
+
+  @override
+  String get donateQrPermissionDenied =>
+      'QR कोड सहेजने के लिए कृपया सेटिंग्स में फ़ोटो की अनुमति दें।';
+
+  @override
+  String donateCopyLabel(String label) {
+    return '$label कॉपी करें';
+  }
+
+  @override
+  String get donateEmailButton => 'ईमेल';
+
+  @override
+  String get donateWhatsAppMessage =>
+      'जय श्री स्वामिनारायण! श्री जेतलपुर धाम में सेवा (दान) अर्पण करने के बारे में जानकारी चाहिए।';
+
+  @override
+  String get donateSuccessQueued =>
+      'अभी आप ऑफ़लाइन हैं। आपका विवरण इस फ़ोन में सहेज लिया गया है और इंटरनेट मिलते ही अपने-आप भेज दिया जाएगा।';
+
+  @override
+  String get donateRememberHint =>
+      'आपका नाम और नंबर अगली बार के लिए इस फ़ोन में याद रहेगा।';
+
+  @override
   String get aboutTitle => 'मंदिर के बारे में';
 
   @override
