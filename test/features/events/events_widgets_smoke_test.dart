@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:jetalpur_dham/core/l10n/app_language.dart';
 import 'package:jetalpur_dham/core/l10n/l10n.dart';
+import 'package:jetalpur_dham/core/router/routes.dart';
 import 'package:jetalpur_dham/core/services/preferences.dart';
 import 'package:jetalpur_dham/core/theme/app_theme.dart';
 import 'package:jetalpur_dham/features/events/data/events_repository.dart';
@@ -91,7 +93,8 @@ class _FixedToday extends EventsToday {
 
 Future<void> _pump(
   WidgetTester tester,
-  Widget child, {
+  Widget? child, {
+  GoRouter? router,
   List<TempleEvent>? events,
   Map<String, EventLookup> lookups = const <String, EventLookup>{},
   Size size = const Size(390, 844),
@@ -109,6 +112,16 @@ Future<void> _pump(
   addTearDown(tester.view.reset);
 
   final List<TempleEvent> all = events ?? _events;
+  const List<LocalizationsDelegate<dynamic>> localizations =
+      <LocalizationsDelegate<dynamic>>[
+        AppLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ];
+  Widget scaled(BuildContext context, Widget? child) => MediaQuery(
+    data: MediaQuery.of(context)
+        .copyWith(textScaler: TextScaler.linear(textScale)),
+    child: child!,
+  );
   await tester.pumpWidget(
     ProviderScope(
       key: UniqueKey(),
@@ -131,23 +144,27 @@ Future<void> _pump(
           );
         }),
       ],
-      child: MaterialApp(
-        theme: AppTheme.light(language),
-        darkTheme: AppTheme.dark(language),
-        themeMode: themeMode,
-        locale: language.locale,
-        supportedLocales: AppLanguage.supportedLocales,
-        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-          AppLocalizations.delegate,
-          ...GlobalMaterialLocalizations.delegates,
-        ],
-        builder: (BuildContext context, Widget? child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
-        ),
-        home: child,
-      ),
+      child: router == null
+          ? MaterialApp(
+              theme: AppTheme.light(language),
+              darkTheme: AppTheme.dark(language),
+              themeMode: themeMode,
+              locale: language.locale,
+              supportedLocales: AppLanguage.supportedLocales,
+              localizationsDelegates: localizations,
+              builder: scaled,
+              home: child,
+            )
+          : MaterialApp.router(
+              theme: AppTheme.light(language),
+              darkTheme: AppTheme.dark(language),
+              themeMode: themeMode,
+              locale: language.locale,
+              supportedLocales: AppLanguage.supportedLocales,
+              localizationsDelegates: localizations,
+              builder: scaled,
+              routerConfig: router,
+            ),
     ),
   );
   for (int i = 0; i < 6; i++) {
@@ -216,7 +233,7 @@ void main() {
   ) async {
     await _pump(tester, const EventDetailScreen(eventId: 'sharad-purnima'));
     expect(find.text('Watch Live'), findsOneWidget);
-    expect(find.text('View Photos'), findsOneWidget);
+    expect(find.text('View Photos', skipOffstage: false), findsOneWidget);
     // Below the fold on a phone, but built.
     expect(find.text('Share', skipOffstage: false), findsOneWidget);
     expect(find.text('Venue'), findsOneWidget);
@@ -334,6 +351,64 @@ void main() {
       events: <TempleEvent>[_events.last, _events[4]],
     );
     expect(find.text('Upcoming Utsav'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  GoRouter eventsRouter(String initialLocation) => GoRouter(
+    initialLocation: initialLocation,
+    routes: <RouteBase>[
+      GoRoute(
+        path: Routes.events,
+        builder: (_, _) => const EventsScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: ':eventId',
+            builder: (_, GoRouterState state) =>
+                EventDetailScreen(eventId: state.pathParameters['eventId']!),
+          ),
+        ],
+      ),
+    ],
+  );
+
+  Future<void> settle(WidgetTester tester) async {
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
+  testWidgets('Tapping an event card opens its detail page', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = eventsRouter(Routes.events);
+    addTearDown(router.dispose);
+    await _pump(tester, null, router: router);
+
+    await tester.tap(find.text('Shrimad Bhagwat Katha'));
+    await settle(tester);
+
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      Routes.event('katha'),
+    );
+    expect(find.byType(EventDetailScreen), findsOneWidget);
+    expect(find.text('Ongoing'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('A notification link to a deleted event leads back to the list', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = eventsRouter(Routes.event('deleted'));
+    addTearDown(router.dispose);
+    await _pump(tester, null, router: router);
+    expect(find.text('This event is no longer available.'), findsOneWidget);
+
+    await tester.tap(find.text('See all utsav'));
+    await settle(tester);
+
+    expect(router.routeInformationProvider.value.uri.path, Routes.events);
+    expect(find.byType(EventsScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

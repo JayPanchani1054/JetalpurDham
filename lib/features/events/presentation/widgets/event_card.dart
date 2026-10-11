@@ -27,72 +27,96 @@ class EventCard extends StatelessWidget {
     final String lang = context.appLanguage.code;
     final String summary = event.shortDescription.resolve(lang);
     final DateTime? start = event.startAt;
+    return EventTapCard(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        context.go(Routes.event(event.id));
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                Hero(
+                  tag: eventHeroTag(event.id),
+                  child: EventBanner(event: event),
+                ),
+                if (start != null)
+                  PositionedDirectional(
+                    start: AppSpacing.md,
+                    top: AppSpacing.md,
+                    child: EventDateBadge(date: start),
+                  ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: <Widget>[
+                    EventTypeChip(type: event.type),
+                    EventRelativeChip(
+                      relative: relativeEventTime(event, today),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  event.titleIn(lang),
+                  style: theme.textTheme.titleMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (summary.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    summary,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rounded card that opens an event. The ripple is drawn above the content,
+/// so it also shows over the (opaque) banner image, not only under the text.
+class EventTapCard extends StatelessWidget {
+  const EventTapCard({super.key, required this.onTap, required this.child});
+
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     return MergeSemantics(
       child: Card(
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            context.go(Routes.event(event.id));
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    Hero(
-                      tag: eventHeroTag(event.id),
-                      child: EventBanner(event: event),
-                    ),
-                    if (start != null)
-                      PositionedDirectional(
-                        start: AppSpacing.md,
-                        top: AppSpacing.md,
-                        child: EventDateBadge(date: start),
-                      ),
-                  ],
-                ),
+        child: Stack(
+          children: <Widget>[
+            child,
+            Positioned.fill(
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(onTap: onTap),
               ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: <Widget>[
-                        EventTypeChip(type: event.type),
-                        EventRelativeChip(
-                          relative: relativeEventTime(event, today),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      event.titleIn(lang),
-                      style: theme.textTheme.titleMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (summary.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        summary,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

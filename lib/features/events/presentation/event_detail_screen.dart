@@ -219,10 +219,19 @@ class _EventDetailViewState extends ConsumerState<_EventDetailView> {
             systemOverlayStyle: overlay.copyWith(
               statusBarColor: Colors.transparent,
             ),
-            title: AnimatedOpacity(
-              opacity: _collapsed ? 1 : 0,
-              duration: AppDurations.fast,
-              child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+            // Only shown (and read by screen readers) once the banner has
+            // scrolled away; the large title below is the heading until then.
+            title: ExcludeSemantics(
+              excluding: !_collapsed,
+              child: AnimatedOpacity(
+                opacity: _collapsed ? 1 : 0,
+                duration: AppDurations.fast,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
             actions: <Widget>[
               Builder(

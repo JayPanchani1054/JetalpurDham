@@ -108,57 +108,53 @@ class _HomeEventCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final _CardMetrics metrics = _CardMetrics.of(context);
     final DateTime? start = event.startAt;
-    return MergeSemantics(
-      child: Card(
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            context.go(Routes.event(event.id));
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              SizedBox(
-                height: metrics.imageHeight,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    EventBanner(event: event),
-                    if (start != null)
-                      PositionedDirectional(
-                        start: AppSpacing.sm,
-                        top: AppSpacing.sm,
-                        child: EventDateBadge(date: start, compact: true),
-                      ),
-                    PositionedDirectional(
-                      end: AppSpacing.sm,
-                      bottom: AppSpacing.sm,
-                      start: AppSpacing.xxl * 2,
-                      child: Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: EventRelativeChip(
-                          relative: relativeEventTime(event, today),
-                        ),
-                      ),
+    return EventTapCard(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        context.go(Routes.event(event.id));
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SizedBox(
+            height: metrics.imageHeight,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                EventBanner(event: event),
+                if (start != null)
+                  PositionedDirectional(
+                    start: AppSpacing.sm,
+                    top: AppSpacing.sm,
+                    child: EventDateBadge(date: start, compact: true),
+                  ),
+                PositionedDirectional(
+                  end: AppSpacing.sm,
+                  bottom: AppSpacing.sm,
+                  start: AppSpacing.xxl * 2,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: EventRelativeChip(
+                      relative: relativeEventTime(event, today),
                     ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(_CardMetrics._padding),
-                child: SizedBox(
-                  height: metrics.titleBlock,
-                  child: Text(
-                    event.titleIn(context.appLanguage.code),
-                    style: theme.textTheme.titleSmall,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(_CardMetrics._padding),
+            child: SizedBox(
+              height: metrics.titleBlock,
+              child: Text(
+                event.titleIn(context.appLanguage.code),
+                style: theme.textTheme.titleSmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
