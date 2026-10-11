@@ -22,10 +22,10 @@ import {
   asString,
   classifyObject,
   isStaleEvent,
-  leadingOrder,
   newAlbumFields,
   newBookFields,
   newKirtanFields,
+  photoOrder,
   type StorageTarget,
 } from './util';
 
@@ -104,7 +104,7 @@ async function addPhoto(target: Target<'photo'>, object: StorageObjectData, url:
   }
 
   // 2. Create the photo (and count it) or refresh a re-uploaded one.
-  const order = leadingOrder(target.fileName);
+  const order = photoOrder(target.fileName);
   let isNewPhoto = false;
   try {
     await photoRef.create({
@@ -158,9 +158,9 @@ async function attachThumbnail(target: Target<'thumb'>, object: StorageObjectDat
 
 export const onStorageUpload = onObjectFinalized({ region: REGION, retry: true }, async (event) => {
   const object = event.data;
-  const target = classifyObject(object.name, object.contentType);
+  const target = classifyObject(object.name, object.contentType, object.metadata);
   if (target.kind === 'ignore') {
-    logger.debug('Upload ignored', { path: object.name, reason: target.reason });
+    logger.info('Upload ignored', { path: object.name, reason: target.reason });
     return;
   }
   if (asNumber(object.size) === 0) {
@@ -235,7 +235,7 @@ async function detachThumbnail(target: Target<'thumb'>, path: string): Promise<v
 
 export const onStorageDelete = onObjectDeleted({ region: REGION, retry: true }, async (event) => {
   const object = event.data;
-  const target = classifyObject(object.name, object.contentType);
+  const target = classifyObject(object.name, object.contentType, object.metadata);
   if (target.kind === 'ignore') return;
   if (isStaleEvent(event.time, Date.now(), MAX_EVENT_AGE_MS)) {
     logger.error('Giving up on an old delete event', { path: object.name, time: event.time });

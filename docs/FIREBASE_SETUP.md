@@ -271,6 +271,9 @@ Manage service account permissions* in Google Cloud).
 
 The seed is safe to run again at any time: it only adds documents and fields
 that are missing and **never overwrites** anything staff have edited.
+(Developers who corrected `seed-data.json` can add `--overwrite` to replace
+the seeded fields' values; empty placeholders and the payment settings in
+`config/donation` are never overwritten. Try it with `--dry-run` first.)
 
 > Run the seed **before** uploading Avsar 200 photos, so the album gets its
 > proper title (otherwise it is created automatically as "Avsar 200" and the
@@ -302,9 +305,9 @@ photo grid load faster on slow connections and save download costs.
    | Convert image to preferred types | `jpeg` (or `webp`) |
 
 Our `onStorageUpload` function recognises `gallery/<album>/thumbs/<name>_600x600.jpg`
-and stores it as `thumbUrl` on the matching photo — nothing else to do.
-Thumbnails are never counted as photos. (Because of this naming rule, do not
-upload your own photos with names ending in `_<width>x<height>`.)
+(and any file the extension marks with its `resizedImage` metadata) and stores
+it as `thumbUrl` on the matching photo — nothing else to do. Thumbnails are
+never counted as photos. Do not put your own photos in a `thumbs` folder.
 
 ## 12. Optional: donation e-mails (Trigger Email extension)
 
@@ -320,6 +323,8 @@ the request is stored in `donation_requests`. To also get an e-mail:
    |---|---|
    | Cloud Functions location | **asia-south1 (Mumbai)** |
    | Firestore Instance ID | `(default)` |
+   | Firestore Instance Location | **asia-south1** (where you created Firestore in step 4) |
+   | Authentication Type | **Username & Password** |
    | SMTP connection URI | `smtps://your.address@gmail.com@smtp.gmail.com:465` |
    | SMTP password | the App password from step 1 |
    | Email documents collection | `mail` |

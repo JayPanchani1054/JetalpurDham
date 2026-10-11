@@ -136,9 +136,8 @@ final Provider<DonationRepository> donationRepositoryProvider =
     Provider<DonationRepository>((Ref ref) {
       final FirebaseFirestore firestore = ref.watch(firestoreProvider);
       return DonationRepository(
-        addDocument: (Map<String, Object?> data) => firestore
-            .collection(FirestorePaths.donationRequests)
-            .add(data),
+        addDocument: (Map<String, Object?> data) =>
+            firestore.collection(FirestorePaths.donationRequests).add(data),
         appVersion: _packageVersion,
       );
     });

@@ -51,6 +51,13 @@ the ✏ pencil → change the value → **Update**. To add a field click
 **+ Add field**, type the field name exactly as shown in this guide, choose the
 **type**, enter the value and click **Add**.
 
+**Creating a folder in Storage:** a folder only exists once it holds a file,
+so the very first time the `kirtans`, `gallery` or `books` folder (or a
+category folder inside it) is not there yet. Click the **folder icon with a +**
+(*Create folder*) at the top of the file list, type the name exactly as
+written in this guide (lowercase, dashes instead of spaces, e.g. `kirtans`,
+then inside it `aarti-stuti`) and open the new folder before uploading.
+
 **Field types** you will meet:
 
 | Type | Example |
@@ -166,7 +173,14 @@ type **boolean**, value `true`. Featured kirtans appear on the Home screen in
    use any photo tool's *Export*. iPhone photos must be **JPEG, not HEIC**
    (iPhone *Settings → Camera → Formats → Most Compatible*, or export as JPEG);
    HEIC files are skipped.
-2. Optional: number the files (`001.jpg`, `002.jpg` …) to fix their order.
+2. **Order:** photos are shown in the order of the number in their file name.
+   Camera names such as `IMG_0001.jpg` / `DSC01234.jpg` keep the camera's
+   order. To choose your own order, number the files `001.jpg`, `002.jpg` …,
+   or in Windows File Explorer sort the photos the way you want, select them
+   all (**Ctrl+A**), press **F2**, type `Avsar` and press **Enter** (Windows
+   names them `Avsar (1).jpg`, `Avsar (2).jpg` …). Photos without a number
+   come after numbered ones.
+   You can always change a photo's `order` (number) in Firestore later.
 3. **Storage → `gallery` → `avsar-200`** → **Upload file** → select all photos.
 4. Within a minute each photo appears in the app's **Avsar 200** album,
    `photoCount` goes up and the first photo becomes the album cover.
@@ -316,7 +330,7 @@ Firestore → **`notifications`** → **+ Add document** (*Auto-ID*) → fields:
 | `body` | map / string | the message |
 | `imageUrl` | string | optional picture (Storage path or https link) |
 | `route` | string | optional — which screen opens on tap (table below) |
-| `eventId` | string | optional — opens that event, and fills title/text/banner from it if you left them empty |
+| `eventId` | string | optional — the event's **Document ID** (e.g. `holi-2027`); opens that event, and fills title/text/banner from it if you left them empty. If no event has that id, the message is still sent and opens the Utsav list. |
 
 Do **not** add a `status` field — the system writes `status` (`sent` or
 `error`), `sentAt`, `error`, `successCount` and `failureCount` back into the

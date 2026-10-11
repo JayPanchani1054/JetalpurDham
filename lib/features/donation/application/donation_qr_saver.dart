@@ -16,38 +16,37 @@ import '../../../core/utils/app_logger.dart';
 /// Outcome of saving the donation QR to the device's photos.
 enum QrSaveOutcome { saved, denied, failed }
 
-/// Validated QR code for [data], or null when it cannot be encoded.
+/// Painter for [data] (used both on screen and for the saved PNG, so they
+/// always match), or null when the data cannot be encoded.
 ///
 /// Medium error correction keeps the code readable when printed or
-/// photographed from another screen.
-QrCode? buildQrCode(String data) {
-  final QrValidationResult result = QrValidator.validate(
-    data: data,
-    errorCorrectionLevel: QrErrorCorrectLevel.M,
-  );
-  return result.isValid ? result.qrCode : null;
+/// photographed from another screen; the package defaults (square black
+/// modules and eyes) are the most scanner-friendly style.
+QrPainter? buildQrPainter(String data) {
+  try {
+    final QrValidationResult result = QrValidator.validate(
+      data: data,
+      errorCorrectionLevel: QrErrorCorrectLevel.M,
+    );
+    final QrCode? qr = result.qrCode;
+    if (!result.isValid || qr == null) return null;
+    // The QR matrix is computed here, so oversized data fails now instead of
+    // during painting.
+    return QrPainter.withQr(qr: qr, gapless: true);
+  } catch (error, stack) {
+    AppLogger.error('Could not encode QR', error, stack);
+    return null;
+  }
 }
-
-/// Painter used both on screen and for the saved PNG, so they always match.
-QrPainter donationQrPainter(QrCode qr) => QrPainter.withQr(
-  qr: qr,
-  gapless: true,
-  eyeStyle: const QrEyeStyle(
-    eyeShape: QrEyeShape.square,
-    color: Color(0xFF000000),
-  ),
-  dataModuleStyle: const QrDataModuleStyle(
-    dataModuleShape: QrDataModuleShape.square,
-    color: Color(0xFF000000),
-  ),
-);
 
 /// Renders [data] as a PNG: black modules on a white square with a quiet
 /// zone, so it scans reliably from any gallery app (including dark ones —
 /// `QrPainter.toImageData` alone would leave the background transparent).
 Future<Uint8List> renderQrPng(String data, {int size = 1024}) async {
-  final QrCode? qr = buildQrCode(data);
-  if (qr == null) throw ArgumentError.value(data, 'data', 'Not encodable');
+  final QrPainter? painter = buildQrPainter(data);
+  if (painter == null) {
+    throw ArgumentError.value(data, 'data', 'Not encodable');
+  }
   final double side = size.toDouble();
   final double quietZone = side * 0.08;
 
@@ -58,7 +57,7 @@ Future<Uint8List> renderQrPng(String data, {int size = 1024}) async {
       Paint()..color = const Color(0xFFFFFFFF),
     )
     ..translate(quietZone, quietZone);
-  donationQrPainter(qr).paint(canvas, Size.square(side - quietZone * 2));
+  painter.paint(canvas, Size.square(side - quietZone * 2));
   final ui.Picture picture = recorder.endRecording();
   ui.Image? image;
   try {

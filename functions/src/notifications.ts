@@ -18,6 +18,7 @@ import {
   hasText,
   isNotificationPending,
   isRecord,
+  normalizeEventId,
   NotificationStatus,
   notificationRoute,
   shouldNotifyEvent,
@@ -96,12 +97,22 @@ export const onNotificationCreate = onDocumentCreated(
       if (!claimed) return;
 
       // Fill anything left empty from the linked event (title, text, banner).
-      const eventId = asString(claimed['eventId']);
+      // A mistyped or deleted event must not lead taps to an empty screen, so
+      // an eventId that does not exist is dropped (the tap opens the list).
+      let eventId = normalizeEventId(claimed['eventId']);
+      if (!eventId && asString(claimed['eventId'])) {
+        logger.warn('Ignoring invalid eventId', { notificationId, eventId: claimed['eventId'] });
+      }
       let linkedEvent: Record<string, unknown> = {};
       if (eventId) {
         const eventSnap = await db().collection(Collections.events).doc(eventId).get();
         const data = eventSnap.data();
-        if (isRecord(data)) linkedEvent = data;
+        if (eventSnap.exists && isRecord(data)) {
+          linkedEvent = data;
+        } else {
+          logger.warn('eventId does not match an event; opening the events list instead', { notificationId, eventId });
+          eventId = null;
+        }
       }
 
       const title = hasText(claimed['title']) ? claimed['title'] : linkedEvent['title'];

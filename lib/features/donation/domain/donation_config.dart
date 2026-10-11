@@ -74,7 +74,14 @@ class BankDetails {
 }
 
 /// The rows of the bank card. Labels are localized in the presentation layer.
-enum BankField { accountName, accountNumber, ifsc, bankName, branch, accountType }
+enum BankField {
+  accountName,
+  accountNumber,
+  ifsc,
+  bankName,
+  branch,
+  accountType,
+}
 
 /// The `config/donation` document (see docs/DATA_MODEL.md).
 @immutable

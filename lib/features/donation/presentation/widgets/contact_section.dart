@@ -22,7 +22,10 @@ class ContactSection extends StatelessWidget {
   final DonationContact contact;
   final List<LocalizedText> purposes;
 
-  Future<void> _run(BuildContext context, Future<bool> Function() action) async {
+  Future<void> _run(
+    BuildContext context,
+    Future<bool> Function() action,
+  ) async {
     await HapticFeedback.selectionClick();
     if (!await action() && context.mounted) context.showOpenLinkError();
   }

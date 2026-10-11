@@ -161,6 +161,21 @@ export function eventRoute(eventId: string): string {
   return `/events/${encodeURIComponent(eventId)}`;
 }
 
+/**
+ * The events document id staff typed into a notification's `eventId`. Also
+ * accepts what people tend to paste instead — `events/holi-2027`,
+ * `/events/holi-2027` — and returns null for anything that cannot be a
+ * document id.
+ */
+export function normalizeEventId(value: unknown): string | null {
+  const raw = asString(value);
+  if (!raw) return null;
+  let id = raw.replace(/^\/+|\/+$/gu, '');
+  if (id.toLowerCase().startsWith('events/')) id = id.slice('events/'.length).replace(/^\/+/u, '');
+  id = decodeName(id).trim();
+  return isValidDocId(id) ? id : null;
+}
+
 /** Same allow-list as Routes.isSafeDeepLink in the app. */
 const SAFE_ROUTE_PREFIXES = [
   '/home',
@@ -357,6 +372,30 @@ export function leadingOrder(fileName: string): number | null {
   return match?.[1] ? Number(match[1]) : null;
 }
 
+/** "001", "0153" — a file name that is only a number. */
+const NUMBER_ONLY = /^(\d{1,6})$/u;
+/** "Avsar (12)" — what Windows Explorer's "rename all" produces. */
+const NUMBERED_COPY = /\s*\((\d{1,6})\)$/u;
+/** "IMG_0001", "DSC01234", "DSCN0042" — camera sequence numbers. */
+const CAMERA_NAME = /^[A-Za-z]{2,5}[_-]?(\d{3,6})$/u;
+
+/**
+ * Position of an uploaded photo taken from its file name, so photos keep the
+ * order staff gave them (or the camera's order) instead of upload order:
+ * "01 - Aarti.jpg" → 1, "001.jpg" → 1, "Avsar (12).jpg" → 12,
+ * "IMG_0042.jpg" → 42. Returns null when the name carries no number.
+ */
+export function photoOrder(fileName: string): number | null {
+  const leading = leadingOrder(fileName);
+  if (leading !== null) return leading;
+  const base = collapseWhitespace(stripExtension(decodeName(fileName)));
+  for (const pattern of [NUMBER_ONLY, NUMBERED_COPY, CAMERA_NAME]) {
+    const match = pattern.exec(base);
+    if (match?.[1]) return Number(match[1]);
+  }
+  return null;
+}
+
 function decodeName(name: string): string {
   if (!/%[0-9A-Fa-f]{2}/u.test(name)) return name;
   try {
@@ -421,6 +460,14 @@ const THUMB_FOLDERS = new Set(['thumbs', 'thumbnails']);
 /** Suffix added by the "Resize Images" extension: photo_400x400.jpg */
 const RESIZED_SUFFIX = /_(\d{2,4})x(\d{2,4})$/u;
 
+/**
+ * True for files written by the "Resize Images" extension, which marks its
+ * output with the custom metadata `resizedImage: "true"`.
+ */
+export function isMarkedResized(metadata: unknown): boolean {
+  return isRecord(metadata) && String(metadata['resizedImage']).toLowerCase() === 'true';
+}
+
 function mediaType(contentType: string | null | undefined): string {
   return (contentType ?? '').split(';')[0]?.trim().toLowerCase() ?? '';
 }
@@ -462,8 +509,16 @@ export type StorageTarget =
  *  * `books/{categoryId}/{file}.pdf`        → `books/{docId}`
  * Sub-folders are allowed; the id is derived from the whole path so it is
  * stable across re-uploads and unique per file.
+ *
+ * A gallery file is a thumbnail only when it is inside a `thumbs` folder or
+ * the Resize Images extension marked it ([metadata] `resizedImage: "true"`),
+ * so a devotee's own photo named e.g. `Stage_1920x1080.jpg` is still added.
  */
-export function classifyObject(name: string | null | undefined, contentType?: string | null): StorageTarget {
+export function classifyObject(
+  name: string | null | undefined,
+  contentType?: string | null,
+  metadata?: unknown,
+): StorageTarget {
   if (!name || name.endsWith('/')) return { kind: 'ignore', reason: 'folder placeholder' };
   const segments = name.split('/').map((s) => s.trim()).filter((s) => s !== '');
   const fileName = segments[segments.length - 1] ?? '';
@@ -489,8 +544,8 @@ export function classifyObject(name: string | null | undefined, contentType?: st
       const folders = inner.slice(0, -1);
       const base = stripExtension(fileName);
       const inThumbFolder = folders.some((f) => THUMB_FOLDERS.has(f.toLowerCase()));
-      const resized = RESIZED_SUFFIX.test(base);
-      if (inThumbFolder || resized) {
+      if (inThumbFolder || isMarkedResized(metadata)) {
+        const resized = RESIZED_SUFFIX.test(base);
         if (!resized || !isImage(fileName, contentType)) return { kind: 'ignore', reason: 'thumbnail without a size suffix' };
         const originalFolders = folders.filter((f) => !THUMB_FOLDERS.has(f.toLowerCase()));
         const originalKey = [...originalFolders, base.replace(RESIZED_SUFFIX, '')].join('/');

@@ -87,11 +87,8 @@ class DonationRequest {
             amount! <= DonationLimits.amountMax
         ? amount
         : null;
-    final String? languageValue = const <String>{
-      'en',
-      'gu',
-      'hi',
-    }.contains(language) ? language : null;
+    final String? languageValue =
+        const <String>{'en', 'gu', 'hi'}.contains(language) ? language : null;
     final String? platformValue = _clean(platform, DonationLimits.platformMax);
     final String? versionValue = _clean(
       appVersion,
@@ -157,7 +154,9 @@ abstract final class DonationValidators {
   static DonationFieldError? phone(String? value) {
     final String text = value?.trim() ?? '';
     if (text.isEmpty) return DonationFieldError.required;
-    return normalizePhone(text) == null ? DonationFieldError.invalidPhone : null;
+    return normalizePhone(text) == null
+        ? DonationFieldError.invalidPhone
+        : null;
   }
 
   static DonationFieldError? email(String? value) {
@@ -232,9 +231,8 @@ abstract final class DonationValidators {
     if (text.toLowerCase().startsWith('rs')) {
       text = text.substring(2).replaceFirst(RegExp(r'^\.'), '');
     }
-    final RegExpMatch? match = RegExp(r'^(\d+)(?:\.(\d{1,2}))?$').firstMatch(
-      text,
-    );
+    final RegExpMatch? match = RegExp(r'^(\d+)(?:\.(\d{1,2}))?$')
+        .firstMatch(text);
     if (match == null) return null;
     final String? paise = match.group(2);
     if (paise != null && int.parse(paise) != 0) return null;

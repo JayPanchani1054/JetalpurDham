@@ -23,9 +23,11 @@ import {
   newAlbumFields,
   newBookFields,
   newKirtanFields,
+  normalizeEventId,
   notificationRoute,
   parseEmails,
   parseGsUrl,
+  photoOrder,
   prettyTitle,
   pushText,
   safeRoute,
@@ -126,6 +128,18 @@ describe('routes', () => {
       assert.equal(safeRoute(bad), null, String(bad));
     }
     assert.equal(safeRoute('  /kirtan  '), '/kirtan');
+  });
+
+  it('accepts event ids the way staff paste them', () => {
+    assert.equal(normalizeEventId('holi-2027'), 'holi-2027');
+    assert.equal(normalizeEventId('  events/holi-2027 '), 'holi-2027');
+    assert.equal(normalizeEventId('/events/holi-2027/'), 'holi-2027');
+    assert.equal(normalizeEventId('/events/a%20b'), 'a b');
+    assert.equal(normalizeEventId('events/a/b'), null);
+    assert.equal(normalizeEventId('__x__'), null);
+    assert.equal(normalizeEventId(''), null);
+    assert.equal(normalizeEventId(undefined), null);
+    assert.equal(normalizeEventId(2027), '2027');
   });
 
   it('chooses the tap destination of an ad-hoc notification', () => {
@@ -271,6 +285,20 @@ describe('file names', () => {
     assert.equal(leadingOrder('01.mp3'), null);
   });
 
+  it('orders photos by the number in their file name', () => {
+    assert.equal(photoOrder('01 - Aarti.jpg'), 1);
+    assert.equal(photoOrder('001.jpg'), 1);
+    assert.equal(photoOrder('0153.JPG'), 153);
+    assert.equal(photoOrder('Avsar (12).jpg'), 12);
+    assert.equal(photoOrder('Avsar(3).jpeg'), 3);
+    assert.equal(photoOrder('IMG_0042.jpg'), 42);
+    assert.equal(photoOrder('DSC01234.JPG'), 1234);
+    assert.equal(photoOrder('IMG-20260305-WA0001.jpg'), null);
+    assert.equal(photoOrder('20260305_101010.jpg'), null);
+    assert.equal(photoOrder('Mandir at night.jpg'), null);
+    assert.equal(photoOrder('1234567.jpg'), null);
+  });
+
   it('makes readable titles', () => {
     assert.equal(prettyTitle('01 - jay_sadguru_swami.mp3'), 'Jay Sadguru Swami');
     assert.equal(prettyTitle('JAY-SADGURU-SWAMI.mp3'), 'Jay Sadguru Swami');
@@ -323,9 +351,21 @@ describe('classifyObject', () => {
       fileName: 'IMG_0001_400x400.webp',
       photoId: 'img-0001',
     });
-    const sideBySide = classifyObject('gallery/avsar-200/IMG_0001_200x200.jpg', 'image/jpeg');
+    // Resize Images output next to the original is recognised by its metadata.
+    const sideBySide = classifyObject('gallery/avsar-200/IMG_0001_200x200.jpg', 'image/jpeg', { resizedImage: 'true' });
     assert.equal(sideBySide.kind === 'thumb' && sideBySide.photoId, 'img-0001');
     assert.equal(classifyObject('gallery/avsar-200/thumbs/readme.jpg', 'image/jpeg').kind, 'ignore');
+  });
+
+  it('keeps a devotee photo whose name merely looks like a thumbnail', () => {
+    assert.deepEqual(classifyObject('gallery/avsar-200/Stage_1920x1080.jpg', 'image/jpeg'), {
+      kind: 'photo',
+      albumId: 'avsar-200',
+      fileName: 'Stage_1920x1080.jpg',
+      docId: 'stage-1920x1080',
+    });
+    assert.equal(classifyObject('gallery/avsar-200/Stage_1920x1080.jpg', 'image/jpeg', { resizedImage: 'false' }).kind, 'photo');
+    assert.equal(classifyObject('gallery/avsar-200/Stage_1920x1080.jpg', 'image/jpeg', null).kind, 'photo');
   });
 
   it('rejects unsupported gallery files', () => {

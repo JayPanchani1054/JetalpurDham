@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr_flutter/qr_flutter.dart' show QrPainter;
 
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -189,10 +189,7 @@ class _GeneratedQrState extends State<_GeneratedQr> {
     if (oldWidget.data != widget.data) _build();
   }
 
-  void _build() {
-    final QrCode? qr = buildQrCode(widget.data);
-    _painter = qr == null ? null : donationQrPainter(qr);
-  }
+  void _build() => _painter = buildQrPainter(widget.data);
 
   @override
   Widget build(BuildContext context) {

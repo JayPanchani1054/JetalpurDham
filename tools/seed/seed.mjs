@@ -5,12 +5,17 @@
  *   cd tools/seed
  *   npm install
  *   gcloud auth application-default login      # or GOOGLE_APPLICATION_CREDENTIALS=key.json
- *   node seed.mjs --project <firebase-project-id> [--dry-run]
+ *   node seed.mjs --project <firebase-project-id> [--dry-run] [--overwrite]
  *
- * Safe to run any number of times: it creates missing documents and adds
- * missing fields, but NEVER overwrites a value that already exists, so edits
- * made by temple staff in the Firebase console are always kept. To re-apply a
- * seeded value, delete that field (or document) in the console and run again.
+ * Safe to run any number of times: by default it creates missing documents
+ * and adds missing fields, but NEVER overwrites a value that already exists,
+ * so edits made by temple staff in the Firebase console are always kept.
+ *
+ * --overwrite (developers only, e.g. after correcting seed-data.json) merges
+ * every seeded field into existing documents, replacing those fields' values;
+ * fields that are not in the seed file are still left untouched, empty
+ * placeholders ("") never replace a real value, and the payment settings in
+ * config/donation are never overwritten.
  *
  * Works against the Firestore emulator too: set FIRESTORE_EMULATOR_HOST.
  */
@@ -29,6 +34,9 @@ const USAGE = `Usage: node seed.mjs --project <firebase-project-id> [options]
 Options:
   --project, -p <id>   Firebase project id (or set GOOGLE_CLOUD_PROJECT)
   --dry-run            Show what would be written without writing anything
+  --overwrite          Replace the values of seeded fields in existing documents
+                       (default: only add missing documents and fields, so
+                       staff edits are never lost)
   --data <file>        Seed file (default: seed-data.json next to this script)
   --help, -h           Show this help`;
 
@@ -43,6 +51,7 @@ try {
     options: {
       project: { type: 'string', short: 'p' },
       'dry-run': { type: 'boolean', default: false },
+      overwrite: { type: 'boolean', default: false },
       data: { type: 'string', default: resolve(here, 'seed-data.json') },
       help: { type: 'boolean', short: 'h', default: false },
     },
@@ -59,6 +68,7 @@ if (args.help) {
 const projectId = args.project ?? process.env.GOOGLE_CLOUD_PROJECT ?? process.env.GCLOUD_PROJECT;
 if (!projectId) fail(`Missing --project.\n\n${USAGE}`);
 const dryRun = args['dry-run'];
+const overwrite = args.overwrite;
 const emulator = process.env.FIRESTORE_EMULATOR_HOST;
 
 /** Converts the JSON encodings for Firestore types into real values. */
@@ -78,6 +88,28 @@ function decode(value, path) {
   return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, decode(v, `${path}.${k}`)]));
 }
 
+/** Payment settings belong to the temple office: --overwrite never touches them. */
+const NEVER_OVERWRITE = new Set(['config/donation']);
+
+const isPlainObject = (value) =>
+  value !== null && typeof value === 'object' && !Array.isArray(value) &&
+  !(value instanceof GeoPoint) && !(value instanceof Timestamp);
+
+/**
+ * Removes empty-string placeholders (e.g. `phone: ""`) and maps left empty,
+ * so --overwrite can never blank a value staff have filled in.
+ */
+function withoutPlaceholders(value) {
+  const out = {};
+  for (const [key, v] of Object.entries(value)) {
+    if (typeof v === 'string' && v.trim() === '') continue;
+    const cleaned = isPlainObject(v) ? withoutPlaceholders(v) : v;
+    if (isPlainObject(cleaned) && Object.keys(cleaned).length === 0) continue;
+    out[key] = cleaned;
+  }
+  return out;
+}
+
 async function main() {
   let seed;
   try {
@@ -91,7 +123,8 @@ async function main() {
   initializeApp(emulator ? { projectId } : { credential: applicationDefault(), projectId });
   const db = getFirestore();
 
-  console.log(`Seeding project "${projectId}"${emulator ? ` (emulator ${emulator})` : ''}${dryRun ? ' — DRY RUN, nothing is written' : ''}\n`);
+  console.log(`Seeding project "${projectId}"${emulator ? ` (emulator ${emulator})` : ''}${dryRun ? ' — DRY RUN, nothing is written' : ''}`);
+  console.log(overwrite ? 'Mode: OVERWRITE seeded fields in existing documents\n' : 'Mode: add missing documents and fields only\n');
 
   const totals = { created: 0, updated: 0, unchanged: 0 };
   for (const [collection, docs] of Object.entries(collections)) {
@@ -111,16 +144,20 @@ async function main() {
       }
 
       const existing = snap.data() ?? {};
-      const missing = Object.fromEntries(Object.entries(data).filter(([key]) => !(key in existing)));
-      const keys = Object.keys(missing);
+      const replace = overwrite && !NEVER_OVERWRITE.has(path);
+      if (overwrite && !replace) console.log(`  ! ${path}  (payment settings are never overwritten; only missing fields are added)`);
+      const changes = replace
+        ? withoutPlaceholders(data)
+        : Object.fromEntries(Object.entries(data).filter(([key]) => !(key in existing)));
+      const keys = Object.keys(changes);
       if (keys.length === 0) {
         totals.unchanged++;
         console.log(`  = ${path}  (unchanged)`);
         continue;
       }
-      if (!dryRun) await ref.set(missing, { merge: true });
+      if (!dryRun) await ref.set(changes, { merge: true });
       totals.updated++;
-      console.log(`  ~ ${path}  (added ${keys.join(', ')})`);
+      console.log(`  ~ ${path}  (${replace ? 'wrote' : 'added'} ${keys.join(', ')})`);
     }
   }
 
