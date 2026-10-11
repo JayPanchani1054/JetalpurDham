@@ -125,6 +125,26 @@ Secrets are never committed: Google Maps keys live in `android/local.properties`
 (`MAPS_API_KEY=…`) and `ios/Flutter/Secrets.xcconfig` (`GOOGLE_MAPS_API_KEY = …`),
 release signing in `android/key.properties`.
 
+## Before launch
+
+1. **Murti photo** — replace `assets/images/murti.jpg` with the official darshan
+   photo of Shree Revati Baldevji Harikrushna Maharaj (portrait, about
+   1080 × 1620, same file name). It is used by the opening screen, the Home
+   header, the menu and the About page; a decorative placeholder ships until
+   then. (`config/app.heroImageUrl` can also override the Home header remotely.)
+2. **Connect Firebase** — `flutterfire configure`, deploy rules and functions,
+   run the seed ([docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md)).
+3. **Confirm facts** — darshan timings, phone/WhatsApp numbers and the map pins of
+   the prasadi places came from public sources; confirm them with the temple
+   office and correct them in the console.
+4. **Donation** — fill `config/donation` (UPI ID, QR image, bank details) and set
+   `enabled: true`.
+5. **Recommended** — enable Firebase App Check (Play Integrity / App Attest) to
+   protect the public donation form from spam, and install the *Resize Images*
+   extension so large albums load thumbnails.
+6. **Icons/splash** — if the logo changes: `dart run flutter_launcher_icons` and
+   `dart run flutter_native_splash:create`.
+
 ## Documentation
 
 * **[docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md)** — create the Firebase
