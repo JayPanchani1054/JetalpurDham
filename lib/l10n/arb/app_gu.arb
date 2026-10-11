@@ -110,6 +110,13 @@
   "@sleepTimerMinutes": {"placeholders": {"minutes": {"type": "int"}}},
   "sleepTimerEndOfTrack": "કીર્તન પૂરું થાય ત્યારે",
   "playbackSpeed": "ઝડપ",
+  "kirtanCancelDownload": "ડાઉનલોડ રદ કરો",
+  "kirtanRemoveDownloadConfirm": "આ કીર્તન ફોનમાંથી દૂર કરવું છે? તમે ગમે ત્યારે ફરી ડાઉનલોડ કરી શકો છો.",
+  "kirtanSleepTimerRemaining": "{time} પછી બંધ થશે",
+  "@kirtanSleepTimerRemaining": {"placeholders": {"time": {"type": "String"}}},
+  "kirtanSpeedNormal": "સામાન્ય",
+  "kirtanOfflineUnavailable": "તમે ઑફલાઇન છો. ડાઉનલોડ કરેલાં કીર્તન ઇન્ટરનેટ વગર વાગે છે.",
+  "kirtanBrowse": "કીર્તન જુઓ",
 
   "placesTitle": "પ્રસાદીનાં સ્થાનો",
   "placesSubtitle": "શ્રી સ્વામિનારાયણ ભગવાનના ચરણસ્પર્શથી પાવન સ્થાનો",

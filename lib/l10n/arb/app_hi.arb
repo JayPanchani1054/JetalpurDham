@@ -110,6 +110,13 @@
   "@sleepTimerMinutes": {"placeholders": {"minutes": {"type": "int"}}},
   "sleepTimerEndOfTrack": "कीर्तन समाप्त होने पर",
   "playbackSpeed": "गति",
+  "kirtanCancelDownload": "डाउनलोड रद्द करें",
+  "kirtanRemoveDownloadConfirm": "यह कीर्तन फ़ोन से हटाना है? आप इसे कभी भी फिर से डाउनलोड कर सकते हैं।",
+  "kirtanSleepTimerRemaining": "{time} में बंद होगा",
+  "@kirtanSleepTimerRemaining": {"placeholders": {"time": {"type": "String"}}},
+  "kirtanSpeedNormal": "सामान्य",
+  "kirtanOfflineUnavailable": "आप ऑफ़लाइन हैं। डाउनलोड किए गए कीर्तन बिना इंटरनेट चलते हैं।",
+  "kirtanBrowse": "कीर्तन देखें",
 
   "placesTitle": "प्रसादी स्थान",
   "placesSubtitle": "श्री स्वामिनारायण भगवान के चरणस्पर्श से पावन स्थान",

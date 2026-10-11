@@ -329,6 +329,28 @@ class AppLocalizationsGu extends AppLocalizations {
   String get playbackSpeed => 'ઝડપ';
 
   @override
+  String get kirtanCancelDownload => 'ડાઉનલોડ રદ કરો';
+
+  @override
+  String get kirtanRemoveDownloadConfirm =>
+      'આ કીર્તન ફોનમાંથી દૂર કરવું છે? તમે ગમે ત્યારે ફરી ડાઉનલોડ કરી શકો છો.';
+
+  @override
+  String kirtanSleepTimerRemaining(String time) {
+    return '$time પછી બંધ થશે';
+  }
+
+  @override
+  String get kirtanSpeedNormal => 'સામાન્ય';
+
+  @override
+  String get kirtanOfflineUnavailable =>
+      'તમે ઑફલાઇન છો. ડાઉનલોડ કરેલાં કીર્તન ઇન્ટરનેટ વગર વાગે છે.';
+
+  @override
+  String get kirtanBrowse => 'કીર્તન જુઓ';
+
+  @override
   String get placesTitle => 'પ્રસાદીનાં સ્થાનો';
 
   @override

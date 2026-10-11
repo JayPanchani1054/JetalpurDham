@@ -1,0 +1,118 @@
+rules_version = '2';
+
+// Jetalpur Dham — Cloud Firestore security rules.
+//
+// * Temple content is public and read-only for the app.
+// * Temple staff edit content in the Firebase console, which bypasses these
+//   rules, so no client ever needs write access to content.
+// * The only client write is a devotee's "I have donated" form
+//   (donation_requests): create-only and strictly validated. Devotees cannot
+//   read it back; staff see it in the console.
+// * Users with the custom claim admin == true may read and write everything
+//   (for future admin tooling).
+// * Everything else (notifications, mail, ...) is denied by default.
+//
+// Data contract: docs/DATA_MODEL.md
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.get('admin', false) == true;
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------- content
+
+    match /config/{docId} {
+      allow read: if true;
+    }
+
+    match /kirtan_categories/{categoryId} {
+      allow read: if true;
+    }
+
+    match /kirtans/{kirtanId} {
+      allow read: if true;
+    }
+
+    match /places/{placeId} {
+      allow read: if true;
+    }
+
+    match /albums/{albumId} {
+      allow read: if true;
+
+      match /photos/{photoId} {
+        allow read: if true;
+      }
+    }
+
+    match /book_categories/{categoryId} {
+      allow read: if true;
+    }
+
+    match /books/{bookId} {
+      allow read: if true;
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+    }
+
+    // -------------------------------------------------------- donation form
+
+    // Optional text field: absent, null, or a string of at most [max] chars.
+    function optionalString(data, key, max) {
+      return !(key in data)
+        || data[key] == null
+        || (data[key] is string && data[key].size() <= max);
+    }
+
+    // Optional value from a fixed list: absent, null, or one of [allowed].
+    function optionalEnum(data, key, allowed) {
+      return !(key in data) || data[key] == null || data[key] in allowed;
+    }
+
+    // Optional amount in rupees: absent, null, or a number in 1..1,00,00,000.
+    function optionalAmount(data) {
+      return !('amount' in data)
+        || data.amount == null
+        || ((data.amount is int || data.amount is float)
+            && data.amount >= 1
+            && data.amount <= 10000000);
+    }
+
+    function isValidDonationRequest(data) {
+      return data.keys().hasAll(['name', 'phone', 'status', 'createdAt'])
+        && data.keys().hasOnly([
+          'name', 'phone', 'email', 'amount', 'purpose', 'method',
+          'transactionRef', 'message', 'language', 'platform', 'appVersion',
+          'status', 'createdAt'
+        ])
+        && data.name is string
+        && data.name.trim().size() >= 2
+        && data.name.size() <= 80
+        && data.phone is string
+        && data.phone.size() >= 7
+        && data.phone.size() <= 20
+        && optionalString(data, 'email', 254)
+        && optionalAmount(data)
+        && optionalString(data, 'purpose', 200)
+        && optionalEnum(data, 'method', ['upi', 'bank', 'cash', 'cheque', 'other'])
+        && optionalString(data, 'transactionRef', 120)
+        && optionalString(data, 'message', 1000)
+        && optionalEnum(data, 'language', ['en', 'gu', 'hi'])
+        && optionalString(data, 'platform', 20)
+        && optionalString(data, 'appVersion', 40)
+        && data.status == 'new'
+        && data.createdAt == request.time;
+    }
+
+    match /donation_requests/{requestId} {
+      allow create: if isValidDonationRequest(request.resource.data);
+    }
+  }
+}

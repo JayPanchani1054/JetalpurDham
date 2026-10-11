@@ -712,6 +712,42 @@ abstract class AppLocalizations {
   /// **'Speed'**
   String get playbackSpeed;
 
+  /// No description provided for @kirtanCancelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get kirtanCancelDownload;
+
+  /// No description provided for @kirtanRemoveDownloadConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this kirtan from your phone? You can download it again anytime.'**
+  String get kirtanRemoveDownloadConfirm;
+
+  /// No description provided for @kirtanSleepTimerRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops in {time}'**
+  String kirtanSleepTimerRemaining(String time);
+
+  /// No description provided for @kirtanSpeedNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get kirtanSpeedNormal;
+
+  /// No description provided for @kirtanOfflineUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Downloaded kirtans play without internet.'**
+  String get kirtanOfflineUnavailable;
+
+  /// No description provided for @kirtanBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse kirtans'**
+  String get kirtanBrowse;
+
   /// No description provided for @placesTitle.
   ///
   /// In en, this message translates to:

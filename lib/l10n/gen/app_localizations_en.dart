@@ -330,6 +330,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playbackSpeed => 'Speed';
 
   @override
+  String get kirtanCancelDownload => 'Cancel download';
+
+  @override
+  String get kirtanRemoveDownloadConfirm =>
+      'Remove this kirtan from your phone? You can download it again anytime.';
+
+  @override
+  String kirtanSleepTimerRemaining(String time) {
+    return 'Stops in $time';
+  }
+
+  @override
+  String get kirtanSpeedNormal => 'Normal';
+
+  @override
+  String get kirtanOfflineUnavailable =>
+      'You\'re offline. Downloaded kirtans play without internet.';
+
+  @override
+  String get kirtanBrowse => 'Browse kirtans';
+
+  @override
   String get placesTitle => 'Prasadi Places';
 
   @override

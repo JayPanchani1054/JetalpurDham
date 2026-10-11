@@ -1,0 +1,15 @@
+{
+  "name": "jetalpur-dham-seed",
+  "private": true,
+  "description": "Loads the starter content (temple info, prasadi places, categories, Avsar 200 album and event) into Cloud Firestore.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "seed": "node seed.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}

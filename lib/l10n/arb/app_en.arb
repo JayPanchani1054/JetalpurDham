@@ -110,6 +110,13 @@
   "@sleepTimerMinutes": {"placeholders": {"minutes": {"type": "int"}}},
   "sleepTimerEndOfTrack": "End of kirtan",
   "playbackSpeed": "Speed",
+  "kirtanCancelDownload": "Cancel download",
+  "kirtanRemoveDownloadConfirm": "Remove this kirtan from your phone? You can download it again anytime.",
+  "kirtanSleepTimerRemaining": "Stops in {time}",
+  "@kirtanSleepTimerRemaining": {"placeholders": {"time": {"type": "String"}}},
+  "kirtanSpeedNormal": "Normal",
+  "kirtanOfflineUnavailable": "You're offline. Downloaded kirtans play without internet.",
+  "kirtanBrowse": "Browse kirtans",
 
   "placesTitle": "Prasadi Places",
   "placesSubtitle": "Places blessed by Shree Swaminarayan Bhagwan",

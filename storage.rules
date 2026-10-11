@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// Jetalpur Dham — Cloud Storage security rules.
+//
+// * The app may read (download) every content folder.
+// * Only users with the custom claim admin == true may write from a client.
+//   Uploads made by temple staff in the Firebase console bypass these rules,
+//   so staff can always upload and delete files there.
+// * Everything else is denied by default.
+//
+// Folder layout: docs/DATA_MODEL.md ("Storage layout").
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.get('admin', false) == true;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Kirtan audio: kirtans/{categoryId}/*.mp3
+    match /kirtans/{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Photo albums: gallery/{albumId}/*.jpg
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Shastra PDFs: books/{categoryId}/*.pdf
+    match /books/{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Prasadi place photos and 360° panoramas: places/{placeId}/*
+    match /places/{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Utsav / katha banners: events/*
+    match /events/{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Donation QR, home image and other settings images: config/*
+    match /config/{allPaths=**} {
+      allow read: if true;
+    }
+  }
+}
