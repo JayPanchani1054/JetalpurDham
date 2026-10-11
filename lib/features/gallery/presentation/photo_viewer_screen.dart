@@ -121,6 +121,21 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
       ? AsyncData<String>(photo.url)
       : ref.watch(mediaUrlProvider(photo.url));
 
+  /// Loads a photo again after it failed (no internet, expired link…).
+  /// [resolved] is null when the Storage link itself could not be resolved.
+  void _retryPhoto(AlbumPhoto photo, String? resolved) {
+    unawaited(HapticFeedback.selectionClick());
+    if (resolved == null) {
+      ref.invalidate(mediaUrlProvider(photo.url));
+    } else {
+      // Drop the failed image so a fresh download starts.
+      final ImageProvider? failed = _providers.remove(resolved);
+      _precached.remove(resolved);
+      if (failed != null) unawaited(failed.evict());
+    }
+    setState(() => _attempts[photo.id] = (_attempts[photo.id] ?? 0) + 1);
+  }
+
   /// Warms the neighbouring photos so swiping shows them instantly.
   void _precacheNeighbours() {
     if (!mounted) return;
@@ -292,7 +307,15 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
 
     final LiveList<AlbumPhoto>? list = photosAsync.value;
     final Widget content;
-    if (list == null) {
+    if (album != null && !album.isActive) {
+      // Hidden by the temple (also when opened from an old link).
+      content = _statusPage(
+        _StatusMessage(
+          icon: Icons.photo_library_outlined,
+          message: context.l10n.galleryAlbumNotFound,
+        ),
+      );
+    } else if (list == null) {
       content = photosAsync.hasError
           ? _statusPage(
               _StatusMessage(
