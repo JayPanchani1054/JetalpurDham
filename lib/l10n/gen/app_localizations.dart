@@ -1174,6 +1174,90 @@ abstract class AppLocalizations {
   /// **'Sanskrit'**
   String get langSanskrit;
 
+  /// No description provided for @libraryContinueFromPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading · Page {page}'**
+  String libraryContinueFromPage(int page);
+
+  /// No description provided for @libraryPageNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String libraryPageNumber(int page);
+
+  /// No description provided for @libraryDownloadWithSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline · {size}'**
+  String libraryDownloadWithSize(String size);
+
+  /// No description provided for @libraryDownloadingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading… {percent}'**
+  String libraryDownloadingProgress(String percent);
+
+  /// No description provided for @libraryAvailableOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Available offline'**
+  String get libraryAvailableOffline;
+
+  /// No description provided for @libraryRemoveDownloadConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this book from your phone? You can download it again anytime.'**
+  String get libraryRemoveDownloadConfirm;
+
+  /// No description provided for @libraryDownloadComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved for offline reading'**
+  String get libraryDownloadComplete;
+
+  /// No description provided for @libraryDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. Please try again.'**
+  String get libraryDownloadFailed;
+
+  /// No description provided for @libraryCancelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get libraryCancelDownload;
+
+  /// No description provided for @libraryDownloadedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Books you download will appear here, ready to read without internet.'**
+  String get libraryDownloadedEmpty;
+
+  /// No description provided for @libraryAboutBook.
+  ///
+  /// In en, this message translates to:
+  /// **'About this scripture'**
+  String get libraryAboutBook;
+
+  /// No description provided for @libraryReaderPageInputLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Page number (1 – {total})'**
+  String libraryReaderPageInputLabel(int total);
+
+  /// No description provided for @libraryReaderGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get libraryReaderGo;
+
+  /// No description provided for @libraryReaderNeedsInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'This book isn\'t downloaded yet. Please connect to the internet to read it.'**
+  String get libraryReaderNeedsInternet;
+
   /// No description provided for @eventsTitle.
   ///
   /// In en, this message translates to:

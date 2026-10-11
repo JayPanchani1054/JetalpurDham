@@ -38,11 +38,7 @@ class SaveAccess {
 /// Photos are read through the same disk cache the image widgets use, so a
 /// photo that is already on screen is saved or shared instantly and offline.
 class PhotoSaver {
-  PhotoSaver({
-    required Future<String> Function(String raw) resolveUrl,
-    BaseCacheManager? cacheManager,
-  }) : _resolveUrl = resolveUrl,
-       _cacheManager = cacheManager;
+  PhotoSaver({required this._resolveUrl, this._cacheManager});
 
   /// Device album that saved photos go into.
   static const String albumName = 'Jetalpur Dham';
@@ -139,9 +135,7 @@ class PhotoSaver {
   /// The full-size photo bytes, from the disk cache when available.
   Future<Uint8List> loadBytes(AlbumPhoto photo) async {
     final String url = await _resolveUrl(photo.url);
-    final File file = await _cache
-        .getSingleFile(url)
-        .timeout(_downloadTimeout);
+    final File file = await _cache.getSingleFile(url).timeout(_downloadTimeout);
     return file.readAsBytes();
   }
 
@@ -151,11 +145,12 @@ class PhotoSaver {
     final Directory dir = Directory(
       p.join((await getTemporaryDirectory()).path, 'shared_photos'),
     );
-    if (dir.existsSync()) {
+    if (await dir.exists()) {
       final DateTime cutoff = DateTime.now().subtract(const Duration(hours: 1));
       try {
         await for (final FileSystemEntity entity in dir.list()) {
-          if (entity is File && entity.statSync().modified.isBefore(cutoff)) {
+          if (entity is File &&
+              (await entity.stat()).modified.isBefore(cutoff)) {
             await entity.delete();
           }
         }

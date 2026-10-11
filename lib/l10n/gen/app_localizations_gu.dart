@@ -619,6 +619,62 @@ class AppLocalizationsGu extends AppLocalizations {
   String get langSanskrit => 'સંસ્કૃત';
 
   @override
+  String libraryContinueFromPage(int page) {
+    return 'વાંચન ચાલુ રાખો · પાનું $page';
+  }
+
+  @override
+  String libraryPageNumber(int page) {
+    return 'પાનું $page';
+  }
+
+  @override
+  String libraryDownloadWithSize(String size) {
+    return 'ઑફલાઇન માટે ડાઉનલોડ કરો · $size';
+  }
+
+  @override
+  String libraryDownloadingProgress(String percent) {
+    return 'ડાઉનલોડ થઈ રહ્યું છે… $percent';
+  }
+
+  @override
+  String get libraryAvailableOffline => 'ઑફલાઇન ઉપલબ્ધ';
+
+  @override
+  String get libraryRemoveDownloadConfirm =>
+      'આ ગ્રંથ ફોનમાંથી દૂર કરવો છે? તમે તેને ગમે ત્યારે ફરી ડાઉનલોડ કરી શકો છો.';
+
+  @override
+  String get libraryDownloadComplete => 'ઑફલાઇન વાંચન માટે સાચવ્યો';
+
+  @override
+  String get libraryDownloadFailed =>
+      'ડાઉનલોડ નિષ્ફળ થયું. કૃપા કરી ફરી પ્રયાસ કરો.';
+
+  @override
+  String get libraryCancelDownload => 'ડાઉનલોડ રદ કરો';
+
+  @override
+  String get libraryDownloadedEmpty =>
+      'તમે ડાઉનલોડ કરેલા ગ્રંથો અહીં દેખાશે, જે ઇન્ટરનેટ વગર પણ વાંચી શકાશે.';
+
+  @override
+  String get libraryAboutBook => 'આ શાસ્ત્ર વિશે';
+
+  @override
+  String libraryReaderPageInputLabel(int total) {
+    return 'પાના નંબર (1 – $total)';
+  }
+
+  @override
+  String get libraryReaderGo => 'જાઓ';
+
+  @override
+  String get libraryReaderNeedsInternet =>
+      'આ ગ્રંથ હજી ડાઉનલોડ થયો નથી. વાંચવા માટે કૃપા કરી ઇન્ટરનેટ ચાલુ કરો.';
+
+  @override
   String get eventsTitle => 'ઉત્સવ અને કાર્યક્રમો';
 
   @override

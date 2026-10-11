@@ -26,9 +26,10 @@ int compareAlbums(Album a, Album b) {
   } else if (da != null || db != null) {
     return da != null ? -1 : 1; // dated albums before undated ones
   }
-  final int byTitle = a.titleFor('en').toLowerCase().compareTo(
-    b.titleFor('en').toLowerCase(),
-  );
+  final int byTitle = a
+      .titleFor('en')
+      .toLowerCase()
+      .compareTo(b.titleFor('en').toLowerCase());
   return byTitle != 0 ? byTitle : a.id.compareTo(b.id);
 }
 
@@ -187,7 +188,8 @@ ImageFileType sniffImageType(Uint8List bytes) {
     return ImageFileType.webp;
   }
   // ISO-BMFF ("....ftyp<brand>") used by HEIC/HEIF photos from iPhones.
-  if (startsWith(const <int>[0x66, 0x74, 0x79, 0x70], 4) && bytes.length >= 12) {
+  if (startsWith(const <int>[0x66, 0x74, 0x79, 0x70], 4) &&
+      bytes.length >= 12) {
     final String brand = String.fromCharCodes(bytes.sublist(8, 12));
     const Set<String> heif = <String>{
       'heic',

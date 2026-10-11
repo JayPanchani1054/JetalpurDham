@@ -617,6 +617,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get langSanskrit => 'Sanskrit';
 
   @override
+  String libraryContinueFromPage(int page) {
+    return 'Continue reading · Page $page';
+  }
+
+  @override
+  String libraryPageNumber(int page) {
+    return 'Page $page';
+  }
+
+  @override
+  String libraryDownloadWithSize(String size) {
+    return 'Download for offline · $size';
+  }
+
+  @override
+  String libraryDownloadingProgress(String percent) {
+    return 'Downloading… $percent';
+  }
+
+  @override
+  String get libraryAvailableOffline => 'Available offline';
+
+  @override
+  String get libraryRemoveDownloadConfirm =>
+      'Remove this book from your phone? You can download it again anytime.';
+
+  @override
+  String get libraryDownloadComplete => 'Saved for offline reading';
+
+  @override
+  String get libraryDownloadFailed => 'Download failed. Please try again.';
+
+  @override
+  String get libraryCancelDownload => 'Cancel download';
+
+  @override
+  String get libraryDownloadedEmpty =>
+      'Books you download will appear here, ready to read without internet.';
+
+  @override
+  String get libraryAboutBook => 'About this scripture';
+
+  @override
+  String libraryReaderPageInputLabel(int total) {
+    return 'Page number (1 – $total)';
+  }
+
+  @override
+  String get libraryReaderGo => 'Go';
+
+  @override
+  String get libraryReaderNeedsInternet =>
+      'This book isn\'t downloaded yet. Please connect to the internet to read it.';
+
+  @override
   String get eventsTitle => 'Utsav & Events';
 
   @override

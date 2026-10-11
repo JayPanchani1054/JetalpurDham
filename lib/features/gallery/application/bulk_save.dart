@@ -68,10 +68,9 @@ class BulkSaveProgress {
 class BulkSaveJob {
   BulkSaveJob({
     required List<AlbumPhoto> photos,
-    required Future<PhotoSaveOutcome> Function(AlbumPhoto photo) save,
+    required this._save,
     this.maxConsecutiveFailures = 5,
-  }) : _photos = List<AlbumPhoto>.unmodifiable(photos),
-       _save = save;
+  }) : _photos = List<AlbumPhoto>.unmodifiable(photos);
 
   final List<AlbumPhoto> _photos;
   final Future<PhotoSaveOutcome> Function(AlbumPhoto photo) _save;

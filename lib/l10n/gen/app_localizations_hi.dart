@@ -620,6 +620,62 @@ class AppLocalizationsHi extends AppLocalizations {
   String get langSanskrit => 'संस्कृत';
 
   @override
+  String libraryContinueFromPage(int page) {
+    return 'पढ़ना जारी रखें · पृष्ठ $page';
+  }
+
+  @override
+  String libraryPageNumber(int page) {
+    return 'पृष्ठ $page';
+  }
+
+  @override
+  String libraryDownloadWithSize(String size) {
+    return 'ऑफ़लाइन के लिए डाउनलोड करें · $size';
+  }
+
+  @override
+  String libraryDownloadingProgress(String percent) {
+    return 'डाउनलोड हो रहा है… $percent';
+  }
+
+  @override
+  String get libraryAvailableOffline => 'ऑफ़लाइन उपलब्ध';
+
+  @override
+  String get libraryRemoveDownloadConfirm =>
+      'इस ग्रंथ को फ़ोन से हटाना है? आप इसे कभी भी फिर से डाउनलोड कर सकते हैं।';
+
+  @override
+  String get libraryDownloadComplete => 'ऑफ़लाइन पढ़ने के लिए सहेजा गया';
+
+  @override
+  String get libraryDownloadFailed =>
+      'डाउनलोड नहीं हो सका। कृपया फिर से प्रयास करें।';
+
+  @override
+  String get libraryCancelDownload => 'डाउनलोड रद्द करें';
+
+  @override
+  String get libraryDownloadedEmpty =>
+      'आपके डाउनलोड किए गए ग्रंथ यहाँ दिखेंगे, जिन्हें बिना इंटरनेट के भी पढ़ा जा सकता है।';
+
+  @override
+  String get libraryAboutBook => 'इस शास्त्र के बारे में';
+
+  @override
+  String libraryReaderPageInputLabel(int total) {
+    return 'पृष्ठ संख्या (1 – $total)';
+  }
+
+  @override
+  String get libraryReaderGo => 'जाएँ';
+
+  @override
+  String get libraryReaderNeedsInternet =>
+      'यह ग्रंथ अभी डाउनलोड नहीं हुआ है। पढ़ने के लिए कृपया इंटरनेट से जुड़ें।';
+
+  @override
   String get eventsTitle => 'उत्सव और कार्यक्रम';
 
   @override
