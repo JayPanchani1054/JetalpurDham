@@ -96,10 +96,8 @@ class Place360Badge extends StatelessWidget {
             const SizedBox(width: AppSpacing.xs),
             Text(
               context.l10n.places360Badge,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
             ),
           ],
         ),

@@ -24,13 +24,12 @@ Future<void> openPlacePhotoViewer(
         images: images,
         initialIndex: initialIndex.clamp(0, images.length - 1),
       ),
-      transitionsBuilder:
-          (
-            BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            Widget child,
-          ) => FadeTransition(opacity: animation, child: child),
+      transitionsBuilder: (
+        BuildContext context,
+        Animation<double> animation,
+        Animation<double> secondaryAnimation,
+        Widget child,
+      ) => FadeTransition(opacity: animation, child: child),
     ),
   );
 }
@@ -173,9 +172,8 @@ class _Loading extends StatelessWidget {
   const _Loading();
 
   @override
-  Widget build(BuildContext context) => const Center(
-    child: CircularProgressIndicator(color: Colors.white70),
-  );
+  Widget build(BuildContext context) =>
+      const Center(child: CircularProgressIndicator(color: Colors.white70));
 }
 
 class _Broken extends StatelessWidget {

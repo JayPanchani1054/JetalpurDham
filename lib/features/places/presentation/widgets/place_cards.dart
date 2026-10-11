@@ -11,31 +11,77 @@ import 'place_ui.dart';
 double placesTextScale(BuildContext context) =>
     MediaQuery.textScalerOf(context).scale(16) / 16;
 
+/// A place photo inside a [Hero] that keeps one decode size during the
+/// flight.
+///
+/// [AppNetworkImage] decodes at its layout width; inside a Hero flight that
+/// width changes every frame, which would reload the photo and flash the
+/// placeholder. Here the photo is laid out once at its resting size and the
+/// flight only scales it (like `BoxFit.cover`).
+class PlaceHeroImage extends StatelessWidget {
+  const PlaceHeroImage({
+    super.key,
+    required this.placeId,
+    required this.url,
+    required this.placeholderIcon,
+  });
+
+  final String placeId;
+  final String? url;
+  final IconData placeholderIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final Size size = Size(
+          constraints.hasBoundedWidth ? constraints.maxWidth : 320,
+          constraints.hasBoundedHeight ? constraints.maxHeight : 180,
+        );
+        return Hero(
+          tag: placeHeroTag(placeId),
+          child: FittedBox(
+            fit: BoxFit.cover,
+            clipBehavior: Clip.hardEdge,
+            child: SizedBox.fromSize(
+              size: size,
+              child: AppNetworkImage(
+                url: url,
+                placeholderIcon: placeholderIcon,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// Cover image of a place with an optional Hero and the 360° badge.
 class PlaceCoverImage extends StatelessWidget {
   const PlaceCoverImage({
     super.key,
     required this.place,
     this.hero = true,
-    this.borderRadius,
     this.showBadge = true,
   });
 
   final PrasadiPlace place;
   final bool hero;
-  final BorderRadius? borderRadius;
   final bool showBadge;
 
   @override
   Widget build(BuildContext context) {
-    Widget image = AppNetworkImage(
-      url: place.coverImage,
-      borderRadius: borderRadius,
-      placeholderIcon: place.category.icon,
-    );
-    if (hero) {
-      image = Hero(tag: placeHeroTag(place.id), child: image);
-    }
+    final Widget image = hero
+        ? PlaceHeroImage(
+            placeId: place.id,
+            url: place.coverImage,
+            placeholderIcon: place.category.icon,
+          )
+        : AppNetworkImage(
+            url: place.coverImage,
+            placeholderIcon: place.category.icon,
+          );
     if (!showBadge || !place.hasPanorama) return image;
     return Stack(
       fit: StackFit.expand,

@@ -1000,6 +1000,54 @@ abstract class AppLocalizations {
   /// **'This album is no longer available.'**
   String get galleryAlbumNotFound;
 
+  /// No description provided for @gallerySaveSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Save 1 photo} other{Save {count} photos}}'**
+  String gallerySaveSelected(int count);
+
+  /// No description provided for @gallerySavingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving {done} of {total}…'**
+  String gallerySavingProgress(int done, int total);
+
+  /// No description provided for @galleryNotSavedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo couldn\'t be saved} other{{count} photos couldn\'t be saved}}'**
+  String galleryNotSavedCount(int count);
+
+  /// No description provided for @galleryClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get galleryClearSelection;
+
+  /// No description provided for @gallerySelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap photos to select them'**
+  String get gallerySelectHint;
+
+  /// No description provided for @galleryShareText.
+  ///
+  /// In en, this message translates to:
+  /// **'Jay Shree Swaminarayan! {album} – Shree Swaminarayan Mandir, Jetalpur Dham'**
+  String galleryShareText(String album);
+
+  /// No description provided for @galleryPhotoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo {index} of {total}'**
+  String galleryPhotoLabel(int index, int total);
+
+  /// No description provided for @galleryPhotoLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this photo'**
+  String get galleryPhotoLoadFailed;
+
   /// No description provided for @libraryTitle.
   ///
   /// In en, this message translates to:

@@ -504,6 +504,52 @@ class AppLocalizationsHi extends AppLocalizations {
   String get galleryAlbumNotFound => 'यह एल्बम अब उपलब्ध नहीं है।';
 
   @override
+  String gallerySaveSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count तस्वीरें सहेजें',
+      one: '१ तस्वीर सहेजें',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gallerySavingProgress(int done, int total) {
+    return '$total में से $done सहेज रहे हैं…';
+  }
+
+  @override
+  String galleryNotSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count तस्वीरें सहेजी नहीं जा सकीं',
+      one: '१ तस्वीर सहेजी नहीं जा सकी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get galleryClearSelection => 'चयन हटाएँ';
+
+  @override
+  String get gallerySelectHint => 'चुनने के लिए तस्वीरों पर टैप करें';
+
+  @override
+  String galleryShareText(String album) {
+    return 'जय श्री स्वामिनारायण! $album – श्री स्वामिनारायण मंदिर, जेतलपुर धाम';
+  }
+
+  @override
+  String galleryPhotoLabel(int index, int total) {
+    return '$total में से तस्वीर $index';
+  }
+
+  @override
+  String get galleryPhotoLoadFailed => 'यह तस्वीर खोली नहीं जा सकी';
+
+  @override
   String get libraryTitle => 'शास्त्र ग्रंथालय';
 
   @override

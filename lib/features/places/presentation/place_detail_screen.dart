@@ -23,6 +23,7 @@ import '../data/places_repository.dart';
 import '../domain/place_queries.dart';
 import '../domain/prasadi_place.dart';
 import 'place_photo_viewer.dart';
+import 'widgets/place_cards.dart';
 import 'widgets/place_map_style.dart';
 import 'widgets/place_ui.dart';
 
@@ -91,8 +92,10 @@ class _PlaceDetailViewState extends ConsumerState<_PlaceDetailView> {
     final ThemeData theme = Theme.of(context);
     final PrasadiPlace place = widget.place;
     final bool mapEnabled = ref.watch(placesMapEnabledProvider);
-    final double headerHeight = (MediaQuery.sizeOf(context).width * 0.75)
-        .clamp(240.0, 420.0);
+    final double headerHeight = (MediaQuery.sizeOf(context).width * 0.75).clamp(
+      240.0,
+      420.0,
+    );
     _collapseAt = headerHeight - kToolbarHeight - AppSpacing.lg;
 
     final String mahima = place.mahima.of(context);
@@ -212,10 +215,7 @@ class _HeaderAppBar extends StatelessWidget {
         ),
         LanguageButton(foregroundColor: collapsed ? null : Colors.white),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const <StretchMode>[StretchMode.zoomBackground],
-        background: _HeaderMedia(place: place),
-      ),
+      flexibleSpace: FlexibleSpaceBar(background: _HeaderMedia(place: place)),
     );
   }
 }
@@ -251,9 +251,7 @@ class _HeaderMediaState extends State<_HeaderMedia> {
           Hero(
             tag: placeHeroTag(widget.place.id),
             child: DecoratedBox(
-              decoration: const BoxDecoration(
-                gradient: AppColors.heroGradient,
-              ),
+              decoration: const BoxDecoration(gradient: AppColors.heroGradient),
               child: Center(
                 child: Icon(
                   widget.place.category.icon,
@@ -269,20 +267,20 @@ class _HeaderMediaState extends State<_HeaderMedia> {
             itemCount: images.length,
             onPageChanged: (int i) => setState(() => _page = i),
             itemBuilder: (BuildContext context, int i) {
-              Widget image = AppNetworkImage(
-                url: images[i],
-                placeholderIcon: widget.place.category.icon,
-              );
-              if (i == 0) {
-                // Only the visible first photo flies back to the list card.
-                image = HeroMode(
-                  enabled: _page == 0,
-                  child: Hero(
-                    tag: placeHeroTag(widget.place.id),
-                    child: image,
-                  ),
-                );
-              }
+              final Widget image = i == 0
+                  // Only the visible first photo flies back to the card.
+                  ? HeroMode(
+                      enabled: _page == 0,
+                      child: PlaceHeroImage(
+                        placeId: widget.place.id,
+                        url: images[i],
+                        placeholderIcon: widget.place.category.icon,
+                      ),
+                    )
+                  : AppNetworkImage(
+                      url: images[i],
+                      placeholderIcon: widget.place.category.icon,
+                    );
               return Semantics(
                 button: true,
                 label: l10n.placePhotos,
@@ -359,9 +357,8 @@ class _PageIndicator extends StatelessWidget {
         child: count > 8
             ? Text(
                 '${index + 1} / $count',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelMedium?.copyWith(color: Colors.white),
+                style: Theme.of(context).textTheme.labelMedium
+                    ?.copyWith(color: Colors.white),
               )
             : Row(
                 mainAxisSize: MainAxisSize.min,
@@ -521,40 +518,41 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
-    final Color background = primary
-        ? scheme.primary
-        : scheme.primaryContainer;
+    final Color background = primary ? scheme.primary : scheme.primaryContainer;
     final Color foreground = primary
         ? scheme.onPrimary
         : scheme.onPrimaryContainer;
-    return Material(
-      color: background,
-      borderRadius: AppRadius.lgAll,
-      child: InkWell(
+    return Semantics(
+      button: true,
+      child: Material(
+        color: background,
         borderRadius: AppRadius.lgAll,
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 88),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xs + 2,
-              vertical: AppSpacing.md,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Icon(icon, size: 30, color: foreground),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: foreground,
+        child: InkWell(
+          borderRadius: AppRadius.lgAll,
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 88),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xs + 2,
+                vertical: AppSpacing.md,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(icon, size: 30, color: foreground),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: foreground,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

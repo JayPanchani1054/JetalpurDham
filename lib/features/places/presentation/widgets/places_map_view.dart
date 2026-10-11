@@ -66,14 +66,27 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
   @override
   void didUpdateWidget(PlacesMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_selectedId != null &&
-        findPlace(_places, _selectedId!) == null &&
-        _places.isNotEmpty) {
-      // The selected place was removed by the temple: go back to the first.
+    if (identical(oldWidget.places, widget.places)) return;
+    if (_selectedId != null && findPlace(_places, _selectedId!) == null) {
+      // The selected place was removed or hidden by the temple.
       _selectedId = null;
-      final PageController? pages = _pages;
-      if (pages != null && pages.hasClients) pages.jumpToPage(0);
     }
+    // Places were edited live: keep the visible card on the selected place
+    // (after this frame, never during build).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final PageController? pages = _pages;
+      if (!mounted || pages == null || !pages.hasClients || _places.isEmpty) {
+        return;
+      }
+      final int target = _selectedIndex;
+      if ((pages.page?.round() ?? target) == target) return;
+      _syncingFromMap = true;
+      try {
+        pages.jumpToPage(target);
+      } finally {
+        _syncingFromMap = false;
+      }
+    });
   }
 
   @override
@@ -248,11 +261,16 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
           top: AppSpacing.sm,
           bottom: cardHeight + AppSpacing.lg * 2,
         );
-        _initialCamera ??= _fitCamera();
+        if (_initialCamera == null) {
+          final CameraPosition initial = _fitCamera();
+          _initialCamera = initial;
+          _zoom = initial.zoom;
+        }
         _pages ??= PageController(
-          viewportFraction: (math.min(440.0, _mapSize.width - 40) /
-                  math.max(1.0, _mapSize.width))
-              .clamp(0.5, 0.9),
+          viewportFraction:
+              (math.min(440.0, _mapSize.width - 40) /
+                      math.max(1.0, _mapSize.width))
+                  .clamp(0.5, 0.9),
           initialPage: selectedIndex,
         );
 
@@ -278,11 +296,12 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
                 tiltGesturesEnabled: false,
                 // The map owns every gesture over it (e.g. no accidental
                 // drawer swipe while panning).
-                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                  Factory<OneSequenceGestureRecognizer>(
-                    EagerGestureRecognizer.new,
-                  ),
-                },
+                gestureRecognizers:
+                    const <Factory<OneSequenceGestureRecognizer>>{
+                      Factory<OneSequenceGestureRecognizer>(
+                        EagerGestureRecognizer.new,
+                      ),
+                    },
               ),
             ),
             Positioned(

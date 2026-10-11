@@ -503,6 +503,52 @@ class AppLocalizationsGu extends AppLocalizations {
   String get galleryAlbumNotFound => 'આ આલ્બમ હવે ઉપલબ્ધ નથી.';
 
   @override
+  String gallerySaveSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count તસવીરો સાચવો',
+      one: '૧ તસવીર સાચવો',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gallerySavingProgress(int done, int total) {
+    return '$total માંથી $done સાચવી રહ્યા છીએ…';
+  }
+
+  @override
+  String galleryNotSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count તસવીરો સાચવી શકાઈ નહીં',
+      one: '૧ તસવીર સાચવી શકાઈ નહીં',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get galleryClearSelection => 'પસંદગી દૂર કરો';
+
+  @override
+  String get gallerySelectHint => 'પસંદ કરવા માટે તસવીરો પર ટૅપ કરો';
+
+  @override
+  String galleryShareText(String album) {
+    return 'જય શ્રી સ્વામિનારાયણ! $album – શ્રી સ્વામિનારાયણ મંદિર, જેતલપુર ધામ';
+  }
+
+  @override
+  String galleryPhotoLabel(int index, int total) {
+    return '$total માંથી તસવીર $index';
+  }
+
+  @override
+  String get galleryPhotoLoadFailed => 'આ તસવીર ખોલી શકાઈ નહીં';
+
+  @override
   String get libraryTitle => 'શાસ્ત્ર ગ્રંથાલય';
 
   @override

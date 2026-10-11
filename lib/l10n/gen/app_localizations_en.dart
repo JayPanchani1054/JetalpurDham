@@ -502,6 +502,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryAlbumNotFound => 'This album is no longer available.';
 
   @override
+  String gallerySaveSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Save $count photos',
+      one: 'Save 1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gallerySavingProgress(int done, int total) {
+    return 'Saving $done of $total…';
+  }
+
+  @override
+  String galleryNotSavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos couldn\'t be saved',
+      one: '1 photo couldn\'t be saved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get galleryClearSelection => 'Clear selection';
+
+  @override
+  String get gallerySelectHint => 'Tap photos to select them';
+
+  @override
+  String galleryShareText(String album) {
+    return 'Jay Shree Swaminarayan! $album – Shree Swaminarayan Mandir, Jetalpur Dham';
+  }
+
+  @override
+  String galleryPhotoLabel(int index, int total) {
+    return 'Photo $index of $total';
+  }
+
+  @override
+  String get galleryPhotoLoadFailed => 'Couldn\'t load this photo';
+
+  @override
   String get libraryTitle => 'Shastra Library';
 
   @override

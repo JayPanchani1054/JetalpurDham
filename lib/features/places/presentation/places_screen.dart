@@ -25,8 +25,7 @@ class PlacesScreen extends ConsumerWidget {
     final AppLocalizations l10n = context.l10n;
     final bool mapEnabled = ref.watch(placesMapEnabledProvider);
     final bool showMap =
-        mapEnabled &&
-        ref.watch(placesViewModeProvider) == PlacesViewMode.map;
+        mapEnabled && ref.watch(placesViewModeProvider) == PlacesViewMode.map;
     final AsyncValue<List<PrasadiPlace>> places = ref.watch(placesProvider);
     final bool offline = !(ref.watch(isOnlineProvider).value ?? true);
 
