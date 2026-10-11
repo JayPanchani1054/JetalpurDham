@@ -16,7 +16,8 @@ extension UiFeedbackX on BuildContext {
   /// Copies [text] and confirms with a snackbar + light haptic.
   Future<void> copyToClipboard(String text) async {
     await Clipboard.setData(ClipboardData(text: text));
-    await HapticFeedback.selectionClick();
+    // Haptics are best-effort and must never block the action.
+    HapticFeedback.selectionClick().ignore();
     if (mounted) showSnack(l10n.copied);
   }
 

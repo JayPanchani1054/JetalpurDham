@@ -12,6 +12,7 @@ class KirtanQueue {
     this.items = const <Kirtan>[],
     this.index,
     this.isPreparing = false,
+    this.autoplay = true,
     this.errorCount = 0,
   });
 
@@ -20,6 +21,13 @@ class KirtanQueue {
 
   /// True while URLs are resolved and the first kirtan is loading.
   final bool isPreparing;
+
+  /// Whether playback starts once the queue has loaded. Cleared when the user
+  /// taps pause while it is still loading (and set again by tapping play).
+  final bool autoplay;
+
+  /// Loading and about to play: shown as a spinner on the play button.
+  bool get isStarting => isPreparing && autoplay;
 
   /// Incremented on every playback error so the UI can show one message per
   /// failure.
@@ -39,11 +47,13 @@ class KirtanQueue {
     List<Kirtan>? items,
     int? index,
     bool? isPreparing,
+    bool? autoplay,
     int? errorCount,
   }) => KirtanQueue(
     items: items ?? this.items,
     index: index ?? this.index,
     isPreparing: isPreparing ?? this.isPreparing,
+    autoplay: autoplay ?? this.autoplay,
     errorCount: errorCount ?? this.errorCount,
   );
 }
