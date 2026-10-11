@@ -12,6 +12,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../data/donation_repository.dart';
 import '../../domain/donation_request.dart';
+import '../donation_haptics.dart';
 import '../donation_labels.dart';
 
 /// Opens the "Share donation details" form above the bottom navigation bar.
@@ -111,12 +112,12 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
       _failed = false;
     });
     if (!(_formKey.currentState?.validate() ?? false)) {
-      await HapticFeedback.heavyImpact();
+      DonationHaptics.error();
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _submitting = true);
-    await HapticFeedback.selectionClick();
+    DonationHaptics.tap();
 
     final DonationRequest request = DonationRequest(
       name: _name.text.trim(),
@@ -132,6 +133,8 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
       language: language,
       platform: platformName(defaultTargetPlatform, isWeb: kIsWeb),
     );
+    final String phoneAsTyped = _phone.text.trim();
+    final SharedPreferences? prefs = _prefs;
     // Offline, the write is stored locally at once; no need to wait long for
     // a server acknowledgement that cannot arrive.
     final bool online = ref.read(isOnlineProvider).value ?? true;
@@ -143,13 +146,13 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
             request,
             timeout: online ? null : const Duration(milliseconds: 1500),
           );
-      await _rememberDonor(request);
+      await _rememberDonor(prefs, request, phoneAsTyped);
       if (!mounted) return;
       setState(() {
         _submitting = false;
         _result = result;
       });
-      await HapticFeedback.mediumImpact();
+      DonationHaptics.success();
     } catch (error, stack) {
       AppLogger.error('Donation request failed', error, stack);
       if (!mounted) return;
@@ -157,16 +160,21 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
         _submitting = false;
         _failed = true;
       });
-      await HapticFeedback.heavyImpact();
+      DonationHaptics.error();
     }
   }
 
-  Future<void> _rememberDonor(DonationRequest request) async {
-    final SharedPreferences? prefs = _prefs;
+  /// Saves the donor's contact details on this phone for next time.
+  /// Values are passed in because the sheet may be closed by now.
+  static Future<void> _rememberDonor(
+    SharedPreferences? prefs,
+    DonationRequest request,
+    String phoneAsTyped,
+  ) async {
     if (prefs == null) return;
     try {
       await prefs.setString(_DonorPrefs.name, request.name);
-      await prefs.setString(_DonorPrefs.phone, _phone.text.trim());
+      await prefs.setString(_DonorPrefs.phone, phoneAsTyped);
       final String email = request.email ?? '';
       if (email.isEmpty) {
         await prefs.remove(_DonorPrefs.email);
@@ -481,7 +489,7 @@ class _MethodField extends StatelessWidget {
                     onSelected: enabled
                         ? (bool selected) {
                             if (!selected) return;
-                            HapticFeedback.selectionClick();
+                            DonationHaptics.tap();
                             onChanged(method);
                             field.didChange(method);
                           }

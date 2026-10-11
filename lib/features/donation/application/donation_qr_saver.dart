@@ -48,7 +48,8 @@ Future<Uint8List> renderQrPng(String data, {int size = 1024}) async {
     throw ArgumentError.value(data, 'data', 'Not encodable');
   }
   final double side = size.toDouble();
-  final double quietZone = side * 0.08;
+  // ~4 modules of white margin, as the QR specification recommends.
+  final double quietZone = side * 0.1;
 
   final ui.PictureRecorder recorder = ui.PictureRecorder();
   final Canvas canvas = Canvas(recorder)
@@ -94,14 +95,8 @@ class DonationQrSaver {
     try {
       final String? album = await _requestAccess();
       if (album == null) return QrSaveOutcome.denied;
-      final Uint8List bytes;
-      if (imageUrl != null && imageUrl.trim().isNotEmpty) {
-        bytes = await _downloadImage(imageUrl);
-      } else if (upiUri != null) {
-        bytes = await renderQrPng(upiUri);
-      } else {
-        return QrSaveOutcome.failed;
-      }
+      final Uint8List? bytes = await _qrBytes(imageUrl, upiUri);
+      if (bytes == null) return QrSaveOutcome.failed;
       await Gal.putImageBytes(
         bytes,
         album: album.isEmpty ? null : album,
@@ -135,6 +130,20 @@ class DonationQrSaver {
     if (await Gal.hasAccess(toAlbum: true)) return albumName;
     final bool granted = await Gal.hasAccess() || await Gal.requestAccess();
     return granted ? '' : null;
+  }
+
+  /// The official QR image, or — when there is none or it cannot be
+  /// downloaded (e.g. offline) — a QR generated from the UPI link.
+  Future<Uint8List?> _qrBytes(String? imageUrl, String? upiUri) async {
+    if (imageUrl != null && imageUrl.trim().isNotEmpty) {
+      try {
+        return await _downloadImage(imageUrl);
+      } catch (error, stack) {
+        if (upiUri == null) rethrow;
+        AppLogger.error('QR image unavailable, generating it', error, stack);
+      }
+    }
+    return upiUri == null ? null : renderQrPng(upiUri);
   }
 
   Future<Uint8List> _downloadImage(String raw) async {

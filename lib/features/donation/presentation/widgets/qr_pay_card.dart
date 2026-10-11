@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart' show QrPainter;
@@ -11,6 +10,7 @@ import '../../../../core/utils/ui_feedback.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../application/donation_qr_saver.dart';
 import '../../domain/donation_config.dart';
+import '../donation_haptics.dart';
 import 'donation_card.dart';
 
 /// Step 1 — "Scan & Pay": the temple QR, UPI ID and the two actions.
@@ -35,7 +35,7 @@ class _QrPayCardState extends ConsumerState<QrPayCard> {
   Future<void> _payWithUpiApp() async {
     final String? uri = widget.config.upiUri;
     if (uri == null) return;
-    await HapticFeedback.selectionClick();
+    DonationHaptics.tap();
     final bool opened = await Launcher.url(uri);
     if (!opened && mounted) context.showSnack(context.l10n.donateNoUpiApp);
   }
@@ -43,7 +43,7 @@ class _QrPayCardState extends ConsumerState<QrPayCard> {
   Future<void> _saveQr() async {
     if (_saving) return;
     setState(() => _saving = true);
-    await HapticFeedback.selectionClick();
+    DonationHaptics.tap();
     final QrSaveOutcome outcome = await ref
         .read(donationQrSaverProvider)
         .save(imageUrl: widget.config.qrImageUrl, upiUri: widget.config.upiUri);
@@ -141,6 +141,9 @@ class _QrFrame extends StatelessWidget {
             fit: BoxFit.contain,
             placeholderIcon: Icons.qr_code_2_rounded,
             decodeAtFullResolution: true,
+            // Not downloaded yet and offline (or a broken link): the same
+            // payment still works with a QR generated from the UPI ID.
+            fallback: upiUri == null ? null : _GeneratedQr(data: upiUri!),
           )
         : _GeneratedQr(data: upiUri!);
     return Semantics(
@@ -199,8 +202,15 @@ class _GeneratedQrState extends State<_GeneratedQr> {
         child: Icon(Icons.qr_code_2_rounded, size: 64, color: Colors.black26),
       );
     }
-    return RepaintBoundary(
-      child: CustomPaint(painter: painter, size: Size.infinite),
+    // Extra white margin (the QR "quiet zone") so every scanner locks on.
+    return ColoredBox(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: RepaintBoundary(
+          child: CustomPaint(painter: painter, size: Size.infinite),
+        ),
+      ),
     );
   }
 }

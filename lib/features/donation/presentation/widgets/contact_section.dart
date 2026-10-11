@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/l10n.dart';
@@ -7,6 +6,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/launcher.dart';
 import '../../../../core/utils/ui_feedback.dart';
 import '../../domain/donation_config.dart';
+import '../donation_haptics.dart';
 import 'donation_card.dart';
 import 'donation_form_sheet.dart';
 
@@ -26,7 +26,7 @@ class ContactSection extends StatelessWidget {
     BuildContext context,
     Future<bool> Function() action,
   ) async {
-    await HapticFeedback.selectionClick();
+    DonationHaptics.tap();
     if (!await action() && context.mounted) context.showOpenLinkError();
   }
 
@@ -46,10 +46,9 @@ class ContactSection extends StatelessWidget {
         children: <Widget>[
           FilledButton.icon(
             style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
-            onPressed: () async {
-              await HapticFeedback.selectionClick();
-              if (!context.mounted) return;
-              await showDonationFormSheet(context, purposes: purposes);
+            onPressed: () {
+              DonationHaptics.tap();
+              showDonationFormSheet(context, purposes: purposes);
             },
             icon: const Icon(Icons.edit_note_rounded),
             label: Text(l10n.donateContactNow),
