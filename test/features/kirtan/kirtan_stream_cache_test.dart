@@ -104,6 +104,22 @@ void main() {
       expect(left, <String>{'new.mp3', 'live.mp3.part', 'live.mp3.mime'});
     });
 
+    test('reports its size and clears finished files', () async {
+      final KirtanStreamCache cache = KirtanStreamCache(
+        rootDirectory: () async => root,
+      );
+      final Directory dir = await cache.directory();
+      await write(dir, 'a.mp3', 40, DateTime.now());
+      await write(dir, 'a.mp3.mime', 10, DateTime.now());
+      await write(dir, 'b.mp3.part', 5, DateTime.now());
+      expect(await cache.size(), 55);
+      await cache.clear();
+      expect(
+        dir.listSync().map((FileSystemEntity e) => p.basename(e.path)),
+        <String>['b.mp3.part'],
+      );
+    });
+
     test('keeps everything below the limit and prunes only once', () async {
       final KirtanStreamCache cache = KirtanStreamCache(
         rootDirectory: () async => root,

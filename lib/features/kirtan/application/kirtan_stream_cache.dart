@@ -115,6 +115,33 @@ class KirtanStreamCache {
     }
   }
 
+  /// Total bytes used by the cache. Never throws.
+  Future<int> size() async {
+    try {
+      int total = 0;
+      await for (final FileSystemEntity entity in (await directory()).list()) {
+        if (entity is File) total += await entity.length();
+      }
+      return total;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Deletes every cached kirtan (e.g. from Settings). Files that are still
+  /// being written or played are skipped. Never throws.
+  Future<void> clear() async {
+    try {
+      await for (final FileSystemEntity entity in (await directory()).list()) {
+        if (entity is File && !entity.path.endsWith('.part')) {
+          await _delete(entity.path);
+        }
+      }
+    } catch (error, stack) {
+      AppLogger.error('Kirtan cache clear failed', error, stack);
+    }
+  }
+
   Future<void> _delete(String path) async {
     try {
       final File file = File(path);

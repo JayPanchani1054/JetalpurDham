@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/language_button.dart';
 import '../../../core/widgets/menu_button.dart';
@@ -86,6 +87,7 @@ class _KirtanScreenState extends ConsumerState<KirtanScreen> {
     final AsyncValue<List<Kirtan>> kirtans = ref.watch(kirtansProvider);
     final List<KirtanCategory> allCategories =
         ref.watch(kirtanCategoriesProvider).value ?? const <KirtanCategory>[];
+    final bool offline = !(ref.watch(isOnlineProvider).value ?? true);
 
     return Scaffold(
       appBar: AppBar(
@@ -105,10 +107,21 @@ class _KirtanScreenState extends ConsumerState<KirtanScreen> {
         onRetry: () => ref.invalidate(kirtansProvider),
         loading: const _KirtanListSkeleton(),
         isEmpty: (List<Kirtan> list) => list.isEmpty,
-        empty: EmptyState(
-          icon: Icons.library_music_outlined,
-          title: l10n.kirtanEmpty,
-        ),
+        // Offline before the list was ever loaded: point to downloads.
+        empty: offline
+            ? EmptyState(
+                icon: Icons.wifi_off_rounded,
+                title: l10n.kirtanOfflineUnavailable,
+                action: FilledButton.tonalIcon(
+                  onPressed: () => context.go(Routes.kirtanDownloads),
+                  icon: const Icon(Icons.download_for_offline_outlined),
+                  label: Text(l10n.kirtanDownloads),
+                ),
+              )
+            : EmptyState(
+                icon: Icons.library_music_outlined,
+                title: l10n.kirtanEmpty,
+              ),
         data: (List<Kirtan> all) {
           final List<KirtanCategory> categories = categoriesInUse(
             allCategories,
