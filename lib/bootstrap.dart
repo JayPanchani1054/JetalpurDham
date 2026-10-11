@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
@@ -59,6 +60,7 @@ Future<void> bootstrap() async {
 
   await _guard('Notifications', NotificationService.instance.initialize);
   await _guard('Audio', initKirtanAudio);
+  await _guard('PDF', pdfrxFlutterInitialize);
 
   runApp(
     ProviderScope(

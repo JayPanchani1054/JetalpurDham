@@ -20,7 +20,11 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
-    final String location = GoRouterState.of(context).uri.path;
+    final String location = GoRouter.of(context)
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .path;
 
     void open(String route) {
       shellScaffoldKey.currentState?.closeDrawer();
