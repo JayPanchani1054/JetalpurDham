@@ -43,17 +43,12 @@ abstract final class Launcher {
     ),
   );
 
-  /// Shows a pin at a location in Google Maps.
-  static Future<bool> mapLocation(double lat, double lng, {String? label}) {
-    final String query = label == null || label.isEmpty
-        ? '$lat,$lng'
-        : Uri.encodeComponent(label);
-    return _launch(
-      Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=$query&center=$lat,$lng',
-      ),
-    );
-  }
+  /// Shows a pin at exact coordinates in Google Maps. (A text label would make
+  /// Maps search by name, which can land on the wrong place.)
+  static Future<bool> mapLocation(double lat, double lng, {String? label}) =>
+      _launch(
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng'),
+      );
 
   /// Opens Google Street View panorama at a location.
   static Future<bool> streetView(

@@ -80,7 +80,7 @@ class _HomePlaceCard extends StatelessWidget {
       child: Card(
         child: InkWell(
           onTap: () {
-            unawaited(HapticFeedback.selectionClick());
+            HapticFeedback.selectionClick().ignore();
             context.go(Routes.place(place.id));
           },
           child: Column(

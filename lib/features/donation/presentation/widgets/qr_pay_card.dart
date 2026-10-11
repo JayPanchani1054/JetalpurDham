@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart' show QrPainter;
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/launcher.dart';
@@ -27,26 +28,32 @@ class _QrPayCardState extends ConsumerState<QrPayCard> {
   bool _saving = false;
 
   /// UPI intents only work reliably on Android; iOS users scan the QR.
-  bool get _canOpenUpiApp =>
-      !kIsWeb &&
-      defaultTargetPlatform == TargetPlatform.android &&
-      widget.config.upiUri != null;
+  static bool get _canOpenUpiApp =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
-  Future<void> _payWithUpiApp() async {
-    final String? uri = widget.config.upiUri;
-    if (uri == null) return;
+  /// The `upi://pay` link, with the temple's name as payee when staff left
+  /// `payeeName` empty. Used for the button, the generated QR and the saved
+  /// QR so all three always match.
+  String? _upiUri(String templeNameEn) {
+    final String fallback = templeNameEn.isNotEmpty
+        ? templeNameEn
+        : lookupAppLocalizations(const Locale('en')).templeName;
+    return widget.config.upiUriWithPayee(fallback);
+  }
+
+  Future<void> _payWithUpiApp(String uri) async {
     DonationHaptics.tap();
     final bool opened = await Launcher.url(uri);
     if (!opened && mounted) context.showSnack(context.l10n.donateNoUpiApp);
   }
 
-  Future<void> _saveQr() async {
+  Future<void> _saveQr(String? upiUri) async {
     if (_saving) return;
     setState(() => _saving = true);
     DonationHaptics.tap();
     final QrSaveOutcome outcome = await ref
         .read(donationQrSaverProvider)
-        .save(imageUrl: widget.config.qrImageUrl, upiUri: widget.config.upiUri);
+        .save(imageUrl: widget.config.qrImageUrl, upiUri: upiUri);
     if (!mounted) return;
     setState(() => _saving = false);
     final AppLocalizations l10n = context.l10n;
@@ -63,6 +70,13 @@ class _QrPayCardState extends ConsumerState<QrPayCard> {
     final ThemeData theme = Theme.of(context);
     final DonationConfig config = widget.config;
     final String? payee = config.payeeName;
+    final String? upiUri = _upiUri(
+      ref.watch(
+        appConfigValueProvider.select(
+          (AppConfig app) => app.templeName.resolve('en'),
+        ),
+      ),
+    );
 
     return DonationCard(
       icon: Icons.qr_code_2_rounded,
@@ -74,10 +88,7 @@ class _QrPayCardState extends ConsumerState<QrPayCard> {
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 260),
-              child: _QrFrame(
-                imageUrl: config.qrImageUrl,
-                upiUri: config.upiUri,
-              ),
+              child: _QrFrame(imageUrl: config.qrImageUrl, upiUri: upiUri),
             ),
           ),
           if (payee != null) ...<Widget>[
@@ -93,16 +104,16 @@ class _QrPayCardState extends ConsumerState<QrPayCard> {
             CopyableRow(label: l10n.donateUpiId, value: config.upiId!),
           ],
           const SizedBox(height: AppSpacing.lg),
-          if (_canOpenUpiApp) ...<Widget>[
+          if (_canOpenUpiApp && upiUri != null) ...<Widget>[
             FilledButton.icon(
-              onPressed: _payWithUpiApp,
+              onPressed: () => _payWithUpiApp(upiUri),
               icon: const Icon(Icons.account_balance_wallet_rounded),
               label: Text(l10n.donatePayWithUpi),
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
           OutlinedButton.icon(
-            onPressed: _saving ? null : _saveQr,
+            onPressed: _saving ? null : () => _saveQr(upiUri),
             icon: AnimatedSwitcher(
               duration: AppDurations.fast,
               child: _saving
@@ -140,7 +151,9 @@ class _QrFrame extends StatelessWidget {
             url: imageUrl,
             fit: BoxFit.contain,
             placeholderIcon: Icons.qr_code_2_rounded,
-            decodeAtFullResolution: true,
+            // Decoded at display size (already pixel-exact on screen): staff
+            // may upload a large printed standee, which at full resolution
+            // would cost tens of MB of memory. "Save QR" saves the original.
             // Not downloaded yet and offline (or a broken link): the same
             // payment still works with a QR generated from the UPI ID.
             fallback: upiUri == null ? null : _GeneratedQr(data: upiUri!),

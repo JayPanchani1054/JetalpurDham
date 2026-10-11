@@ -131,7 +131,7 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
   }
 
   Future<void> _showAll() async {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     final GoogleMapController? map = _map;
     if (map == null) return;
     try {
@@ -163,7 +163,7 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
   }
 
   void _toggleMapType() {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(
       () => _mapType = _mapType == MapType.normal
           ? MapType.hybrid
@@ -183,7 +183,7 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
   void _onMarkerTap(String placeId) {
     final int index = _places.indexWhere((PrasadiPlace p) => p.id == placeId);
     if (index < 0) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _selectedId = placeId);
     unawaited(_showCard(index));
   }
@@ -212,7 +212,7 @@ class _PlacesMapViewState extends ConsumerState<PlacesMapView> {
   }
 
   void _open(PrasadiPlace place) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     context.go(Routes.place(place.id));
   }
 

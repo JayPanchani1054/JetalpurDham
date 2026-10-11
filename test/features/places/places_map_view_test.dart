@@ -7,9 +7,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 // The fake map below implements the platform interface google_maps_flutter is
-// built on (a transitive dependency pinned in pubspec.lock); it is not
-// re-exported by google_maps_flutter.
-// ignore: depend_on_referenced_packages
+// built on (a dev dependency); it is not re-exported by google_maps_flutter.
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:jetalpur_dham/core/config/app_config.dart';
 import 'package:jetalpur_dham/core/firebase/media_url.dart';

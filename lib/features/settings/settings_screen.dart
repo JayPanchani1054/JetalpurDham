@@ -13,6 +13,7 @@ import '../../core/utils/formatters.dart';
 import '../../core/utils/ui_feedback.dart';
 import '../../core/widgets/language_button.dart';
 import '../events/application/notification_service.dart';
+import '../kirtan/application/kirtan_stream_cache.dart';
 
 final FutureProviderFamily<int, String> _folderSizeProvider =
     FutureProvider.family<int, String>(
@@ -88,6 +89,7 @@ class SettingsScreen extends ConsumerWidget {
             title: l10n.settingsDownloadedBooks,
             folder: DownloadFolders.books,
           ),
+          const _StreamCacheTile(),
           ListTile(
             leading: const Icon(Icons.image_rounded),
             title: Text(l10n.settingsClearCache),
@@ -164,6 +166,41 @@ class _StorageTile extends ConsumerWidget {
                 ref.invalidate(_folderSizeProvider(folder));
               },
               child: Text(context.l10n.settingsRemoveAll),
+            ),
+    );
+  }
+}
+
+final FutureProvider<int> _streamCacheSizeProvider = FutureProvider<int>(
+  (Ref ref) => ref.watch(kirtanStreamCacheProvider).size(),
+);
+
+/// Kirtans cached while streaming (instant replays). Not covered by the
+/// image cache, so it gets its own entry.
+class _StreamCacheTile extends ConsumerWidget {
+  const _StreamCacheTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final int bytes = ref.watch(_streamCacheSizeProvider).value ?? 0;
+    final AppLocalizations l10n = context.l10n;
+    return ListTile(
+      leading: const Icon(Icons.graphic_eq_rounded),
+      title: Text(l10n.settingsStreamCache),
+      subtitle: Text(
+        '${l10n.settingsStreamCacheDesc} · ${Formatters.bytes(bytes)}',
+      ),
+      trailing: bytes == 0
+          ? null
+          : TextButton(
+              onPressed: () async {
+                await ref.read(kirtanStreamCacheProvider).clear();
+                ref.invalidate(_streamCacheSizeProvider);
+                if (context.mounted) {
+                  context.showSnack(l10n.settingsCacheCleared);
+                }
+              },
+              child: Text(l10n.settingsRemoveAll),
             ),
     );
   }

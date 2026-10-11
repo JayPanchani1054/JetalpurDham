@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kirtans are cached while they stream through just_audio's local proxy on
+  127.0.0.1 (LockCachingAudioSource). Android 9+ blocks cleartext HTTP by
+  default, so allow it for the loopback address only; every remote request
+  still requires HTTPS.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

@@ -307,7 +307,7 @@
   "donateCopyLabel": "{label} કૉપિ કરો",
   "donateEmailButton": "ઇમેઇલ",
   "donateWhatsAppMessage": "જય શ્રી સ્વામિનારાયણ! શ્રી જેતલપુર ધામમાં સેવા (દાન) અર્પણ કરવા વિશે માહિતી જોઈએ છે.",
-  "donateSuccessQueued": "હાલ આપ ઑફલાઇન છો. આપની વિગતો આ ફોનમાં સચવાઈ ગઈ છે અને ઇન્ટરનેટ મળતાં જ આપોઆપ મોકલાઈ જશે.",
+  "donateSuccessQueued": "આપની વિગતો આ ફોનમાં સચવાઈ ગઈ છે અને ઇન્ટરનેટ મળતાં જ આપોઆપ મંદિરમાં પહોંચી જશે. ત્યાર બાદ મંદિર કાર્યાલય આપનો સંપર્ક કરશે. જય શ્રી સ્વામિનારાયણ!",
   "donateRememberHint": "આપનું નામ અને નંબર આગલી વખત માટે આ ફોનમાં યાદ રહેશે.",
 
   "aboutTitle": "મંદિર વિશે",
@@ -329,6 +329,8 @@
   "settingsStorage": "સ્ટોરેજ",
   "settingsDownloadedKirtans": "ડાઉનલોડ કરેલાં કીર્તન",
   "settingsDownloadedBooks": "ડાઉનલોડ કરેલા ગ્રંથો",
+  "settingsStreamCache": "સાંભળેલાં કીર્તનની કૅશ",
+  "settingsStreamCacheDesc": "તરત ફરી સાંભળવા માટે સચવાયેલાં કીર્તન",
   "settingsClearCache": "ઇમેજ કૅશ સાફ કરો",
   "settingsCacheCleared": "કૅશ સાફ થઈ ગઈ",
   "settingsRemoveAll": "બધું દૂર કરો",

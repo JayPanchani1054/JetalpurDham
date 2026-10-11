@@ -142,7 +142,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   /// Loads a photo again after it failed (no internet, expired link…).
   /// [resolved] is null when the Storage link itself could not be resolved.
   void _retryPhoto(AlbumPhoto photo, String? resolved) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     if (resolved == null) {
       ref.invalidate(mediaUrlProvider(photo.url));
     } else {
@@ -237,7 +237,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   void _onDragEnd(DragEndDetails details) {
     final double velocity = details.velocity.pixelsPerSecond.dy;
     if (_drag.value.abs() > 110 || velocity.abs() > 900) {
-      unawaited(HapticFeedback.selectionClick());
+      HapticFeedback.selectionClick().ignore();
       _close();
       return;
     }
@@ -270,7 +270,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   Future<void> _save(AlbumPhoto photo) async {
     if (_saving) return;
     final AppLocalizations l10n = context.l10n;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _saving = true);
     final PhotoSaveOutcome outcome = await ref
         .read(photoSaverProvider)
@@ -279,7 +279,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
     setState(() => _saving = false);
     switch (outcome) {
       case PhotoSaveOutcome.saved:
-        unawaited(HapticFeedback.mediumImpact());
+        HapticFeedback.mediumImpact().ignore();
         context.showSnack(l10n.gallerySaved);
       case PhotoSaveOutcome.denied:
         context.showSnack(l10n.galleryPermissionDenied);
@@ -297,7 +297,7 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   Future<void> _share(AlbumPhoto photo, String albumTitle, Rect? origin) async {
     if (_sharing) return;
     final AppLocalizations l10n = context.l10n;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _sharing = true);
     final bool shared = await ref
         .read(photoSaverProvider)

@@ -70,7 +70,7 @@ class _MiniPlayerBarState extends ConsumerState<_MiniPlayerBar>
   }
 
   void _openPlayer() {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     openKirtanPlayer(context);
   }
 
@@ -207,7 +207,7 @@ class _MiniPlayPauseButton extends ConsumerWidget {
       iconSize: 32,
       color: scheme.primary,
       onPressed: () {
-        unawaited(HapticFeedback.selectionClick());
+        HapticFeedback.selectionClick().ignore();
         unawaited(ref.read(kirtanPlayerProvider.notifier).togglePlayPause());
       },
       icon: loading
@@ -234,7 +234,7 @@ class _MiniNextButton extends ConsumerWidget {
       iconSize: 28,
       onPressed: hasNext
           ? () {
-              unawaited(HapticFeedback.selectionClick());
+              HapticFeedback.selectionClick().ignore();
               unawaited(ref.read(kirtanPlayerProvider.notifier).skipToNext());
             }
           : null,

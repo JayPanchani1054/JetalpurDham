@@ -1741,7 +1741,7 @@ abstract class AppLocalizations {
   /// No description provided for @donateSuccessQueued.
   ///
   /// In en, this message translates to:
-  /// **'You\'re offline right now. Your details are saved on this phone and will be sent automatically once you\'re connected.'**
+  /// **'Your details are saved on this phone and will reach the temple automatically as soon as the internet is available. The temple office will then contact you. Jay Shree Swaminarayan!'**
   String get donateSuccessQueued;
 
   /// No description provided for @donateRememberHint.
@@ -1857,6 +1857,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Downloaded books'**
   String get settingsDownloadedBooks;
+
+  /// No description provided for @settingsStreamCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Kirtan listening cache'**
+  String get settingsStreamCache;
+
+  /// No description provided for @settingsStreamCacheDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Kirtans you have heard, kept for instant replay'**
+  String get settingsStreamCacheDesc;
 
   /// No description provided for @settingsClearCache.
   ///

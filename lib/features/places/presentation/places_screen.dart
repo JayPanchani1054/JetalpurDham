@@ -41,7 +41,7 @@ class PlacesScreen extends ConsumerWidget {
                 showMap ? Icons.view_agenda_outlined : Icons.map_outlined,
               ),
               onPressed: () {
-                unawaited(HapticFeedback.selectionClick());
+                HapticFeedback.selectionClick().ignore();
                 ref.read(placesViewModeProvider.notifier).toggle();
               },
             ),

@@ -140,6 +140,32 @@ void main() {
         'upi://pay?pa=temple@sbi&pn=Shree%20%26%20Mandir&cu=INR',
       );
     });
+
+    test('falls back to the temple name when payeeName is missing', () {
+      final DonationConfig unnamed = DonationConfig.fromMap(
+        const <String, Object?>{'upiId': 'temple@sbi'},
+      );
+      expect(
+        unnamed.upiUriWithPayee('Shree Swaminarayan Mandir'),
+        'upi://pay?pa=temple@sbi&pn=Shree%20Swaminarayan%20Mandir&cu=INR',
+      );
+      expect(unnamed.upiUriWithPayee('  '), 'upi://pay?pa=temple@sbi&cu=INR');
+
+      // The payee name set by staff always wins.
+      final DonationConfig named = DonationConfig.fromMap(
+        const <String, Object?>{'upiId': 'temple@sbi', 'payeeName': 'Trust'},
+      );
+      expect(
+        named.upiUriWithPayee('Shree Swaminarayan Mandir'),
+        'upi://pay?pa=temple@sbi&pn=Trust&cu=INR',
+      );
+
+      // No UPI ID, no link.
+      expect(
+        DonationConfig.fromMap(const <String, Object?>{}).upiUriWithPayee('X'),
+        isNull,
+      );
+    });
   });
 
   test('formatBankDetails writes one "Label: value" per line', () {

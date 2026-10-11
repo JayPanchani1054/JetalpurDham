@@ -65,7 +65,7 @@ class _KirtanScreenState extends ConsumerState<KirtanScreen> {
 
   void _selectCategory(String? id) {
     if (id == _categoryId) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _categoryId = id);
   }
 
@@ -305,7 +305,7 @@ class KirtanPlayAllHeader extends StatelessWidget {
     final AppLocalizations l10n = context.l10n;
     final ThemeData theme = Theme.of(context);
     void tap(VoidCallback action) {
-      unawaited(HapticFeedback.selectionClick());
+      HapticFeedback.selectionClick().ignore();
       action();
     }
 

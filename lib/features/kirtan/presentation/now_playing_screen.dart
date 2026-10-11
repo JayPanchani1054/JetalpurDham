@@ -293,7 +293,7 @@ class _MainControls extends ConsumerWidget {
         ref.watch(kirtanLoopModeProvider).value ?? LoopMode.off;
 
     void tap(Future<void> Function() action) {
-      unawaited(HapticFeedback.selectionClick());
+      HapticFeedback.selectionClick().ignore();
       unawaited(action());
     }
 

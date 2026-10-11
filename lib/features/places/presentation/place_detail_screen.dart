@@ -448,7 +448,7 @@ class _Actions extends StatelessWidget {
           label: l10n.placeView360,
           primary: true,
           onTap: () {
-            unawaited(HapticFeedback.selectionClick());
+            HapticFeedback.selectionClick().ignore();
             unawaited(context.push(Routes.panorama(place.id)));
           },
         ),
@@ -822,13 +822,13 @@ Future<void> _launch(
   BuildContext context,
   Future<bool> Function() action,
 ) async {
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   final bool opened = await action();
   if (!opened && context.mounted) context.showOpenLinkError();
 }
 
 Future<void> _sharePlace(BuildContext context, PrasadiPlace place) async {
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   final AppLocalizations l10n = context.l10n;
   final String name = place.name.of(context);
   final String mahima = place.mahima.of(context);

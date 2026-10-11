@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,7 @@ import 'package:jetalpur_dham/core/theme/app_theme.dart';
 import 'package:jetalpur_dham/features/donation/data/donation_repository.dart';
 import 'package:jetalpur_dham/features/donation/domain/donation_config.dart';
 import 'package:jetalpur_dham/features/donation/presentation/donation_screen.dart';
+import 'package:jetalpur_dham/features/donation/presentation/widgets/donation_form_sheet.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -146,6 +149,15 @@ Future<void> _openForm(WidgetTester tester) async {
   await _settle(tester);
   expect(find.text('Share Donation Details'), findsWidgets);
 }
+
+const String _receivedText =
+    'Your details have been received. The temple office will contact you '
+    'soon. Jay Shree Swaminarayan!';
+
+const String _queuedText =
+    'Your details are saved on this phone and will reach the temple '
+    'automatically as soon as the internet is available. The temple office '
+    'will then contact you. Jay Shree Swaminarayan!';
 
 Finder _field(String label) =>
     find.ancestor(of: find.text(label), matching: find.byType(TextFormField));
@@ -283,13 +295,8 @@ void main() {
     pending.complete(DonationSubmitResult.sent);
     await _settle(tester);
     expect(find.text('Thank you!'), findsOneWidget);
-    expect(
-      find.text(
-        "You're offline right now. Your details are saved on this phone and "
-        "will be sent automatically once you're connected.",
-      ),
-      findsNothing,
-    );
+    expect(find.text(_receivedText), findsOneWidget);
+    expect(find.text(_queuedText), findsNothing);
 
     await tester.tap(find.text('Done'));
     await _settle(tester);
@@ -329,14 +336,103 @@ void main() {
     await tester.tap(submit);
     await _settle(tester);
     expect(find.text('Thank you!'), findsOneWidget);
-    expect(
-      find.text(
-        "You're offline right now. Your details are saved on this phone and "
-        "will be sent automatically once you're connected.",
-      ),
-      findsOneWidget,
-    );
+    expect(find.text(_queuedText), findsOneWidget);
+    // Not confirmed by the server, so it must not claim "received".
+    expect(find.text(_receivedText), findsNothing);
     expect(repository.calls, 2);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('copies details without spaces, also via screen readers', (
+    WidgetTester tester,
+  ) async {
+    final List<String?> clipboard = <String?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (MethodCall call) async {
+        if (call.method == 'Clipboard.setData') {
+          final Map<Object?, Object?> args =
+              call.arguments as Map<Object?, Object?>;
+          clipboard.add(args['text'] as String?);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await _pump(tester);
+
+    // TalkBack / VoiceOver double-tap on the UPI ID row copies it.
+    final SemanticsFinder upiRow = find.semantics.byLabel(
+      'UPI ID, jetalpurdham@sbi',
+    );
+    expect(upiRow, findsOne);
+    expect(
+      upiRow.evaluate().single.getSemanticsData().hasAction(
+        SemanticsAction.tap,
+      ),
+      isTrue,
+    );
+    tester.semantics.tap(upiRow);
+    await tester.pump();
+    expect(clipboard.last, 'jetalpurdham@sbi');
+
+    // The account number is copied without the readability spaces.
+    await _scrollTo(tester, find.text('1234 5678 9012'));
+    await tester.tap(find.text('1234 5678 9012'));
+    await tester.pump();
+    expect(clipboard.last, '123456789012');
+
+    await _scrollTo(tester, find.text('Copy all details'));
+    await tester.tap(find.text('Copy all details'));
+    await tester.pump();
+    expect(
+      clipboard.last,
+      'Account name: Shree Swaminarayan Mandir Jetalpur Trust\n'
+      'Account number: 123456789012\n'
+      'IFSC code: SBIN0001234\n'
+      'Bank: State Bank of India\n'
+      'Branch: Jetalpur, Ahmedabad\n'
+      'Account type: Savings',
+    );
+    await _settle(tester);
+    expect(find.text('Copied to clipboard'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('closing the sheet while sending still confirms on screen', (
+    WidgetTester tester,
+  ) async {
+    final Completer<DonationSubmitResult> pending =
+        Completer<DonationSubmitResult>();
+    final _FakeRepository repository = _FakeRepository(() => pending.future);
+    await _pump(tester, repository: repository);
+    await _openForm(tester);
+
+    await tester.enterText(_field('Full name *'), 'Ramesh Patel');
+    await tester.enterText(_field('Mobile number *'), '9876543210');
+    await tester.ensureVisible(find.text('UPI'));
+    await tester.tap(find.text('UPI'));
+    await tester.pump();
+    final Finder submit = find.text('Submit details');
+    await tester.ensureVisible(submit);
+    await tester.tap(submit);
+    await tester.pump();
+    expect(repository.calls, 1);
+
+    // Dragging the handle pops the sheet directly, bypassing PopScope.
+    Navigator.of(tester.element(find.byType(DonationFormSheet))).pop();
+    await _settle(tester);
+    expect(find.byType(DonationFormSheet), findsNothing);
+
+    pending.complete(DonationSubmitResult.sent);
+    await _settle(tester);
+    expect(find.text(_receivedText), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

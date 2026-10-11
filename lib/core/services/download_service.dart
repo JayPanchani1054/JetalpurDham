@@ -204,14 +204,15 @@ class DownloadManager extends Notifier<Map<DownloadKey, DownloadState>> {
   /// Starts (or joins) a download. Returns the file, or null if it failed or
   /// was cancelled. [source] may be any media reference (https, gs://, path).
   Future<File?> download(DownloadKey key, String source) async {
-    if (state[key]?.isDownloading ?? false) return null;
-    final File? existing = await localFile(key);
-    if (existing != null) return existing;
-
+    if (_tokens.containsKey(key) || (state[key]?.isDownloading ?? false)) {
+      return null;
+    }
     final CancelToken token = CancelToken();
     _tokens[key] = token;
-    _set(key, const DownloadState(DownloadStatus.downloading));
     try {
+      final File? existing = await localFile(key);
+      if (existing != null) return existing;
+      _set(key, const DownloadState(DownloadStatus.downloading));
       final String url = await ref
           .read(mediaUrlResolverProvider)
           .resolve(source);

@@ -935,7 +935,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get donateSuccessQueued =>
-      'You\'re offline right now. Your details are saved on this phone and will be sent automatically once you\'re connected.';
+      'Your details are saved on this phone and will reach the temple automatically as soon as the internet is available. The temple office will then contact you. Jay Shree Swaminarayan!';
 
   @override
   String get donateRememberHint =>
@@ -995,6 +995,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDownloadedBooks => 'Downloaded books';
+
+  @override
+  String get settingsStreamCache => 'Kirtan listening cache';
+
+  @override
+  String get settingsStreamCacheDesc =>
+      'Kirtans you have heard, kept for instant replay';
 
   @override
   String get settingsClearCache => 'Clear image cache';

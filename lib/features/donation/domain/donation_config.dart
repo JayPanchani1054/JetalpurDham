@@ -134,7 +134,17 @@ class DonationConfig {
   final List<LocalizedText> purposes;
 
   /// `upi://pay?...` link for "Pay with UPI app" and the generated QR.
-  String? get upiUri => upiId == null ? null : buildUpiUri(upiId!, payeeName);
+  String? get upiUri => upiUriWithPayee(null);
+
+  /// Like [upiUri], but uses [fallbackPayeeName] (e.g. the temple's name)
+  /// when staff left `payeeName` empty: the UPI linking spec lists `pn` as
+  /// mandatory and some UPI apps refuse a link without it.
+  String? upiUriWithPayee(String? fallbackPayeeName) {
+    final String? id = upiId;
+    if (id == null) return null;
+    final String fallback = fallbackPayeeName?.trim() ?? '';
+    return buildUpiUri(id, payeeName ?? (fallback.isEmpty ? null : fallback));
+  }
 
   /// True when a QR (official image or generated from the UPI ID) can be shown.
   bool get hasQr => qrImageUrl != null || upiId != null;

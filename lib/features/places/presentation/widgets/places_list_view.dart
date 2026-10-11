@@ -56,7 +56,7 @@ class PlacesListView extends StatelessWidget {
                 key: ValueKey<String>(place.id),
                 place: place,
                 onTap: () {
-                  unawaited(HapticFeedback.selectionClick());
+                  HapticFeedback.selectionClick().ignore();
                   context.go(Routes.place(place.id));
                 },
               ),

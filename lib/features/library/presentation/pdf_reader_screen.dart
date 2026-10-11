@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../core/firebase/media_url.dart';
 import '../../../core/l10n/l10n.dart';
@@ -113,11 +114,14 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
       ..listenManual<AsyncValue<List<Book>>>(booksProvider, (_, _) {});
     // Persist the page if the app goes to the background mid-chapter.
     _lifecycle = AppLifecycleListener(onHide: _flushSave, onPause: _flushSave);
+    // Keep the screen on during long reading sessions (best-effort).
+    WakelockPlus.enable().ignore();
     unawaited(_open());
   }
 
   @override
   void dispose() {
+    WakelockPlus.disable().ignore();
     _saveTimer?.cancel();
     _lifecycle.dispose();
     final int? page = _unsavedPage;

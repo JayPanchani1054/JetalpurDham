@@ -138,6 +138,12 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     // Offline, the write is stored locally at once; no need to wait long for
     // a server acknowledgement that cannot arrive.
     final bool online = ref.read(isOnlineProvider).value ?? true;
+    // Dragging the sheet's handle closes it even while sending (it bypasses
+    // PopScope). Keep what is needed to still confirm on the screen below.
+    final ScaffoldMessengerState? messenger = ScaffoldMessenger.maybeOf(
+      context,
+    );
+    final AppLocalizations l10n = context.l10n;
 
     try {
       final DonationSubmitResult result = await ref
@@ -147,7 +153,15 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
             timeout: online ? null : const Duration(milliseconds: 1500),
           );
       await _rememberDonor(prefs, request, phoneAsTyped);
-      if (!mounted) return;
+      if (!mounted) {
+        _notifyClosedSheet(
+          messenger,
+          result == DonationSubmitResult.queued
+              ? l10n.donateSuccessQueued
+              : l10n.donateSuccessBody,
+        );
+        return;
+      }
       setState(() {
         _submitting = false;
         _result = result;
@@ -155,13 +169,28 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
       DonationHaptics.success();
     } catch (error, stack) {
       AppLogger.error('Donation request failed', error, stack);
-      if (!mounted) return;
+      if (!mounted) {
+        _notifyClosedSheet(messenger, l10n.errorGeneric);
+        return;
+      }
       setState(() {
         _submitting = false;
         _failed = true;
       });
       DonationHaptics.error();
     }
+  }
+
+  /// Shows the outcome on the donation screen when the sheet was closed
+  /// before the request finished.
+  static void _notifyClosedSheet(
+    ScaffoldMessengerState? messenger,
+    String message,
+  ) {
+    if (messenger == null || !messenger.mounted) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// Saves the donor's contact details on this phone for next time.
@@ -609,13 +638,16 @@ class _SuccessView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            l10n.donateSuccessBody,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge,
-          ),
-          if (queued) ...<Widget>[
-            const SizedBox(height: AppSpacing.lg),
+          if (!queued)
+            Text(
+              l10n.donateSuccessBody,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
+            )
+          else ...<Widget>[
+            // Not confirmed by the server yet (offline or a slow network):
+            // say it is saved and will be sent, never "received".
+            const SizedBox(height: AppSpacing.xs),
             DecoratedBox(
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerHigh,
@@ -633,8 +665,8 @@ class _SuccessView extends StatelessWidget {
                     Expanded(
                       child: Text(
                         l10n.donateSuccessQueued,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: scheme.onSurface,
                         ),
                       ),
                     ),

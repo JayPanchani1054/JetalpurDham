@@ -11,6 +11,7 @@ import '../../../core/widgets/language_button.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../data/donation_repository.dart';
 import '../domain/donation_config.dart';
+import 'donation_haptics.dart';
 import 'widgets/bank_details_card.dart';
 import 'widgets/contact_section.dart';
 import 'widgets/donation_card.dart';
@@ -162,7 +163,10 @@ class _UnavailableCard extends ConsumerWidget {
         icon: Icons.cloud_off_rounded,
         message: failed ? l10n.errorGeneric : l10n.errorNetwork,
         action: FilledButton.tonalIcon(
-          onPressed: () => ref.invalidate(donationConfigProvider),
+          onPressed: () {
+            DonationHaptics.tap();
+            ref.invalidate(donationConfigProvider);
+          },
           icon: const Icon(Icons.refresh_rounded),
           label: Text(l10n.retry),
         ),

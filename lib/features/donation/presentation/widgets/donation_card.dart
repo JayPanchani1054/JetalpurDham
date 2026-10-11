@@ -97,14 +97,19 @@ class CopyableRow extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
     final String copyLabel = context.l10n.donateCopyLabel(label);
+    void copy() => context.copyToClipboard(copyValue ?? value);
+    // excludeSemantics drops the InkWell's own tap action, so the merged
+    // node needs its own onTap for TalkBack / VoiceOver double-tap to copy.
     return Semantics(
+      container: true,
       button: true,
       label: '$label, $value',
       hint: copyLabel,
       excludeSemantics: true,
+      onTap: copy,
       child: InkWell(
         borderRadius: AppRadius.smAll,
-        onTap: () => context.copyToClipboard(copyValue ?? value),
+        onTap: copy,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
             minHeight: AppSpacing.minTouchTarget + AppSpacing.md,
@@ -145,7 +150,7 @@ class CopyableRow extends StatelessWidget {
                   tooltip: copyLabel,
                   icon: const Icon(Icons.copy_rounded),
                   color: scheme.primary,
-                  onPressed: () => context.copyToClipboard(copyValue ?? value),
+                  onPressed: copy,
                 ),
               ],
             ),

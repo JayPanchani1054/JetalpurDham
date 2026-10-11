@@ -308,7 +308,7 @@
   "@donateCopyLabel": {"placeholders": {"label": {"type": "String"}}},
   "donateEmailButton": "Email",
   "donateWhatsAppMessage": "Jay Shree Swaminarayan! I would like to know about offering seva (donation) at Shree Jetalpur Dham.",
-  "donateSuccessQueued": "You're offline right now. Your details are saved on this phone and will be sent automatically once you're connected.",
+  "donateSuccessQueued": "Your details are saved on this phone and will reach the temple automatically as soon as the internet is available. The temple office will then contact you. Jay Shree Swaminarayan!",
   "donateRememberHint": "Your name and number are remembered on this phone for next time.",
 
   "aboutTitle": "About Temple",
@@ -330,6 +330,8 @@
   "settingsStorage": "Storage",
   "settingsDownloadedKirtans": "Downloaded kirtans",
   "settingsDownloadedBooks": "Downloaded books",
+  "settingsStreamCache": "Kirtan listening cache",
+  "settingsStreamCacheDesc": "Kirtans you have heard, kept for instant replay",
   "settingsClearCache": "Clear image cache",
   "settingsCacheCleared": "Cache cleared",
   "settingsRemoveAll": "Remove all",

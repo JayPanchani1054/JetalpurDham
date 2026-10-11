@@ -101,18 +101,18 @@ class _PanoramaScreenState extends ConsumerState<PanoramaScreen> {
   }
 
   void _toggleMotion() {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _motion = !_motion);
   }
 
   void _select(int index) {
     if (index == _index) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() => _index = index);
   }
 
   Future<void> _openStreetView(StreetViewTarget target) async {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     final bool opened = await Launcher.streetView(
       target.coordinate.latitude,
       target.coordinate.longitude,
@@ -406,7 +406,7 @@ class _PanoramaViewState extends ConsumerState<_PanoramaView> {
   }
 
   Future<void> _retry() async {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     _revealTimer?.cancel();
     _detach();
     final ImageProvider<Object>? provider = _provider;

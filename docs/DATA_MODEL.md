@@ -41,6 +41,7 @@ filters/sorts on the device, so a missing field can never make an item vanish.
 | `bank` | map `{ accountName, accountNumber, ifsc, bankName, branch, accountType }` | All strings |
 | `contactPhone`, `contactWhatsapp`, `contactEmail` | string | "Contact Now" options |
 | `purposes` | array of LocalizedText | Dropdown options in the "Share donation details" form |
+| `notifyEmail` | string, comma-separated string, or array | Office address(es) e-mailed for every new donation form (needs the *Trigger Email* extension). Publicly readable — use an official address. |
 
 ### `kirtan_categories/{categoryId}`
 `name: LocalizedText`, `order`, `isActive`, `imageUrl?: MediaRef`
@@ -113,19 +114,36 @@ if empty. The "Avsar 200" album id is `avsar-200`.
 | `liveUrl` | string | optional YouTube/live link → "Watch Live" |
 | `isActive` | bool | |
 | `sendNotification` | bool | When `true`, a push notification is sent **once** to all devotees (in their language) |
-| `notifiedAt` | timestamp | written by Cloud Functions after sending — do not edit |
+| `notifiedAt` | timestamp | written by Cloud Functions when the send is claimed — do not edit |
+| `notificationStatus`, `notificationError` | string | written by Cloud Functions (`sending` → `sent` / `error`) — do not edit |
 
 Upcoming = `endAt ?? startAt` is today or later (ascending). Past = the rest (newest first).
 
 ### `notifications/{id}` — ad-hoc push messages (optional)
 Create a document to broadcast any message: `title`, `body: LocalizedText`,
 `imageUrl?: MediaRef`, `route?: string` (e.g. `/events/abc`, `/kirtan`, `/home/donate`),
-`eventId?: string`. Cloud Functions send it and write `status`, `sentAt`, `error`.
+`eventId?: string` (`holi-2027`, `events/holi-2027` and `/events/holi-2027` all work; an
+id that matches no event is dropped and the tap opens `/events`). Empty title/body/image
+are filled from the event. Cloud Functions send it and write `status`, `sentAt`, `error`,
+`successCount`, `failureCount` and the `route` actually used.
 
 ### `donation_requests/{id}` — written by the app (create-only)
 `name`, `phone`, `email?`, `amount?: number`, `purpose?`, `method` (`upi` · `bank` · `cash` · `cheque` · `other`),
 `transactionRef?`, `message?`, `language`, `platform`, `appVersion`, `status: "new"`, `createdAt: serverTimestamp`.
 Devotees cannot read these; temple staff see them in the console (and get an alert, see Functions).
+
+### Fields written by Cloud Functions (do not edit)
+
+* Auto-created kirtans, books and photos also carry `storagePath`, `contentType` and `updatedAt`;
+  photos made by the *Resize Images* extension link `thumbUrl` / `thumbStoragePath`.
+* A gallery file is treated as a thumbnail only inside a `thumbs/` folder or when the
+  extension marked it `resizedImage=true`.
+* Photo `order` comes from the file name: a leading number (`01 - Arti.jpg`), a
+  number-only name (`001.jpg`), Windows bulk-rename (`Avsar (12).jpg`) or a camera
+  sequence (`IMG_0042.jpg`, `DSC01234.jpg`).
+* `mail/{id}` — documents in the format of the official *Trigger Email from Firestore*
+  extension, written for new donation forms when `config/donation.notifyEmail` is set.
+  No client access.
 
 ## Push notifications (FCM)
 
@@ -149,3 +167,11 @@ events/*                         → event banners
 config/*                         → donation QR, hero image, etc.
 ```
 All of Storage is publicly readable by the app and writable only by admins (console).
+
+## Cost notes
+
+The app keeps live listeners on small collections and the offline cache serves repeat
+visits. Firestore bills a full re-read when a listener reconnects after ~30 minutes, so
+the largest recurring cost is the featured album's photo list on the Home screen
+(one read per photo). For albums with many hundreds of photos, prefer featuring a
+smaller highlights album via `config/app.featuredAlbumId`.

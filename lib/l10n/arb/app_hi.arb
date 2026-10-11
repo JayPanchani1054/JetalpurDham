@@ -307,7 +307,7 @@
   "donateCopyLabel": "{label} कॉपी करें",
   "donateEmailButton": "ईमेल",
   "donateWhatsAppMessage": "जय श्री स्वामिनारायण! श्री जेतलपुर धाम में सेवा (दान) अर्पण करने के बारे में जानकारी चाहिए।",
-  "donateSuccessQueued": "अभी आप ऑफ़लाइन हैं। आपका विवरण इस फ़ोन में सहेज लिया गया है और इंटरनेट मिलते ही अपने-आप भेज दिया जाएगा।",
+  "donateSuccessQueued": "आपका विवरण इस फ़ोन में सहेज लिया गया है और इंटरनेट मिलते ही अपने-आप मंदिर तक पहुँच जाएगा। उसके बाद मंदिर कार्यालय आपसे संपर्क करेगा। जय श्री स्वामिनारायण!",
   "donateRememberHint": "आपका नाम और नंबर अगली बार के लिए इस फ़ोन में याद रहेगा।",
 
   "aboutTitle": "मंदिर के बारे में",
@@ -329,6 +329,8 @@
   "settingsStorage": "स्टोरेज",
   "settingsDownloadedKirtans": "डाउनलोड किए गए कीर्तन",
   "settingsDownloadedBooks": "डाउनलोड किए गए ग्रंथ",
+  "settingsStreamCache": "सुने गए कीर्तन का कैश",
+  "settingsStreamCacheDesc": "तुरंत दोबारा सुनने के लिए सहेजे गए कीर्तन",
   "settingsClearCache": "इमेज कैश साफ़ करें",
   "settingsCacheCleared": "कैश साफ़ हो गया",
   "settingsRemoveAll": "सभी हटाएँ",

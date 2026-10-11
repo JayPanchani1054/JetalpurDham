@@ -940,7 +940,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get donateSuccessQueued =>
-      'अभी आप ऑफ़लाइन हैं। आपका विवरण इस फ़ोन में सहेज लिया गया है और इंटरनेट मिलते ही अपने-आप भेज दिया जाएगा।';
+      'आपका विवरण इस फ़ोन में सहेज लिया गया है और इंटरनेट मिलते ही अपने-आप मंदिर तक पहुँच जाएगा। उसके बाद मंदिर कार्यालय आपसे संपर्क करेगा। जय श्री स्वामिनारायण!';
 
   @override
   String get donateRememberHint =>
@@ -999,6 +999,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get settingsDownloadedBooks => 'डाउनलोड किए गए ग्रंथ';
+
+  @override
+  String get settingsStreamCache => 'सुने गए कीर्तन का कैश';
+
+  @override
+  String get settingsStreamCacheDesc =>
+      'तुरंत दोबारा सुनने के लिए सहेजे गए कीर्तन';
 
   @override
   String get settingsClearCache => 'इमेज कैश साफ़ करें';

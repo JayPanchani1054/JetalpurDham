@@ -60,7 +60,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
   // Selection
 
   void _startSelection([String? photoId]) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() {
       _selecting = true;
       _selected = <String>{?photoId};
@@ -77,7 +77,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
 
   void _toggle(String photoId) {
     if (_saving) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() {
       final Set<String> next = Set<String>.of(_selected);
       if (!next.remove(photoId)) next.add(photoId);
@@ -87,7 +87,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
 
   void _toggleAll(List<AlbumPhoto> photos) {
     if (_saving) return;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     setState(() {
       _selected = _selected.length == photos.length
           ? const <String>{}
@@ -96,7 +96,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
   }
 
   void _openPhoto(int index) {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     context.push(Routes.photo(widget.albumId, index));
   }
 
@@ -113,7 +113,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
     final List<AlbumPhoto> chosen = selectedPhotosInOrder(photos, _selected);
     if (chosen.isEmpty) return;
     final AppLocalizations l10n = context.l10n;
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     final PhotoSaver saver = ref.read(photoSaverProvider);
 
     SaveAccess? access;
@@ -177,7 +177,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
         ? result.failed
         : result.total - result.saved;
     if (result.saved == 0 && notSaved == 0) return; // cancelled at once
-    if (result.saved > 0) unawaited(HapticFeedback.mediumImpact());
+    if (result.saved > 0) HapticFeedback.mediumImpact().ignore();
     final bool offline = !(ref.read(isOnlineProvider).value ?? true);
     if (result.saved == 0 && result.total == 1) {
       _snack(offline ? l10n.errorNetwork : l10n.gallerySaveFailed);

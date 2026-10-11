@@ -124,7 +124,7 @@ class _SleepTimerSheet extends ConsumerWidget {
     );
 
     void choose(VoidCallback action) {
-      unawaited(HapticFeedback.selectionClick());
+      HapticFeedback.selectionClick().ignore();
       action();
       Navigator.of(context).pop();
     }
@@ -184,7 +184,7 @@ class _SpeedSheet extends ConsumerWidget {
                 : formatKirtanSpeed(speed),
             selected: (current - speed).abs() < 0.01,
             onTap: () {
-              unawaited(HapticFeedback.selectionClick());
+              HapticFeedback.selectionClick().ignore();
               unawaited(
                 ref.read(kirtanPlayerProvider.notifier).setSpeed(speed),
               );
@@ -262,7 +262,7 @@ class _QueueSheetState extends ConsumerState<_QueueSheet> {
                 kirtan: _items[index],
                 trailing: const SizedBox(width: AppSpacing.md),
                 onTap: () {
-                  unawaited(HapticFeedback.selectionClick());
+                  HapticFeedback.selectionClick().ignore();
                   unawaited(
                     ref.read(kirtanPlayerProvider.notifier).skipToIndex(index),
                   );

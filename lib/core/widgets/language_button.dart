@@ -118,7 +118,7 @@ class _LanguageSheet extends ConsumerWidget {
                   language: language,
                   selected: language == current,
                   onTap: () async {
-                    await HapticFeedback.selectionClick();
+                    HapticFeedback.selectionClick().ignore();
                     await ref
                         .read(languageProvider.notifier)
                         .setLanguage(language);

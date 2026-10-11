@@ -26,6 +26,11 @@ class DonationHero extends StatelessWidget {
           decoration: const BoxDecoration(gradient: AppColors.heroGradient),
           child: Stack(
             children: <Widget>[
+              // A light shade over the bright saffron corner keeps the white
+              // text comfortably readable for elderly devotees.
+              const Positioned.fill(
+                child: ColoredBox(color: Color(0x1F000000)),
+              ),
               // Soft decorative glyph; purely visual.
               Positioned(
                 right: -18,
@@ -46,7 +51,8 @@ class DonationHero extends StatelessWidget {
                     Text(
                       context.l10n.jaySwaminarayan,
                       style: text.titleSmall?.copyWith(
-                        color: AppColors.goldLight,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
@@ -57,9 +63,7 @@ class DonationHero extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       message,
-                      style: text.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.92),
-                      ),
+                      style: text.bodyLarge?.copyWith(color: Colors.white),
                     ),
                   ],
                 ),

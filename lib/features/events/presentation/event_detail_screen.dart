@@ -387,13 +387,13 @@ class _EventDetailViewState extends ConsumerState<_EventDetailView> {
   }
 
   Future<void> _openLive(BuildContext context, String url) async {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     final bool opened = await Launcher.url(url);
     if (!opened && context.mounted) context.showOpenLinkError();
   }
 
   Future<void> _share(BuildContext context, TempleEvent event) async {
-    unawaited(HapticFeedback.selectionClick());
+    HapticFeedback.selectionClick().ignore();
     final AppLocalizations l10n = context.l10n;
     final String lang = context.appLanguage.code;
     final String link =

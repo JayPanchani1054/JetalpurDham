@@ -81,7 +81,7 @@ Future<void> onKirtanDownloadTap(
     await confirmRemoveKirtanDownload(context, ref, kirtan);
     return;
   }
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   if (view.isDownloading) {
     controller.cancel(kirtan);
     return;

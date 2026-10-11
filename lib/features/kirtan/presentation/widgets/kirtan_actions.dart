@@ -19,7 +19,7 @@ void playKirtanFromList(
   int index,
 ) {
   if (index < 0 || index >= list.length) return;
-  unawaited(HapticFeedback.selectionClick());
+  HapticFeedback.selectionClick().ignore();
   final KirtanPlayerController controller = ref.read(
     kirtanPlayerProvider.notifier,
   );
