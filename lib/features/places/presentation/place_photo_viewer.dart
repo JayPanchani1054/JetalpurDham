@@ -153,17 +153,33 @@ class _ViewerImage extends ConsumerWidget {
   Widget _image(BuildContext context, String url) {
     final Size size = MediaQuery.sizeOf(context);
     final double dpr = MediaQuery.devicePixelRatioOf(context);
-    final int maxWidth = (size.longestSide * dpr * 1.5).round().clamp(
-      1080,
-      4096,
-    );
-    return CachedNetworkImage(
-      imageUrl: url,
+    // Bounded on BOTH sides (aspect ratio kept): sharp enough to zoom, while
+    // a 24-megapixel portrait upload can never exhaust the phone's memory
+    // (bounding only the width would still decode it at ~86 MB).
+    final int bound = (size.longestSide * dpr * 1.25).round().clamp(1080, 3072);
+    return Image(
+      image: ResizeImage(
+        CachedNetworkImageProvider(url),
+        width: bound,
+        height: bound,
+        policy: ResizeImagePolicy.fit,
+      ),
       fit: BoxFit.contain,
-      memCacheWidth: maxWidth,
-      fadeInDuration: AppDurations.medium,
-      placeholder: (_, _) => const _Loading(),
-      errorWidget: (_, _, _) => const _Broken(),
+      gaplessPlayback: true,
+      frameBuilder:
+          (
+            BuildContext context,
+            Widget child,
+            int? frame,
+            bool wasSynchronouslyLoaded,
+          ) {
+            if (wasSynchronouslyLoaded) return child;
+            return AnimatedSwitcher(
+              duration: AppDurations.medium,
+              child: frame == null ? const _Loading() : child,
+            );
+          },
+      errorBuilder: (_, _, _) => const _Broken(),
     );
   }
 }

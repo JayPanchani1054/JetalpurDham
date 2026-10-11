@@ -623,9 +623,15 @@ class _MapPreview extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
     final LatLng target = LatLng(at.latitude, at.longitude);
+    // The exact pin, not a search by name: prasadi places often have names
+    // Google Maps does not know (or shares with other places).
+    void open() => unawaited(
+      _launch(context, () => Launcher.mapLocation(at.latitude, at.longitude)),
+    );
     return Semantics(
       button: true,
       label: l10n.placeOpenInMaps,
+      onTap: open,
       excludeSemantics: true,
       child: ClipRRect(
         borderRadius: AppRadius.lgAll,
@@ -675,16 +681,7 @@ class _MapPreview extends StatelessWidget {
                 ),
               Material(
                 type: MaterialType.transparency,
-                child: InkWell(
-                  onTap: () => _launch(
-                    context,
-                    () => Launcher.mapLocation(
-                      at.latitude,
-                      at.longitude,
-                      label: place.name.of(context),
-                    ),
-                  ),
-                ),
+                child: InkWell(onTap: open),
               ),
               Positioned(
                 right: AppSpacing.sm,

@@ -150,10 +150,13 @@ String photoFileName(String albumId, String photoId) {
 
 /// Longest side (in pixels) to decode a full-screen photo at: sharp enough to
 /// zoom, but bounded so very large uploads never exhaust memory.
+///
+/// The cap keeps one decoded photo under ~20 MB, so the visible photo plus
+/// its two pre-loaded neighbours stay light enough for budget phones.
 int viewerDecodeSize(double longestSideDp, double devicePixelRatio) {
   final double pixels = longestSideDp * devicePixelRatio * 1.5;
-  if (pixels.isNaN || pixels <= 0) return 2048;
-  return pixels.round().clamp(1440, 3200);
+  if (!pixels.isFinite || pixels <= 0) return 2048;
+  return pixels.round().clamp(1440, 2560);
 }
 
 /// Image container types the app can save or share.

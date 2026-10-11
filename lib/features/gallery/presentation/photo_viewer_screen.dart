@@ -56,6 +56,10 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   bool _zoomed = false;
   bool _saving = false;
   bool _sharing = false;
+  bool _closing = false;
+
+  /// Retry count per photo id; part of the page key so "Retry" reloads it.
+  final Map<String, int> _attempts = <String, int>{};
 
   late ThemeData _theme;
   AppLanguage? _themeLanguage;
@@ -163,6 +167,9 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   }
 
   void _onScaleStateChanged(PhotoViewScaleState state) {
+    // photo_view reports this through a stream, so it can arrive after the
+    // viewer has closed.
+    if (!mounted) return;
     final bool zoomed =
         state == PhotoViewScaleState.zoomedIn ||
         state == PhotoViewScaleState.covering ||
@@ -171,6 +178,10 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
   }
 
   void _close() {
+    // A second close (double tap, or a swipe ending as the button is
+    // pressed) must not pop the screen underneath or re-route the app.
+    if (_closing || !mounted) return;
+    _closing = true;
     final NavigatorState navigator = Navigator.of(context);
     if (navigator.canPop()) {
       navigator.pop();

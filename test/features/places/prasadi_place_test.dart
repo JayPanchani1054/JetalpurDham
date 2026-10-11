@@ -238,6 +238,16 @@ void main() {
       expect(PlaceCategory.fromValue('Ordo'), PlaceCategory.residence);
     });
 
+    test('Gujarati and Hindi words typed in the console', () {
+      expect(PlaceCategory.fromValue('મંદિર'), PlaceCategory.temple);
+      expect(PlaceCategory.fromValue('यज्ञशाला'), PlaceCategory.yagna);
+      expect(PlaceCategory.fromValue('ગોમતી તળાવ'), PlaceCategory.water);
+      expect(PlaceCategory.fromValue('બાવડી / વાવ'), PlaceCategory.water);
+      expect(PlaceCategory.fromValue('प्रसादी वृक्ष'), PlaceCategory.tree);
+      expect(PlaceCategory.fromValue('અક્ષર ઓરડી'), PlaceCategory.residence);
+      expect(PlaceCategory.fromValue('પ્રસાદીની વસ્તુ'), PlaceCategory.other);
+    });
+
     test('unknown, empty or non-string values are other', () {
       expect(PlaceCategory.fromValue('relics'), PlaceCategory.other);
       expect(PlaceCategory.fromValue(''), PlaceCategory.other);

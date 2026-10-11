@@ -280,6 +280,26 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Tapping a header photo opens the zoomable viewer', (
+    WidgetTester tester,
+  ) async {
+    await _pump(tester, const PlaceDetailScreen(placeId: 'dev-sarovar'));
+    // Middle of the photo header (below the app bar buttons).
+    await tester.tapAt(const Offset(195, 200));
+    await _settle(tester);
+    expect(find.text('1 / 2'), findsOneWidget);
+    expect(find.byTooltip('Close'), findsOneWidget);
+    // Photo can't load (offline): a calm placeholder, no crash.
+    expect(find.byIcon(Icons.broken_image_outlined), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byTooltip('Close'));
+    await _settle(tester);
+    expect(find.text('1 / 2'), findsNothing);
+    expect(find.text('360° Darshan'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Place detail without photos, mahima or panorama', (
     WidgetTester tester,
   ) async {

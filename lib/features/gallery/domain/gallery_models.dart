@@ -109,7 +109,9 @@ class AlbumPhoto {
     final int? height = Fs.integerOrNull(map['height']);
     return AlbumPhoto(
       id: id,
-      url: Fs.string(map['url']),
+      // Cloud Functions also store the Storage path, which still shows the
+      // photo if `url` is cleared or mistyped in the console.
+      url: Fs.stringOrNull(map['url']) ?? Fs.string(map['storagePath']),
       thumbUrl: Fs.stringOrNull(map['thumbUrl']),
       caption: LocalizedText.fromValue(map['caption']),
       order: Fs.integerOrNull(map['order']),

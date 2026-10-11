@@ -14,7 +14,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/launcher.dart';
 import '../../../core/utils/ui_feedback.dart';
-import '../../../core/widgets/app_network_image.dart';
 import '../../../core/widgets/language_button.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/places_repository.dart';
@@ -217,7 +216,7 @@ class _PanoramaScreenState extends ConsumerState<PanoramaScreen> {
                     children: <Widget>[
                       if (panoramas.length > 1)
                         _PanoramaSelector(
-                          panoramas: panoramas,
+                          count: panoramas.length,
                           index: index,
                           onSelected: _select,
                         ),
@@ -271,11 +270,17 @@ class _PanoramaView extends ConsumerStatefulWidget {
 }
 
 class _PanoramaViewState extends ConsumerState<_PanoramaView> {
-  final PanoramaController _controller = PanoramaController();
+  /// The viewer package adds a listener to its controller and never removes
+  /// it, so every new [PanoramaViewer] (after a retry) gets a fresh one.
+  PanoramaController _controller = PanoramaController();
   ImageProvider<Object>? _provider;
   Image? _image;
   ImageStream? _stream;
   ImageStreamListener? _listener;
+
+  /// Shows the photo even if the viewer never reports that its texture is
+  /// ready, so the loading ring can never spin forever.
+  Timer? _revealTimer;
   int _attempt = 0;
   bool _decoded = false;
   bool _visible = false;
@@ -302,6 +307,7 @@ class _PanoramaViewState extends ConsumerState<_PanoramaView> {
 
   @override
   void dispose() {
+    _revealTimer?.cancel();
     _detach();
     _controller.dispose();
     // A decoded 360° photo is ~30 MB: free it as soon as it leaves the
@@ -366,6 +372,8 @@ class _PanoramaViewState extends ConsumerState<_PanoramaView> {
       _decoded = true;
       _progress = 1;
     });
+    _revealTimer?.cancel();
+    _revealTimer = Timer(const Duration(seconds: 4), _reveal);
   }
 
   void _onChunk(ImageChunkEvent event) {
@@ -388,20 +396,25 @@ class _PanoramaViewState extends ConsumerState<_PanoramaView> {
 
   /// Called by the viewer when the photo is on the sphere. May arrive during
   /// a frame, so the rebuild is deferred.
-  void _onTextureReady() {
-    scheduleMicrotask(() {
-      if (!mounted || _visible) return;
-      setState(() => _visible = true);
-      widget.onLoaded();
-    });
+  void _onTextureReady() => scheduleMicrotask(_reveal);
+
+  void _reveal() {
+    _revealTimer?.cancel();
+    if (!mounted || _visible || !_decoded || _failed) return;
+    setState(() => _visible = true);
+    widget.onLoaded();
   }
 
   Future<void> _retry() async {
     unawaited(HapticFeedback.selectionClick());
+    _revealTimer?.cancel();
     _detach();
     final ImageProvider<Object>? provider = _provider;
     _provider = null;
     _image = null;
+    final PanoramaController oldController = _controller;
+    _controller = PanoramaController();
+    oldController.dispose();
     if (provider != null) {
       try {
         await provider.evict();
@@ -642,59 +655,94 @@ class _PanoramaError extends StatelessWidget {
   }
 }
 
-/// Thumbnail strip to switch between several 360° photos.
+/// Numbered buttons to switch between several 360° photos.
+///
+/// Deliberately not thumbnails: a thumbnail of a 360° photo would download
+/// and decode every full-size panorama at once, slowing down the one the
+/// devotee is waiting for (and a squeezed sphere is hard to recognise).
 class _PanoramaSelector extends StatelessWidget {
   const _PanoramaSelector({
-    required this.panoramas,
+    required this.count,
     required this.index,
     required this.onSelected,
   });
 
-  final List<String> panoramas;
+  final int count;
   final int index;
   final ValueChanged<int> onSelected;
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n;
-    return SizedBox(
-      height: 56,
-      child: Center(
-        child: ListView.separated(
-          shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          itemCount: panoramas.length,
-          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
-          itemBuilder: (BuildContext context, int i) {
-            final bool selected = i == index;
-            return Semantics(
-              button: true,
-              selected: selected,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          for (int i = 0; i < count; i++) ...<Widget>[
+            if (i > 0) const SizedBox(width: AppSpacing.sm),
+            _PanoramaPill(
               label: l10n.placesPanoramaNumber(i + 1),
-              excludeSemantics: true,
-              child: GestureDetector(
-                onTap: () => onSelected(i),
-                child: AnimatedContainer(
-                  duration: AppDurations.medium,
-                  width: 88,
-                  decoration: BoxDecoration(
-                    borderRadius: AppRadius.smAll,
-                    border: Border.all(
-                      color: selected ? Colors.white : Colors.white30,
-                      width: selected ? 2.5 : 1,
+              selected: i == index,
+              onTap: () {
+                if (i != index) onSelected(i);
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PanoramaPill extends StatelessWidget {
+  const _PanoramaPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color foreground = selected ? Colors.black87 : Colors.white;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected ? Colors.white : Colors.black54,
+        shape: StadiumBorder(
+          side: BorderSide(color: selected ? Colors.white : Colors.white38),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppSpacing.minTouchTarget,
+              minWidth: AppSpacing.minTouchTarget,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.threesixty_rounded, size: 18, color: foreground),
+                  const SizedBox(width: AppSpacing.xs + 2),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    child: AppNetworkImage(
-                      url: panoramas[i],
-                      placeholderIcon: Icons.threesixty_rounded,
-                    ),
-                  ),
-                ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );

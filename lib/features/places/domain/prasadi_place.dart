@@ -84,10 +84,27 @@ enum PlaceCategory {
   residence,
   other;
 
+  /// English / transliterated words plus the Gujarati and Hindi words staff
+  /// are likely to type in the console.
   static const Map<PlaceCategory, List<String>> _keywords =
       <PlaceCategory, List<String>>{
-        PlaceCategory.temple: <String>['temple', 'mandir', 'shrine', 'shiv'],
-        PlaceCategory.yagna: <String>['yagna', 'yajna', 'yagya', 'yagn'],
+        PlaceCategory.temple: <String>[
+          'temple',
+          'mandir',
+          'shrine',
+          'shiv',
+          'મંદિર',
+          'મંદીર',
+          'मंदिर',
+        ],
+        PlaceCategory.yagna: <String>[
+          'yagna',
+          'yajna',
+          'yagya',
+          'yagn',
+          'યજ્ઞ',
+          'यज्ञ',
+        ],
         PlaceCategory.water: <String>[
           'water',
           'lake',
@@ -99,8 +116,30 @@ enum PlaceCategory {
           'sarovar',
           'river',
           'pond',
+          'તળાવ',
+          'વાવ',
+          'કૂવો',
+          'કુવો',
+          'કુંડ',
+          'સરોવર',
+          'નદી',
+          'तालाब',
+          'बावड़ी',
+          'कुआँ',
+          'कुंड',
+          'सरोवर',
+          'नदी',
         ],
-        PlaceCategory.tree: <String>['tree', 'vruksh', 'vriksh', 'vruksha'],
+        PlaceCategory.tree: <String>[
+          'tree',
+          'vruksh',
+          'vriksh',
+          'vruksha',
+          'વૃક્ષ',
+          'ઝાડ',
+          'वृक्ष',
+          'पेड़',
+        ],
         PlaceCategory.residence: <String>[
           'residence',
           'home',
@@ -110,6 +149,13 @@ enum PlaceCategory {
           'haveli',
           'nivas',
           'room',
+          'ઓરડો',
+          'ઓરડી',
+          'હવેલી',
+          'નિવાસ',
+          'मकान',
+          'हवेली',
+          'निवास',
         ],
       };
 
