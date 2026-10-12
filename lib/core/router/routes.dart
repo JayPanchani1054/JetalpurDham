@@ -61,12 +61,14 @@ abstract final class Routes {
   static String? deepLinkTarget(String? location) {
     if (location == null || !location.startsWith('/')) return null;
     if (location.startsWith('//')) return null;
+    // go_router opens the parsed location, in which '.' and '..' segments are
+    // already resolved ('/home/../player' is '/player'), so the parsed path
+    // is what gets checked.
+    final String? path = Uri.tryParse(location)?.path;
+    if (path == null) return null;
     bool isUnder(String root) => root.endsWith('/')
-        ? location.length > root.length && location.startsWith(root)
-        : location == root ||
-              location.startsWith('$root/') ||
-              location.startsWith('$root?') ||
-              location.startsWith('$root#');
+        ? path.length > root.length && path.startsWith(root)
+        : path == root || path.startsWith('$root/');
     for (final MapEntry<String, String> redirect
         in _deepLinkRedirects.entries) {
       if (isUnder(redirect.key)) return redirect.value;

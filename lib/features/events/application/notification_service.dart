@@ -37,8 +37,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// Push notifications (FCM) + local notifications for foreground messages.
 ///
 /// Contract used by the rest of the app (none of these ever throw):
-///  * [initialize] is started once by bootstrap after Firebase init, right
-///    after the first frame.
+///  * [initialize] is started once by bootstrap right after `runApp`, when
+///    Firebase init has finished (even if that took longer than its limit).
 ///  * [syncSubscription] is called on start and whenever the language or the
 ///    notifications toggle changes. Each device follows exactly one topic:
 ///    `lang_en`, `lang_gu` or `lang_hi`.

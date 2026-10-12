@@ -365,7 +365,7 @@ the trust and test with a ₹1 UPI payment before switching it on.
 
 | Field | Type | Example / notes |
 |---|---|---|
-| `enabled` | boolean | `true` shows the payment details (while `false` the app says "available soon") |
+| `enabled` | boolean | `true` shows the payment details on Android (while `false` the app says "available soon") |
 | `upiId` | string | e.g. `jetalpurmandir@sbi` |
 | `payeeName` | string | name shown in the UPI app, e.g. `Shree Swaminarayan Mandir Jetalpur` |
 | `qrImageUrl` | string | upload the bank's official QR to Storage `config/` (e.g. `config/upi-qr.png`) and paste the path. If empty, the app makes a QR from `upiId`. |
@@ -377,22 +377,27 @@ the trust and test with a ₹1 UPI payment before switching it on.
 | `title`, `message` | map | heading and line shown on the donation screen |
 | `note` | map | small print, e.g. the trust's registration number and receipt / 80G tax-exemption information (only if confirmed — Google Play allows donation details in the app for registered, tax-exempt trusts) |
 | `purposes` | array of maps | choices in the form: General seva, Thal / Annakut, Utsav seva, Gau seva, Mandir maintenance, Sadhu/Brahmin bhojan (each `en`/`gu`/`hi`) |
+| `webUrl` | string | **iPhone:** the temple website's donation page, e.g. `https://jetalpurdarshan.com/donate` (must start with `https://`) |
 
 **iPhone:** Apple does not allow donation payment details (UPI QR, bank
 account, amount form) inside iPhone apps unless the trust is an
 Apple-approved nonprofit — see
-[STORE_SUBMISSION.md § 4.1](STORE_SUBMISSION.md#4-app-store-ios). Before the
-App Store release, the iPhone app must instead send devotees to a **donation
-page on the temple website** (the developer sets this up). Please prepare that
-page, and whenever you change the UPI ID, QR or bank details here, change them
-on that web page too.
+[STORE_SUBMISSION.md § 4.1](STORE_SUBMISSION.md#41-donations-on-iphone--guideline-322iv-). So on
+iPhone the Donate screen shows only a **"Donate on the temple website"**
+button, which opens `webUrl` in Safari, plus the Call / WhatsApp / E-mail
+buttons. While `webUrl` is empty, iPhone users are asked to contact the
+temple office. Please publish that web page before the iPhone beta, put its
+address in `webUrl`, and whenever you change the UPI ID, QR or bank details
+here, change them on that web page too.
 
 ## 9. View donation requests — દાનની વિનંતીઓ જુઓ
 
 When a devotee taps **Contact Now** and submits the form, a document appears in
 **Firestore → `donation_requests`** with `name`, `phone`, `email`, `amount`,
 `purpose`, `method` (`upi`, `bank`, `cash`, `cheque`, `other`),
-`transactionRef` (UTR / transaction no.), `message`, `language`, `createdAt`.
+`transactionRef` (UTR / transaction no.), `message`, `language`, `platform`,
+`appVersion`, `createdAt`. (Forms come only from Android phones — the iPhone
+app has no form.)
 
 * To see the newest first, click the filter (funnel) button above the
   documents and sort by `createdAt`, descending.
@@ -400,21 +405,27 @@ When a devotee taps **Contact Now** and submits the form, a document appears in
   send the receipt. You may add your own fields to keep track, e.g.
   `status` = `done`, `receiptNo` = `R-1023`, `handledBy` = your name.
 * With `notifyEmail` set (and the e-mail extension installed) the office also
-  gets an e-mail for every new form.
+  gets an e-mail for every new form. If very many forms arrive at once, the
+  e-mails pause and you get one *"donation e-mails paused"* message instead —
+  the forms are still all here.
 * These documents contain personal details — do not share screenshots
   outside the office.
 
-**How long to keep them (privacy rule).** The privacy policy promises devotees
-that their details are deleted from the app **[12] months after the receipt
-is issued** (use the same number as in the published policy). Once a month,
-sort by `createdAt` and **delete** the requests that are older than that and
-already handled. Records the trust must keep for accounts or 80G receipts
-belong in the trust's own books, not in Firestore.
+**How long they are kept (privacy rule).** The system **deletes every form
+automatically 12 months after it was sent** (each night), as the privacy
+policy promises — so send receipts well before then. Records the trust must
+keep for accounts or 80G receipts belong in the trust's own books, not in
+Firestore. (If the trust publishes a different number of months in the
+privacy policy, ask the developer to change it — FIREBASE_SETUP.md step 9.)
+Forms you typed in by hand without `createdAt` are not deleted automatically.
+The **alert e-mails in the office inbox are not deleted by the system**: once
+a month, delete the "New donation details" e-mails older than 12 months.
 
 **If a devotee asks** to see, correct or delete the details they sent (by
 e-mail to the privacy address, phone or in person), find their request(s) by
 name or phone number, do what they ask **within 30 days**, and reply to
-confirm.
+confirm. Deleting a form also deletes its copy in the `mail` collection, but
+**not** the e-mail already in the office inbox — delete that e-mail too.
 
 **During the beta test**, testers send practice forms with names starting
 with **TEST** — delete them when the beta ends.
@@ -592,7 +603,7 @@ published before entering them.
 * [ ] A test notification received on Android and iPhone (setup guide, step 13)
 * [ ] Privacy policy published and `privacyPolicyUrl` set (section 15)
 * [ ] `email` (or `whatsapp`) set, so devotees can *Send feedback* (section 15)
-* [ ] Donation page on the temple website ready for iPhone users (section 8)
+* [ ] Donation page on the temple website ready for iPhone users and its address in `config/donation.webUrl` (section 8)
 * [ ] Trust's written permission letter signed, or the app published from the
   trust's own accounts ([STORE_SUBMISSION.md](STORE_SUBMISSION.md#0-who-publishes-the-app))
 * [ ] Beta test finished and test data deleted ([BETA_TESTING.md](BETA_TESTING.md#10-after-the-beta))

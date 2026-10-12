@@ -14,11 +14,12 @@ demo APK over an older one instead of uninstalling first.
 | Key password | `jetalpur-demo` |
 | Certificate | `CN=Jetalpur Dham Demo (not for production)`, valid until 2054 |
 
-**Never use this key for the real app.** It is committed to a public
-repository, so anyone can sign an APK with it. The demo build also gets its
-own package name (`com.jetalpurdham.app.demo`) and launcher name
-("Jetalpur Dham Demo"), so it installs next to the real app and can never
-replace it. Production builds are signed with the upload key from
+**Never use this key for the real app.** It is committed to the repository
+with its password, so anyone who can see the code can sign an APK with it
+(the build stops if `android/key.properties` points at it). The demo build
+also gets its own package name (`com.jetalpurdham.app.demo`) and launcher
+name ("Jetalpur Dham Demo"), so it installs next to the real app and can
+never replace it. Production builds are signed with the upload key from
 `android/key.properties` (see docs/FIREBASE_SETUP.md, step 14), which must
 never be committed.
 

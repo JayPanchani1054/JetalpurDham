@@ -184,9 +184,15 @@ void main() {
 
   test('initKirtanAudio never throws, runs once, and rolls back a real '
       'failure', () async {
-    // audio_service can be started only once per app, so after the first
-    // test the real JustAudioBackground.init fails here, after it has
-    // already replaced the player.
+    // audio_service can be started only once per app (it asserts in debug
+    // builds). Make sure it has started, also when this test runs alone, so
+    // the real JustAudioBackground.init below fails after it has already
+    // replaced the player.
+    await enableBackgroundAudio(
+      () => JustAudioBackground.init(androidNotificationChannelId: 'test.x'),
+    );
+    JustAudioPlatform.instance = plain;
+
     final Future<void> first = initKirtanAudio();
     expect(initKirtanAudio(), same(first));
     await first;

@@ -1,15 +1,17 @@
 // Demo build of the Jetalpur Dham app — explore every screen with sample
 // content and no Firebase project:
 //
-//   flutter run -t preview/main_preview.dart                 (phone)
+//   flutter run -t preview/main_preview.dart -P jdDemo=true  (phone)
 //   flutter build apk -t preview/main_preview.dart -P jdDemo=true
 //                                                            (installable demo APK)
 //   flutter build web -t preview/main_preview.dart           (browser preview)
 //
 // `-P jdDemo=true` (CI: ORG_GRADLE_PROJECT_jdDemo=true) gives the APK its own
-// package name and launcher label ("Jetalpur Dham Demo") and signs it with the
-// public demo key, so it installs next to the real app; see
-// android/app/demo-signing/README.md.
+// package name and launcher label ("Jetalpur Dham Demo") and signs release
+// builds with the public demo key, so it installs next to the real app; see
+// android/app/demo-signing/README.md. Without it, Android builds use the real
+// app's package name, and when the signing keys differ `flutter run`
+// uninstalls an installed beta of the real app (with its downloads) first.
 //
 // Content: the real seed data (temple history, prasadi places and their mahima,
 // categories, Avsar 200), real kirtan titles and shastra names, and original

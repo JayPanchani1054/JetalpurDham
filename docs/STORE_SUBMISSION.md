@@ -8,7 +8,8 @@ details and gives the permissions in section 0.
 
 > **Keep the answers true.** They describe the app as it is today: no login,
 > no ads, no tracking, Crashlytics crash reports, push notifications, and the
-> donation details form. If the app later adds a feature, an SDK or new data,
+> donation details form (Android only — the iPhone app links to the temple
+> website instead). If the app later adds a feature, an SDK or new data,
 > update the answers here and in both consoles.
 
 **Contents**
@@ -259,29 +260,28 @@ app. Reviewers treat a UPI QR code, a copyable UPI ID or bank account, or a
 form asking for the amount and transaction number as "collecting funds within
 the app".
 
-**Compliant design for the iPhone app** (Android keeps the full donation
+**How the iPhone app does it** (built in; Android keeps the full donation
 screen):
 
 * The Donate screen shows a short line of seva text and one button —
-  **"Donate on the temple website"** — that opens the temple's donation web
-  page in **Safari**. That web page shows the UPI QR, the bank details and the
-  receipt / 80G information.
-* The **Call, WhatsApp and E-mail** buttons can stay.
+  **"Donate on the temple website"** — that opens the address in
+  Firestore `config/donation` → **`webUrl`** in **Safari**. That web page
+  shows the UPI QR, the bank details and the receipt / 80G information.
+* While `webUrl` is empty, the screen instead says *"To offer seva, please
+  contact the temple office."*
+* The **Call, WhatsApp and E-mail** buttons stay (from `contactPhone`,
+  `contactWhatsapp`, `contactEmail`).
 * No UPI QR, UPI ID, bank details, *Save QR* or amount / UTR form inside the
   iPhone app; no UPI app names in `Info.plist`, and the photo-permission text
-  does not mention the donation QR.
-* The trust publishes that donation page on its website (with the same
-  details as `config/donation` — see
-  [ADMIN_GUIDE.md § 8](ADMIN_GUIDE.md#8-update-donation-details--દાનની-વિગતો)),
-  and the button opens it.
+  does not mention a donation QR.
 * The review notes (section 5) say that **no money is collected in the app**.
 
-Developer: before **external** TestFlight testing or App Store submission,
-open the Donate screen in an iPhone build and confirm it matches the list
-above. When this guide was written, the iPhone app still showed the same UPI
-QR, bank details and form as Android — if yours still does, change the code
-first. (Internal TestFlight builds are not reviewed by Apple, so they can be
-used meanwhile.)
+**What the trust does:** publish the donation page on the temple website
+(with the same details as `config/donation` — see
+[ADMIN_GUIDE.md § 8](ADMIN_GUIDE.md#8-update-donation-details--દાનની-વિગતો))
+and put its address (starting with `https://`) in `webUrl` **before external
+TestFlight testing or App Store submission**. Then open the Donate screen on
+an iPhone and check that the button opens the right page.
 
 If the trust later becomes an Apple-approved nonprofit with Apple Pay, this
 can be revisited.
@@ -298,13 +298,16 @@ App Store Connect → your app → **App Privacy → Get Started**.
 | Diagnostics → **Crash Data** | App Functionality | No |
 | Identifiers → **Device ID** (notification token, Crashlytics installation ID) | App Functionality | No |
 
-**Only if the iPhone app still contains the donation details form** (which
-section 4.1 advises against), also declare: Contact Info → **Name**, **Phone
-Number**, **Email Address**; Financial Info → **Other Financial Info**; User
-Content → **Other User Content** — purpose **App Functionality**, **linked**
-to the user, not used for tracking.
+The iPhone app has **no donation details form** (section 4.1), so name,
+phone, e-mail and financial info are **not** collected on iPhone — do not
+declare them here. (If a future version brings the form to iPhone, add
+Contact Info → **Name**, **Phone Number**, **Email Address**; Financial Info →
+**Other Financial Info**; User Content → **Other User Content** — purpose
+**App Functionality**, **linked** to the user, not used for tracking.)
 
 **Payment Info** is **not** collected: payments happen outside the app.
+*Send feedback* opens the devotee's own mail or WhatsApp app, so the app
+itself collects nothing there either.
 
 ### 4.3 Age rating
 App Store Connect → **App Information → Age Rating → Edit** and answer
@@ -345,8 +348,10 @@ albums of temple festivals and festival announcements.
   Utsav tab -> an event. The language button at the top right switches between
   English, Gujarati and Hindi.
 - Donations: the app does not collect or process any money.
-  [iOS] The Donate screen only opens the temple's website in Safari, where
-  devotees can give by bank transfer or UPI.
+  [iOS] The Donate screen only has a button that opens the temple's website
+  in Safari, where devotees can give by bank transfer or UPI, and the
+  temple office's call / WhatsApp / e-mail buttons. No payment details or
+  donation form are shown in the iPhone app.
   [Android] The Donate screen shows the trust's UPI and bank details; the
   devotee pays in their own UPI or bank app, directly to the trust's bank
   account. [TRUST LEGAL NAME] is a registered public charitable trust
@@ -406,7 +411,8 @@ Contact for verification: [NAME, DESIGNATION, PHONE, E-MAIL]
 * [ ] **Real content** in every tab — no "will be added soon" screens (Apple
   2.1 / 4.2); donation details filled in (Android) and the website donation
   page live (iPhone).
-* [ ] iPhone Donate screen follows section 4.1.
+* [ ] `config/donation.webUrl` set; on an iPhone the Donate button opens the
+  temple's donation page in Safari (section 4.1).
 * [ ] Build: new **build number**, Android signed with the **upload key**, Maps
   keys set, crash reports checked ([BETA_TESTING.md § 6](BETA_TESTING.md#6-check-that-crash-reports-arrive)).
 * [ ] Play: privacy policy, app access, ads, content rating, target audience,
@@ -417,8 +423,10 @@ Contact for verification: [NAME, DESIGNATION, PHONE, E-MAIL]
 * [ ] App Store: App Privacy, age rating, screenshots, review notes, contact
   details complete.
 * [ ] Beta test data deleted (`donation_requests` named TEST…, test events and
-  notifications); `config/donation.notifyEmail` set to the office; App Check
-  on.
+  notifications); `config/donation.notifyEmail` set to the office.
+* [ ] App Check: see [FIREBASE_SETUP.md step 12](FIREBASE_SETUP.md#12-optional-donation-e-mails-trigger-email-extension)
+  — **do not** switch on enforcement unless the app version in the stores
+  already contains App Check.
 
 ---
 

@@ -44,8 +44,10 @@ import {
  *
  * This only protects the inbox and the mail account. The real fix is Firebase
  * App Check enforced for Cloud Firestore (Play Integrity on Android, App Attest
- * on iPhone), which rejects forms that do not come from the genuine app — turn
- * it on before the public launch.
+ * on iPhone), which rejects forms that do not come from the genuine app. The
+ * app must ship the firebase_app_check plugin first: enforcing it in the
+ * console before that blocks every Firestore request from the app (see
+ * docs/FIREBASE_SETUP.md, step 12).
  */
 export const onDonationRequestCreate = onDocumentCreated(
   { document: `${Collections.donationRequests}/{requestId}`, region: REGION, retry: false },
@@ -182,7 +184,11 @@ export const purgeOldDonationRequests = onSchedule(
     timeoutSeconds: 300,
   },
   async () => {
-    const months = retentionMonths(process.env[DonationRetention.envVar]);
+    const configured = process.env[DonationRetention.envVar]?.trim() ?? '';
+    const months = retentionMonths(configured);
+    if (configured !== '' && Number(configured) !== months) {
+      logger.warn(`Ignoring invalid ${DonationRetention.envVar}; using the default`, { value: configured, months });
+    }
     const cutoff = retentionCutoff(new Date(), months);
     const old = db()
       .collection(Collections.donationRequests)

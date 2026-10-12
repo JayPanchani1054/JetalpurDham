@@ -144,7 +144,9 @@ Devotees cannot read these; temple staff see them in the console (and get an ale
   sequence (`IMG_0042.jpg`, `DSC01234.jpg`).
 * `mail/{id}` — documents in the format of the official *Trigger Email from Firestore*
   extension, written for new donation forms when `config/donation.notifyEmail` is set.
-  No client access.
+  When the daily e-mail limit is reached, one notice
+  `mail/paused-donation-emails-YYYY-MM-DD` (India date) says that further forms
+  that day are only in Firestore. No client access.
 
 ## Push notifications (FCM)
 

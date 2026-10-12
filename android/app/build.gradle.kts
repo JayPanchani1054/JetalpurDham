@@ -19,19 +19,29 @@ val keystoreProperties = Properties().apply {
     if (file.exists()) file.inputStream().use { load(it) }
 }
 val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null
+// Blank counts as missing: an unset CI secret arrives as an empty string.
 val mapsApiKey: String? =
-    localProperties.getProperty("MAPS_API_KEY") ?: System.getenv("MAPS_API_KEY")
+    listOf(localProperties.getProperty("MAPS_API_KEY"), System.getenv("MAPS_API_KEY"))
+        .firstOrNull { !it.isNullOrBlank() }
+        ?.trim()
 
 // Demo build (preview/main_preview.dart): pass -PjdDemo=true, or set the
 // environment variable ORG_GRADLE_PROJECT_jdDemo=true as .github/workflows/
 // build.yml does. The demo gets its own package name and launcher label, so it
 // installs next to the real app and never replaces it. It is signed with the
 // public demo-only key in demo-signing/, so each new demo APK installs as an
-// update. If the google-services plugin is added later (flutterfire
-// configure), also register com.jetalpurdham.app.demo as an Android app in
-// the Firebase project, or the demo build fails to find its google-services
-// client.
+// update.
 val isDemoBuild = findProperty("jdDemo")?.toString().equals("true", ignoreCase = true)
+if (isDemoBuild) {
+    // The demo never connects to Firebase and com.jetalpurdham.app.demo is not
+    // registered there. Once `flutterfire configure` adds the Google Services
+    // and Crashlytics Gradle plugins, their tasks would fail the demo build
+    // ("No matching client found for package name"), so skip them. Until then
+    // no task matches and this does nothing.
+    tasks.configureEach {
+        if (name.contains("GoogleServices") || name.contains("Crashlytics")) enabled = false
+    }
+}
 val demoKeystore = file("demo-signing/demo.keystore")
 if (hasReleaseKeystore &&
     file(keystoreProperties.getProperty("storeFile")).canonicalFile == demoKeystore.canonicalFile

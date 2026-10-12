@@ -141,6 +141,15 @@ describe('routes', () => {
     assert.equal(safeRoute('  /kirtan  '), '/kirtan');
   });
 
+  it('checks routes the way the app opens them', () => {
+    for (const bad of ['/homework', '/eventsx', '/reader/', '/home/../admin', '/events/%2E%2E/%2E%2E/admin']) {
+      assert.equal(safeRoute(bad), null, bad);
+    }
+    assert.equal(safeRoute('/player'), '/kirtan');
+    assert.equal(safeRoute('/home/../player'), '/kirtan');
+    assert.equal(safeRoute('/events/abc?from=push'), '/events/abc?from=push');
+  });
+
   it('accepts event ids the way staff paste them', () => {
     assert.equal(normalizeEventId('holi-2027'), 'holi-2027');
     assert.equal(normalizeEventId('  events/holi-2027 '), 'holi-2027');
@@ -535,7 +544,19 @@ describe('donation e-mail limits', () => {
     // 19:00 UTC is already the next day in India (UTC+5:30).
     assert.equal(indiaDateKey(new Date('2026-10-11T19:00:00Z')), '2026-10-12');
     assert.equal(indiaDateKey(new Date('2026-10-11T18:00:00Z')), '2026-10-11');
-    assert.equal(donationPausedMailId(new Date('2026-03-05T04:30:00Z')), 'donation-paused-2026-03-05');
+    assert.equal(indiaDateKey(new Date('2026-01-01T00:00:00Z')), '2026-01-01');
+    assert.equal(indiaDateKey(new Date('2025-12-31T18:29:59Z')), '2025-12-31');
+    assert.equal(indiaDateKey(new Date('2025-12-31T18:30:00Z')), '2026-01-01');
+    const paused = donationPausedMailId(new Date('2026-03-05T04:30:00Z'));
+    assert.equal(paused, 'paused-donation-emails-2026-03-05');
+  });
+
+  it('keeps the paused notice out of the per-form ids (forms may carry any id)', () => {
+    const paused = donationPausedMailId(new Date('2026-03-05T04:30:00Z'));
+    assert.ok(!paused.startsWith(donationMailId('')));
+    for (const crafted of ['paused-2026-03-05', 'emails-paused-2026-03-05', '-paused-donation-emails-2026-03-05']) {
+      assert.notEqual(donationMailId(crafted), paused);
+    }
   });
 
   it('links the console list or one request', () => {

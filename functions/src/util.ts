@@ -176,20 +176,24 @@ export function normalizeEventId(value: unknown): string | null {
   return isValidDocId(id) ? id : null;
 }
 
-/** Same allow-list as Routes.isSafeDeepLink in the app. */
-const SAFE_ROUTE_PREFIXES = [
-  '/home',
-  '/kirtan',
-  '/player',
-  '/places',
-  '/library',
-  '/reader/',
-  '/events',
-] as const;
+/**
+ * Locations a notification may open, with everything below them; a root
+ * ending in '/' only allows what is below it. Same list as
+ * Routes._deepLinkRoots in the app, which checks every route again.
+ */
+const SAFE_ROUTE_ROOTS = ['/home', '/kirtan', '/places', '/library', '/reader/', '/events'] as const;
 
 /**
- * Returns [value] when the app is allowed to open it from a notification
- * (an internal path such as `/events/abc` or `/home/donate`), else null.
+ * Screens a notification cannot open from cold (same as
+ * Routes._deepLinkRedirects in the app): the player needs a queue only the
+ * app can build, so its tab opens instead.
+ */
+const ROUTE_REDIRECTS: Readonly<Record<string, string>> = { '/player': '/kirtan' };
+
+/**
+ * Returns the internal location the app should open for [value] (such as
+ * `/events/abc` or `/home/donate`), or null when the app must not open it
+ * from a notification. Mirrors Routes.deepLinkTarget in the app.
  */
 export function safeRoute(value: unknown): string | null {
   if (typeof value !== 'string') return null;
@@ -197,7 +201,20 @@ export function safeRoute(value: unknown): string | null {
   if (route === '' || route.length > 300) return null;
   if (!route.startsWith('/') || route.startsWith('//')) return null;
   if (/\s/u.test(route)) return null;
-  return SAFE_ROUTE_PREFIXES.some((prefix) => route.startsWith(prefix)) ? route : null;
+  // The app opens the parsed location, in which '.' and '..' segments are
+  // already resolved ('/home/../player' is '/player'), so check that path.
+  let path: string;
+  try {
+    path = new URL(route, 'https://app.invalid').pathname;
+  } catch {
+    return null;
+  }
+  const isUnder = (root: string): boolean =>
+    root.endsWith('/') ? path.length > root.length && path.startsWith(root) : path === root || path.startsWith(`${root}/`);
+  for (const [from, to] of Object.entries(ROUTE_REDIRECTS)) {
+    if (isUnder(from)) return to;
+  }
+  return SAFE_ROUTE_ROOTS.some(isUnder) ? route : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -790,18 +807,26 @@ export function samePhoneCount(phones: readonly unknown[], phone: unknown): numb
 
 /** "2026-10-12": the calendar date in India of [date]. */
 export function indiaDateKey(date: Date): string {
-  // en-CA formats dates as YYYY-MM-DD.
-  return new Intl.DateTimeFormat('en-CA', {
+  // Built from the parts, so it never depends on a locale's date pattern.
+  const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(date);
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }
 
-/** One "e-mails paused" notice per day at most: `donation-paused-2026-10-12`. */
+/**
+ * One "e-mails paused" notice per day at most:
+ * `paused-donation-emails-2026-10-12`. It must not start with `donation-`:
+ * devotees' forms may carry any document id, so `donation-<requestId>` can be
+ * any id with that prefix, and a form with the id `paused-…` would otherwise
+ * take (or, when deleted, remove) the day's notice.
+ */
 export function donationPausedMailId(date: Date): string {
-  return `donation-paused-${indiaDateKey(date)}`;
+  return `paused-donation-emails-${indiaDateKey(date)}`;
 }
 
 /**

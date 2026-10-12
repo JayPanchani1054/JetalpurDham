@@ -145,7 +145,8 @@ class _PdfReaderScreenState extends ConsumerState<PdfReaderScreen> {
     final int attempt = _attempt;
     bool isCurrent() => mounted && attempt == _attempt;
     try {
-      // Idempotent; bootstrap normally did this already.
+      // Idempotent: the first book opened starts the engine, so app start-up
+      // does not pay for it.
       await pdfrxFlutterInitialize();
     } catch (error, stack) {
       AppLogger.error('PDF engine initialisation failed', error, stack);

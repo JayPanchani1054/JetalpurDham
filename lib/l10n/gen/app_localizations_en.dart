@@ -1063,11 +1063,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get demoIntroBody =>
-      'This is a preview of the Jetalpur Dham app. The temple history, the prasadi places and their mahima are real; the photos, kirtan audio and shastra PDF are only samples.';
+      'This is a preview of the Jetalpur Dham app. The temple history, the prasadi places and their mahima are real; the photos, kirtan audio, shastra PDF and most utsavs are only samples.';
 
   @override
   String get demoIntroDisabled =>
-      'Notifications, the map and donation payments are turned off in this demo.';
+      'Notifications and the map are turned off in this demo. The donation details are samples too, so please do not send money to them.';
 
   @override
   String get demoIntroStart => 'Start exploring';

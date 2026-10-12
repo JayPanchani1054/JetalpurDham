@@ -306,12 +306,20 @@ What this deploys:
 | `firestore.rules` | Content is public read-only; devotees can only *create* a validated donation form; everything else is locked. |
 | `firestore.indexes.json` | No composite indexes — the app sorts on the phone, so a missing field never hides content. |
 | `storage.rules` | Kirtans, gallery, books, places, events and config files are readable by the app; only the console (or an `admin` user) can upload. |
-| `functions/` | `onEventWrite`, `onNotificationCreate`, `onStorageUpload`, `onStorageDelete`, `onDonationRequestCreate` in `asia-south1`. |
+| `functions/` | `onEventWrite`, `onNotificationCreate`, `onStorageUpload`, `onStorageDelete`, `onDonationRequestCreate`, `onDonationRequestDelete` and the nightly `purgeOldDonationRequests` in `asia-south1`. |
 
 The first Functions deploy takes 5–10 minutes. The CLI may ask to enable APIs
-(Cloud Functions, Cloud Build, Artifact Registry, Eventarc, Cloud Run, Pub/Sub)
-— answer **yes**. If it asks about a **cleanup policy for container images**,
-answer **yes** with the suggested 1 day; it avoids small storage charges.
+(Cloud Functions, Cloud Build, Artifact Registry, Eventarc, Cloud Run, Pub/Sub,
+and **Cloud Scheduler** for the nightly clean-up) — answer **yes**. If it asks
+about a **cleanup policy for container images**, answer **yes** with the
+suggested 1 day; it avoids small storage charges.
+
+> **Donation forms are deleted automatically** 12 months after they were
+> sent (`purgeOldDonationRequests`, every night at 03:30 India time), as the
+> privacy policy promises. If the trust publishes a different number of
+> months in [PRIVACY_POLICY.md](PRIVACY_POLICY.md), create
+> `functions/.env` with the line `DONATION_RETENTION_MONTHS=18` (your number,
+> 1–120) and deploy the functions again. Keep the two numbers the same.
 
 > If the very first deploy fails with a permission error mentioning
 > *Eventarc* or *Pub/Sub service agent*, Google is still setting up the
@@ -337,7 +345,7 @@ answer **yes** with the suggested 1 day; it avoids small storage charges.
 >   --role="roles/cloudbuild.builds.builder"
 > ```
 
-Check: **Build → Functions** lists five functions in `asia-south1`.
+Check: **Build → Functions** lists seven functions in `asia-south1`.
 
 **Developers** can run the unit tests with `cd functions && npm test`, and try
 everything locally with the emulators:
@@ -440,17 +448,35 @@ the request is stored in `donation_requests`. To also get an e-mail:
 Each new request now writes `mail/donation-<id>`, and the extension sends a
 neat summary (name, phone, amount, purpose, method, transaction no., message)
 with **reply-to** set to the devotee's e-mail. Without the extension nothing
-breaks — staff still see every request in the console.
+breaks — staff still see every request in the console. When a request is
+deleted (by staff or by the nightly clean-up), its `mail` copy is deleted
+too.
+
+**Built-in limits** protect the mail account. Above **30 forms an hour** or
+**150 a day** (from everyone), the form is still saved but no e-mail is sent;
+the office gets at most one *"donation e-mails paused"* notice a day, and
+e-mails resume by themselves when fewer forms arrive. From the **6th form in
+a day with the same phone number**, that number's forms are saved without an
+e-mail (no notice). (Change the numbers in `DonationEmailLimits`,
+`functions/src/config.ts`.)
 
 > `config/donation` is readable by the app, so use the temple's official
 > address for `notifyEmail`, not a personal one.
 
 > **During the beta**, testers will submit practice forms. Leave `notifyEmail`
 > empty or point it to a test address so the office inbox is not filled with
-> test requests, and delete the test `donation_requests` afterwards. Before
-> public launch, turn on **App Check** (Play Integrity / App Attest) for
-> Firestore so nobody can flood the form — and the office inbox — from outside
-> the app.
+> test requests, and delete the test `donation_requests` afterwards.
+
+> **App Check — a later app update, not a console switch.** Firebase App
+> Check (Play Integrity / App Attest) would stop scripts from sending fake
+> forms from outside the app. The app does **not** contain App Check yet:
+> if you switch on **enforcement** for Cloud Firestore now, Firestore rejects
+> every request from the app and devotees see **no content at all**. To add
+> it, a developer must add the `firebase_app_check` package, activate it at
+> start-up, register the apps in *Build → App Check*, release that version,
+> and wait until the App Check metrics show almost all requests as verified —
+> only then enforce it for Firestore. Until then the limits above protect the
+> inbox, and staff can delete fake forms in the console.
 
 ## 13. Test a push notification
 
@@ -592,6 +618,8 @@ dart run flutter_native_splash:create
 | Functions deploy fails with a region/location error | Firestore and Storage must be in `asia-south1`, or change `REGION` in `functions/src/config.ts` to their location. |
 | Functions deploy fails: "missing permission on the build service account" | Give the *Compute Engine default service account* the **Cloud Build Service Account** role (step 9), then deploy again. |
 | Need to re-send an event notification | Delete the event's `notifiedAt` field — it is sent again once. |
+| App suddenly shows no content anywhere, logs mention *App Check* / "permission denied" | App Check **enforcement** was switched on for Firestore, but the app has no App Check yet (step 12). Firebase console → **App Check → APIs → Cloud Firestore → Unenforce**. |
+| Office receives "donation e-mails paused" | Many forms arrived in a short time (step 12). Forms are still saved in `donation_requests`; e-mails restart by themselves. If the forms look fake, delete them and tell the developer. |
 | `./gradlew: No such file or directory` / `gradlew is not recognized` | The Gradle wrapper is created by the first Android build: run `flutter build apk --debug` once (step 6). |
 | Android build fails right after `flutterfire configure` | Old Gradle plugin versions were written — check `android/settings.gradle.kts` for `4.4.4` / `3.0.7` (step 6). |
 | `CocoaPods not installed or not in valid state` | Mac: `brew install cocoapods`, then build again (step 1). |

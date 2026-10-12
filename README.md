@@ -19,7 +19,7 @@ separate admin panel.
 | 📸 **Avsar 200 gallery** | Photos of the *Avsar* Dwishatabdi Mahotsav (5–11 March 2026) and future utsavs — full-screen viewer, save to phone, share. |
 | 📚 **Shastra library** | PDFs of Sampraday scriptures (Vachanamrut, Shikshapatri, …) with a smooth reader that remembers your page and works offline once downloaded. |
 | 🔔 **Utsav & katha** | Upcoming and past events with banners and details; push notifications in each devotee's language that open the right event. |
-| 🙏 **Donation** | UPI QR, "Pay with UPI app", bank details with copy buttons, and a simple "Contact Now" form so the office can confirm and send a receipt. |
+| 🙏 **Donation** | Android: UPI QR, "Pay with UPI app", bank details with copy buttons, and a simple "Contact Now" form so the office can confirm and send a receipt. iPhone: a "Donate on the temple website" button (Safari) and call / WhatsApp / e-mail, as App Store guideline 3.2.2(iv) requires. |
 | 🌐 **Three languages** | Language switch at the top-right of every screen and in the menu; English first, then Gujarati and Hindi. |
 | 🌙 **Comfortable** | Large readable text, light and dark themes, offline support, skeleton loading and friendly error states. |
 
@@ -41,15 +41,20 @@ Artifacts**:
 
 | Artifact | What it is |
 |---|---|
-| `jetalpur-dham-demo-apk` | Installable **demo app** for any Android phone, with sample content (real temple history, places and mahima; placeholder photos, PDF and tanpura audio). Notifications, the Google map and payments are off. |
+| `jetalpur-dham-demo-apk` | Installable **demo app** for any Android phone, with sample content (real temple history, places and mahima; placeholder photos, PDF and tanpura audio). Notifications and the Google map are off, and the donation page shows sample details. Installs as **"Jetalpur Dham Demo"** (`com.jetalpurdham.app.demo`) next to the real app; newer demo APKs install as updates. |
 | `jetalpur-dham-web-demo` | The same demo for a browser — serve the unzipped folder, e.g. `python3 -m http.server 8080`. |
-| `jetalpur-dham-release-apk` | The production app; shows no content until the temple's Firebase project is connected. Not for testers. |
+| `jetalpur-dham-release-apk` | The production app, signed with a throw-away debug key; shows no content until the temple's Firebase project is connected. Not for testers. |
 
 The workflow also compiles the iPhone app (without code signing) so iOS build
 problems show up early. Step-by-step install instructions (unknown-apps
-permission, Play Protect, uninstalling before a beta) are in
+permission, Play Protect) are in
 [docs/BETA_TESTING.md](docs/BETA_TESTING.md#1-quick-preview--the-demo-apk-no-setup).
-Run the demo locally with `flutter run -t preview/main_preview.dart`.
+Run the demo on an Android phone with
+`flutter run -t preview/main_preview.dart -P jdDemo=true` (on iPhone or in a
+browser, leave out `-P jdDemo=true`); build
+the demo APK with
+`flutter build apk --release -t preview/main_preview.dart -P jdDemo=true`
+(see [android/app/demo-signing/README.md](android/app/demo-signing/README.md)).
 
 ## Tech stack
 
@@ -83,7 +88,7 @@ lib/
     data/ domain/ application/ presentation/
   l10n/                       ARB sources and generated localizations
 preview/                      demo build: main_preview.dart + sample content and media (no Firebase needed)
-functions/                    Cloud Functions (TypeScript) — auto content from uploads, push, donation e-mails
+functions/                    Cloud Functions (TypeScript) — auto content from uploads, push, donation e-mails and clean-up
 tools/seed/                   one-time starter content loader (temple info, prasadi places, categories, Avsar 200)
 firestore.rules, storage.rules, firestore.indexes.json, firebase.json
 .github/workflows/            ci.yml (analyze, tests, functions) · build.yml (demo APK, Android/iOS builds, web demo)
@@ -122,7 +127,9 @@ docs/                         FIREBASE_SETUP · ADMIN_GUIDE · BETA_TESTING · S
 | `onStorageDelete` | file deleted | removes the matching document (ignores overwrites) |
 | `onEventWrite` | `events/*` written | `sendNotification: true` → one push per language topic, exactly once (`notifiedAt`) |
 | `onNotificationCreate` | `notifications/*` created | ad-hoc push; writes `status` / `sentAt` / `error` back |
-| `onDonationRequestCreate` | `donation_requests/*` created | e-mails the office via the Trigger Email extension when `config/donation.notifyEmail` is set |
+| `onDonationRequestCreate` | `donation_requests/*` created | e-mails the office via the Trigger Email extension when `config/donation.notifyEmail` is set (rate-limited: 30/hour, 150/day, 5 per phone/day) |
+| `onDonationRequestDelete` | `donation_requests/*` deleted | deletes the form's e-mail copy in `mail` |
+| `purgeOldDonationRequests` | every night (Cloud Scheduler) | deletes donation forms older than the privacy policy's retention (12 months, `DONATION_RETENTION_MONTHS`) |
 
 Security: content is public read-only; the only client write is a strictly
 validated, create-only donation form; staff use the console (which bypasses
@@ -164,10 +171,13 @@ release signing in `android/key.properties`.
    the prasadi places came from public sources; confirm them with the temple
    office and correct them in the console.
 4. **Donation** — fill `config/donation` (UPI ID, QR image, bank details) and set
-   `enabled: true`.
-5. **Recommended** — enable Firebase App Check (Play Integrity / App Attest) to
-   protect the public donation form from spam, and install the *Resize Images*
-   extension so large albums load thumbnails.
+   `enabled: true`; for iPhone, publish a donation page on the temple website
+   and set `config/donation.webUrl`.
+5. **Recommended** — install the *Resize Images* extension so large albums
+   load thumbnails. Later, add Firebase App Check (the `firebase_app_check`
+   package, Play Integrity / App Attest) to the app to stop scripted donation
+   forms — enforce it in the console **only after** that app version is live,
+   or the app loses all content (FIREBASE_SETUP.md step 12).
 6. **Icons/splash** — if the logo changes: `dart run flutter_launcher_icons` and
    `dart run flutter_native_splash:create`.
 7. **Permission and accounts** — publish from the trust's own organization

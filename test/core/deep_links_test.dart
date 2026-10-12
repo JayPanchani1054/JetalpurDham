@@ -34,6 +34,9 @@ void main() {
         Routes.player,
         '${Routes.player}?id=k1',
         '${Routes.player}/k1',
+        // go_router resolves these to the player as well.
+        '/home/../player',
+        '/kirtan/%2E%2E/player?id=k1',
       ]) {
         expect(Routes.deepLinkTarget(location), Routes.kirtan);
         expect(Routes.isSafeDeepLink(location), isFalse);
@@ -53,6 +56,11 @@ void main() {
         '/kirtans',
         '/reader',
         '/reader/',
+        '/reader/./',
+        // Leave the allowed locations through '..' segments.
+        '/home/../splash',
+        '/events/..',
+        '/library/%2e%2e/admin',
       ]) {
         expect(Routes.deepLinkTarget(location), isNull, reason: location);
         expect(Routes.isSafeDeepLink(location), isFalse, reason: location);

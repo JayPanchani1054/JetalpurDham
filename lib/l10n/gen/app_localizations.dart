@@ -1975,13 +1975,13 @@ abstract class AppLocalizations {
   /// Demo build only: explains which content is real and which is sample.
   ///
   /// In en, this message translates to:
-  /// **'This is a preview of the Jetalpur Dham app. The temple history, the prasadi places and their mahima are real; the photos, kirtan audio and shastra PDF are only samples.'**
+  /// **'This is a preview of the Jetalpur Dham app. The temple history, the prasadi places and their mahima are real; the photos, kirtan audio, shastra PDF and most utsavs are only samples.'**
   String get demoIntroBody;
 
-  /// Demo build only: features that do not work in the demo.
+  /// Demo build only: features that do not work in the demo, and a reminder that the donation details shown are samples.
   ///
   /// In en, this message translates to:
-  /// **'Notifications, the map and donation payments are turned off in this demo.'**
+  /// **'Notifications and the map are turned off in this demo. The donation details are samples too, so please do not send money to them.'**
   String get demoIntroDisabled;
 
   /// Demo build only: button that closes the demo sheet.

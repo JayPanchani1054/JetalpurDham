@@ -64,14 +64,19 @@ photos, a sample PDF and tanpura audio).
 
 * The demo needs **no internet setup** and no Firebase project. Notifications,
   the Google map (places open as a list) and donation payments are switched
-  off; everything else can be explored.
+  off; everything else can be explored. A short welcome message says so the
+  first time it opens.
 * It is **for looking only** — do not report the sample photos, audio or PDF
   as bugs.
+* It installs as a separate app called **"Jetalpur Dham Demo"**, next to the
+  real app (and the beta), and a newer demo APK installs over the older one.
 * If the phone says *"App not installed"* or *"conflicts with an existing
-  package"* when you later install a beta, **uninstall the other Jetalpur Dham
-  app first** (builds signed by different computers cannot replace each other).
+  package"* when you install a **beta**, uninstall any older app called just
+  **"Jetalpur Dham"** that did not come from the beta invitation (for example
+  a very early demo), then try again.
 * Ignore the artifact **`jetalpur-dham-release-apk`**: it is the real app
-  without the temple's Firebase connection, so it shows no content.
+  without the temple's Firebase connection and signed with a test key, so it
+  shows no content and must not be shared.
 * **iPhone or a big screen?** Download **`jetalpur-dham-web-demo`**, unzip it,
   and in that folder run `python3 -m http.server 8080`; then open
   <http://localhost:8080> in a browser (it must be served like this — opening
@@ -98,6 +103,12 @@ Testers should see the **real** app with real content. Tick these off first
   signed with it.
 * [ ] `config/donation.notifyEmail` empty or a test address while testers
   practise the donation form (step 12).
+* [ ] **iPhone:** the temple website's donation page published and its address
+  in `config/donation.webUrl` — the iPhone app's only donation button opens it
+  ([ADMIN_GUIDE.md § 8](ADMIN_GUIDE.md#8-update-donation-details--દાનની-વિગતો)).
+* [ ] **Do not** switch on App Check enforcement — the app does not contain
+  App Check yet, and enforcing it hides all content
+  ([FIREBASE_SETUP.md step 12](FIREBASE_SETUP.md#12-optional-donation-e-mails-trigger-email-extension)).
 * [ ] **Privacy policy** published and its address saved in
   `config/app.privacyPolicyUrl` (needed for Play closed testing and TestFlight
   external testing — see [STORE_SUBMISSION.md](STORE_SUBMISSION.md#1-privacy-policy-address)).
@@ -142,7 +153,8 @@ days, then **4b/4c**.
 **Developer — once:** Firebase console → **App Distribution** (left menu,
 under *Release & Monitor* or *Run*) → choose the Android app → **Get started**.
 Then **Testers & Groups → Add group**, e.g. `devotees`, and add the testers'
-e-mail addresses (any Google or non-Google e-mail works).
+e-mail addresses. Testers sign in with a **Google account** to accept the
+invitation, so invite the Gmail address they use on their phone.
 
 **Developer — every build:**
 
@@ -161,9 +173,9 @@ firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.ap
 *No command line?* In **App Distribution → Releases**, drag the `.apk` onto the
 page, pick the group, write release notes and click **Distribute**.
 
-**Testers:** open the invitation e-mail **on the phone**, accept, and follow
-the steps to download and install (allow *Install unknown apps* when asked).
-New builds arrive the same way.
+**Testers:** open the invitation e-mail **on the phone**, sign in with Google,
+accept, and follow the steps to download and install (allow *Install unknown
+apps* when asked). New builds arrive the same way.
 
 > **Moving to the Play version later:** App Distribution builds are signed
 > with the upload key; the Play Store re-signs with Google's own key. When a
@@ -267,20 +279,21 @@ invitation (e-mail or link), tap **Accept → Install**. New builds show up in
 TestFlight; turn on automatic updates there.
 
 > **Before external testing:** Apple reviews external betas with the same
-> rules as the App Store. The donation screen on iPhone must follow Apple's
-> donation rule and the content must be ready — see
-> [STORE_SUBMISSION.md § 4](STORE_SUBMISSION.md#4-app-store-ios). Internal
-> testing (c) is not reviewed.
+> rules as the App Store. The content must be ready, and
+> `config/donation.webUrl` must point to the temple's donation page — on
+> iPhone the Donate screen only links there (Apple's donation rule, see
+> [STORE_SUBMISSION.md § 4.1](STORE_SUBMISSION.md#41-donations-on-iphone--guideline-322iv-)).
+> Internal testing (c) is not reviewed.
 
 ---
 
 ## 6. Check that crash reports arrive
 
-The app sends crash reports to **Firebase Crashlytics** — only from release
-builds (never while developing), and only if the user has not switched off
-*Settings → Share crash reports*. Check this **once on Android and once on
-iPhone** before the wider beta, so a broken setup is not discovered only after
-testers have had crashes.
+The app sends crash reports to **Firebase Crashlytics** — from release
+builds (never from the debug builds used while developing), and only if the
+user has not switched off *Settings → Share crash reports*. Check this **once
+on Android and once on iPhone** before the wider beta, so a broken setup is
+not discovered only after testers have had crashes.
 
 **1. Force one test crash with a throw-away build** (developer). Create this
 temporary file — do **not** commit it and never upload this build:
@@ -341,9 +354,9 @@ nice.
 
 **First start**
 - [ ] The opening screen shows the murti darshan, then Home.
-- [ ] A short explanation appears before the notification question; tap
-  **Continue** and choose *Allow* (or *Don't allow* — the app should work
-  either way).
+- [ ] On iPhone and on Android 13 or newer, a short explanation appears
+  before the phone's notification question; tap **Continue** and choose
+  *Allow* (or *Don't allow* — the app should work either way).
 
 **Kirtan**
 - [ ] Open a category and play a kirtan — it starts within a few seconds.
@@ -390,12 +403,12 @@ nice.
 **Donation**
 - [ ] Home → Donate. **Android:** the UPI QR, *Pay with UPI app* (opens your
   UPI app — **do not pay** unless the coordinator asks for a ₹1 test) and the
-  bank details with **copy** buttons. **iPhone:** follow what the screen offers
-  (for example the button to the temple website) and report anything that
-  looks broken.
-- [ ] **Contact Now** → *Share Donation Details* form (where shown): fill it
-  in with your name starting with **TEST** and submit; a short privacy note
-  with a *Privacy policy* link is shown on the form.
+  bank details with **copy** buttons. **iPhone:** one **Donate on the temple
+  website** button that opens the temple's donation page in Safari — no QR,
+  bank details or form (that is on purpose, Apple's rule).
+- [ ] **Android:** **Contact Now** → *Share Donation Details* form: fill it in
+  with your name starting with **TEST** and submit; a short privacy note with
+  a *Privacy policy* link is shown on the form.
 - [ ] Call, WhatsApp and e-mail buttons open the right app.
 
 **Languages, look and comfort**
@@ -412,8 +425,10 @@ nice.
   look right.
 
 **Settings and the rest**
-- [ ] About Temple shows the history and darshan timings.
-- [ ] *Share App*, *Contact Us*, *Privacy policy* and *Legal notices* open.
+- [ ] About Temple shows the history and darshan timings; its *Contact*
+  buttons (call, WhatsApp, e-mail, website) open the right app.
+- [ ] *Share App* (menu), *Settings → Privacy policy* and *Settings → Legal
+  notices & licences* open.
 - [ ] *Settings → Send feedback* opens an e-mail (or WhatsApp) to the temple.
 - [ ] Turn on **airplane mode** and open screens you visited before: they
   still show content, and a friendly offline message appears.
@@ -425,9 +440,11 @@ nice.
 ## 8. How testers report a problem
 
 **In the app:** **Settings → Send feedback** (under *About app*; in Gujarati
-*સેટિંગ્સ → પ્રતિસાદ મોકલો*, in Hindi *सेटिंग्स → सुझाव भेजें*). It opens an
-e-mail (or WhatsApp) to the temple with the **app version, phone type and
-system version already filled in** — write above them.
+*સેટિંગ્સ → પ્રતિસાદ મોકલો*, in Hindi *सेटिंग्स → सुझाव भेजें*; Settings is
+in the side menu ☰). It opens an e-mail (or WhatsApp) to the temple with the
+**app version and the phone's system (Android or iOS) and its version string
+already filled in** — write above them, and add your phone model (for example
+"Samsung Galaxy A14"), which the app does not include.
 
 **On iPhone with TestFlight** you can also take a screenshot and tap **Share
 Beta Feedback**, or open TestFlight → Jetalpur Dham → **Send Beta Feedback**.
@@ -482,8 +499,10 @@ then re-check it in that build.
 
 * Delete test documents: `donation_requests` whose name starts with **TEST**,
   test events and test `notifications`.
-* Set `config/donation.notifyEmail` to the office address and turn on App
-  Check ([FIREBASE_SETUP.md](FIREBASE_SETUP.md) step 12).
+* Set `config/donation.notifyEmail` to the office address
+  ([FIREBASE_SETUP.md](FIREBASE_SETUP.md) step 12). Leave App Check
+  enforcement **off** unless a developer has added App Check to the app
+  (same step).
 * Thank the testers 🙏 — they can keep the app; the store version replaces
   the test version through the Play Store / App Store (App Distribution users
   uninstall first and install from the Play Store).
