@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart'
+    show ImageRenderMethodForWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -339,7 +341,10 @@ class _PanoramaViewState extends ConsumerState<_PanoramaView> {
         MediaQuery.sizeOf(context) * MediaQuery.devicePixelRatioOf(context);
     final int maxWidth = physical.longestSide >= 2000 ? 4096 : 3072;
     final ImageProvider<Object> provider = ResizeImage(
-      CachedNetworkImageProvider(url),
+      CachedNetworkImageProvider(
+        url,
+        imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
+      ),
       width: maxWidth,
       height: maxWidth ~/ 2,
       policy: ResizeImagePolicy.fit,

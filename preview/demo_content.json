@@ -1,0 +1,651 @@
+{
+ "_readme": "Sample content for the demo/preview build only (preview/main_preview.dart). Kirtan titles/poets and shastra names are real; audio, PDFs and pictures are placeholders.",
+ "kirtans": [
+  {
+   "title": {
+    "en": "Jay Sadguru Swami",
+    "gu": "જય સદ્‌ગુરુ સ્વામી",
+    "hi": "जय सद्गुरु स्वामी"
+   },
+   "poet": {
+    "en": "Muktanand Swami",
+    "gu": "મુક્તાનંદ સ્વામી",
+    "hi": "मुक्तानंद स्वामी"
+   },
+   "categoryId": "aarti-stuti",
+   "order": 1,
+   "isFeatured": true
+  },
+  {
+   "title": {
+    "en": "Sant Samagam Kije Ho Nishdin (Godi)",
+    "gu": "સંત સમાગમ કીજે હો નિશદિન (ગોડી)",
+    "hi": "संत समागम कीजे हो निशदिन (गोडी)"
+   },
+   "poet": {
+    "en": "Brahmanand Swami",
+    "gu": "બ્રહ્માનંદ સ્વામી",
+    "hi": "ब्रह्मानंद स्वामी"
+   },
+   "categoryId": "aarti-stuti",
+   "order": 2,
+   "isFeatured": true
+  },
+  {
+   "title": {
+    "en": "Arati Pragat Prabhujiki Kije",
+    "gu": "આરતી પ્રગટ પ્રભુજીકી કીજે",
+    "hi": "आरती प्रगट प्रभुजी की कीजे"
+   },
+   "poet": {
+    "en": "Brahmanand Swami",
+    "gu": "બ્રહ્માનંદ સ્વામી",
+    "hi": "ब्रह्मानंद स्वामी"
+   },
+   "categoryId": "aarti-stuti",
+   "order": 3,
+   "isFeatured": true
+  },
+  {
+   "title": {
+    "en": "Pratham Shri Harine Re (Chesta Pad 1)",
+    "gu": "પ્રથમ શ્રીહરિને રે (ચેષ્ટા પદ ૧)",
+    "hi": "प्रथम श्रीहरिने रे (चेष्टा पद १)"
+   },
+   "poet": {
+    "en": "Premanand Swami",
+    "gu": "પ્રેમાનંદ સ્વામી",
+    "hi": "प्रेमानंद स्वामी"
+   },
+   "categoryId": "chesta",
+   "order": 4,
+   "isFeatured": true
+  },
+  {
+   "title": {
+    "en": "Ora Avo Shyam Sanehi",
+    "gu": "ઓરા આવો શ્યામ સનેહી",
+    "hi": "ओरा आवो श्याम सनेही"
+   },
+   "poet": {
+    "en": "Premanand Swami",
+    "gu": "પ્રેમાનંદ સ્વામી",
+    "hi": "प्रेमानंद स्वामी"
+   },
+   "categoryId": "chesta",
+   "order": 5,
+   "isFeatured": true
+  },
+  {
+   "title": {
+    "en": "Vandu Sahajanand Rasroop",
+    "gu": "વંદું સહજાનંદ રસરૂપ",
+    "hi": "वंदुं सहजानंद रसरूप"
+   },
+   "poet": {
+    "en": "Premanand Swami",
+    "gu": "પ્રેમાનંદ સ્વામી",
+    "hi": "प्रेमानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 6,
+   "isFeatured": true
+  },
+  {
+   "title": {
+    "en": "Pratah Same Shri Swamijina Charan Chihna",
+    "gu": "પ્રાતઃ સમે શ્રી સ્વામીજીનાં ચરણ ચિહ્ન",
+    "hi": "प्रातः समे श्री स्वामीजीनां चरण चिह्न"
+   },
+   "poet": {
+    "en": "Premanand Swami",
+    "gu": "પ્રેમાનંદ સ્વામી",
+    "hi": "प्रेमानंद स्वामी"
+   },
+   "categoryId": "prabhatiya",
+   "order": 7,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Mata Premvati Zulave Putrane Parane Re",
+    "gu": "માતા પ્રેમવતી ઝુલાવે પુત્રને પારણે રે",
+    "hi": "माता प्रेमवती झुलावे पुत्रने पारणे रे"
+   },
+   "poet": {
+    "en": "Premanand Swami",
+    "gu": "પ્રેમાનંદ સ્વામી",
+    "hi": "प्रेमानंद स्वामी"
+   },
+   "categoryId": "utsav",
+   "order": 8,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Dharmasut Jivanpran Hamare",
+    "gu": "ધર્મસુત જીવનપ્રાણ હમારે",
+    "hi": "धर्मसुत जीवनप्राण हमारे"
+   },
+   "poet": {
+    "en": "Premanand Swami",
+    "gu": "પ્રેમાનંદ સ્વામી",
+    "hi": "प्रेमानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 9,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Sant Param Hitkari Jagat Mahi",
+    "gu": "સંત પરમ હિતકારી જગત માંહી",
+    "hi": "संत परम हितकारी जगत माहीं"
+   },
+   "poet": {
+    "en": "Brahmanand Swami",
+    "gu": "બ્રહ્માનંદ સ્વામી",
+    "hi": "ब्रह्मानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 10,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Sun Nath Araj Ab Meri",
+    "gu": "સુન નાથ અરજ અબ મેરી",
+    "hi": "सुन नाथ अरज अब मेरी"
+   },
+   "poet": {
+    "en": "Brahmanand Swami",
+    "gu": "બ્રહ્માનંદ સ્વામી",
+    "hi": "ब्रह्मानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 11,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Ek Samay Shashi Udit Ati (Rasashtak)",
+    "gu": "એક સમય શશી ઉદિત અતિ (રાસાષ્ટક)",
+    "hi": "एक समय शशी उदित अति (रासाष्टक)"
+   },
+   "poet": {
+    "en": "Brahmanand Swami",
+    "gu": "બ્રહ્માનંદ સ્વામી",
+    "hi": "ब्रह्मानंद स्वामी"
+   },
+   "categoryId": "ashtak-chhand",
+   "order": 12,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Dekhat Bad Bhag Lag (Dhyanashtak)",
+    "gu": "દેખત બડ ભાગ લાગ (ધ્યાનાષ્ટક)",
+    "hi": "देखत बड भाग लाग (ध्यानाष्टक)"
+   },
+   "poet": {
+    "en": "Brahmanand Swami",
+    "gu": "બ્રહ્માનંદ સ્વામી",
+    "hi": "ब्रह्मानंद स्वामी"
+   },
+   "categoryId": "ashtak-chhand",
+   "order": 13,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Swaminarayannu Smaran Karta",
+    "gu": "સ્વામિનારાયણનું સ્મરણ કરતાં",
+    "hi": "स्वामिनारायणनुं स्मरण करतां"
+   },
+   "poet": {
+    "en": "Muktanand Swami",
+    "gu": "મુક્તાનંદ સ્વામી",
+    "hi": "मुक्तानंद स्वामी"
+   },
+   "categoryId": "prabhatiya",
+   "order": 14,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Sukhdayak Re Swami Sahajanand",
+    "gu": "સુખદાયક રે સ્વામી સહજાનંદ",
+    "hi": "सुखदायक रे स्वामी सहजानंद"
+   },
+   "poet": {
+    "en": "Muktanand Swami",
+    "gu": "મુક્તાનંદ સ્વામી",
+    "hi": "मुक्तानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 15,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Sukhdayak Re Sacha Santno Sang",
+    "gu": "સુખદાયક રે સાચા સંતનો સંગ",
+    "hi": "सुखदायक रे साचा संतनो संग"
+   },
+   "poet": {
+    "en": "Muktanand Swami",
+    "gu": "મુક્તાનંદ સ્વામી",
+    "hi": "मुक्तानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 16,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Tyag Na Take Re Vairagya Vina",
+    "gu": "ત્યાગ ન ટકે રે વૈરાગ્ય વિના",
+    "hi": "त्याग न टके रे वैराग्य विना"
+   },
+   "poet": {
+    "en": "Nishkulanand Swami",
+    "gu": "નિષ્કુળાનંદ સ્વામી",
+    "hi": "निष्कुलानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 17,
+   "isFeatured": false
+  },
+  {
+   "title": {
+    "en": "Ani Ankhye Me Joya Jivan Sahajanand Swami",
+    "gu": "આણી આંખ્યે મેં જોયા જીવન સહજાનંદ સ્વામી",
+    "hi": "आणी आंख्ये में जोया जीवन सहजानंद स्वामी"
+   },
+   "poet": {
+    "en": "Nishkulanand Swami",
+    "gu": "નિષ્કુળાનંદ સ્વામી",
+    "hi": "निष्कुलानंद स्वामी"
+   },
+   "categoryId": "bhajan",
+   "order": 18,
+   "isFeatured": false
+  }
+ ],
+ "books": [
+  {
+   "id": "vachanamrut",
+   "title": {
+    "en": "Vachanamrut",
+    "gu": "વચનામૃત",
+    "hi": "वचनामृत"
+   },
+   "author": {
+    "en": "Discourses of Bhagwan Shree Swaminarayan, compiled by Muktanand Swami, Gopalanand Swami, Nityanand Swami and Shukanand Swami",
+    "gu": "ભગવાન શ્રી સ્વામિનારાયણનાં વચનો; સંકલન: મુક્તાનંદ સ્વામી, ગોપાળાનંદ સ્વામી, નિત્યાનંદ સ્વામી અને શુકાનંદ સ્વામી",
+    "hi": "भगवान श्री स्वामिनारायण के वचन; संकलन: मुक्तानंद स्वामी, गोपालानंद स्वामी, नित्यानंद स्वामी और शुकानंद स्वामी"
+   },
+   "description": {
+    "en": "The foremost scripture of the Sampraday: Shreeji Maharaj's spiritual discourses from Samvat 1876 to 1886 (1819–1829), compiled in His presence. The Ahmedabad and Vadtal editions contain 262 discourses. It includes five given at Jetalpur (Jetalpur 1–5).",
+    "gu": "સંપ્રદાયનો સર્વોપરી ગ્રંથ: સંવત ૧૮૭૬ થી ૧૮૮૬ દરમિયાન શ્રીજી મહારાજે કહેલી આધ્યાત્મિક વાતો, જે તેમની હાજરીમાં સંકલિત થઈ. અમદાવાદ-વડતાલ આવૃત્તિમાં ૨૬૨ વચનામૃત છે, જેમાં જેતલપુરમાં કહેલાં પાંચ (જેતલપુર ૧–૫)નો સમાવેશ થાય છે.",
+    "hi": "संप्रदाय का सर्वोपरि ग्रंथ: संवत १८७६ से १८८६ के बीच श्रीजी महाराज द्वारा कही गई आध्यात्मिक वार्ताएँ, जो उनकी उपस्थिति में संकलित हुईं। अहमदाबाद-वडताल संस्करण में २६२ वचनामृत हैं, जिनमें जेतलपुर में कहे गए पाँच (जेतलपुर १–५) शामिल हैं।"
+   },
+   "categoryId": "core",
+   "language": "gu",
+   "order": 1,
+   "isFeatured": true
+  },
+  {
+   "id": "shikshapatri",
+   "title": {
+    "en": "Shikshapatri",
+    "gu": "શિક્ષાપત્રી",
+    "hi": "शिक्षापत्री"
+   },
+   "author": {
+    "en": "Bhagwan Shree Swaminarayan",
+    "gu": "ભગવાન શ્રી સ્વામિનારાયણ",
+    "hi": "भगवान श्री स्वामिनारायण"
+   },
+   "description": {
+    "en": "A code of conduct in 212 Sanskrit shlokas, written by Shreeji Maharaj at Vadtal on Vasant Panchami, Samvat 1882 (1826). Nityanand Swami rendered it into Gujarati, and its bicentenary was celebrated in 2026.",
+    "gu": "શ્રીજી મહારાજે સંવત ૧૮૮૨ની વસંતપંચમીએ (ઈ.સ. ૧૮૨૬) વડતાલમાં લખેલી ૨૧૨ સંસ્કૃત શ્લોકોની આચારસંહિતા; નિત્યાનંદ સ્વામીએ તેનો ગુજરાતી અનુવાદ કર્યો. ૨૦૨૬માં તેનો દ્વિશતાબ્દી મહોત્સવ ઊજવાયો.",
+    "hi": "श्रीजी महाराज द्वारा संवत १८८२ की वसंत पंचमी (ई.स. १८२६) को वडताल में लिखी २१२ संस्कृत श्लोकों की आचार-संहिता; नित्यानंद स्वामी ने इसका गुजराती अनुवाद किया। २०२६ में इसका द्विशताब्दी महोत्सव मनाया गया।"
+   },
+   "categoryId": "core",
+   "language": "sa",
+   "order": 2,
+   "isFeatured": true
+  },
+  {
+   "id": "desh-vibhag-lekh",
+   "title": {
+    "en": "Desh Vibhag no Lekh",
+    "gu": "દેશવિભાગનો લેખ",
+    "hi": "देशविभाग का लेख"
+   },
+   "author": {
+    "en": "Bhagwan Shree Swaminarayan (dictated; written by Shukanand Swami)",
+    "gu": "ભગવાન શ્રી સ્વામિનારાયણ (લખનાર: શુકાનંદ સ્વામી)",
+    "hi": "भगवान श्री स्वामिनारायण (लेखक: शुकानंद स्वामी)"
+   },
+   "description": {
+    "en": "The document by which Shreeji Maharaj divided the Sampraday into the NarNarayan Dev Gadi (Ahmedabad, north) and the LaxmiNarayan Dev Gadi (Vadtal, south). It also sets out how future Acharyas are appointed, and it is the foundational charter of the Ahmedabad diocese to which Jetalpur belongs.",
+    "gu": "આ લેખ દ્વારા શ્રીજી મહારાજે સંપ્રદાયને શ્રી નરનારાયણદેવ ગાદી (અમદાવાદ, ઉત્તર વિભાગ) અને શ્રી લક્ષ્મીનારાયણદેવ ગાદી (વડતાલ, દક્ષિણ વિભાગ)માં વિભાજિત કર્યો અને ભાવિ આચાર્યોની નિમણૂકની રીત નક્કી કરી; જેતલપુર જે અમદાવાદ દેશ હેઠળ છે તેનો આ પાયાનો દસ્તાવેજ છે.",
+    "hi": "इस लेख द्वारा श्रीजी महाराज ने संप्रदाय को श्री नरनारायणदेव गादी (अहमदाबाद, उत्तर विभाग) और श्री लक्ष्मीनारायणदेव गादी (वडताल, दक्षिण विभाग) में विभाजित किया और भावी आचार्यों की नियुक्ति की विधि निर्धारित की; जेतलपुर जिस अहमदाबाद देश के अंतर्गत है, उसका यह मूल दस्तावेज़ है।"
+   },
+   "categoryId": "core",
+   "language": "gu",
+   "order": 3,
+   "isFeatured": true
+  },
+  {
+   "id": "satsangi-jivan",
+   "title": {
+    "en": "Shree Satsangi Jivan",
+    "gu": "શ્રી સત્સંગિજીવન",
+    "hi": "श्री सत्संगिजीवन"
+   },
+   "author": {
+    "en": "Shatanand Muni",
+    "gu": "શતાનંદ મુનિ",
+    "hi": "शतानंद मुनि"
+   },
+   "description": {
+    "en": "A Sanskrit scripture in five prakarans on the life, lilas and teachings of Shreeji Maharaj. Shatanand Muni wrote it at Maharaj's command and completed it in Samvat 1885 (1829), and Maharaj approved it.",
+    "gu": "શ્રીજી મહારાજનાં જીવન, લીલા અને ઉપદેશ વિશેનો પાંચ પ્રકરણનો સંસ્કૃત ગ્રંથ, જે શતાનંદ મુનિએ મહારાજની આજ્ઞાથી રચ્યો અને સંવત ૧૮૮૫ (ઈ.સ. ૧૮૨૯)માં પૂર્ણ કર્યો; મહારાજે તેને માન્યતા આપી.",
+    "hi": "श्रीजी महाराज के जीवन, लीला और उपदेश पर पाँच प्रकरणों का संस्कृत ग्रंथ, जिसे शतानंद मुनि ने महाराज की आज्ञा से रचा और संवत १८८५ (ई.स. १८२९) में पूर्ण किया; महाराज ने इसे स्वीकृति दी।"
+   },
+   "categoryId": "biography",
+   "language": "sa",
+   "order": 4,
+   "isFeatured": true
+  },
+  {
+   "id": "shikshapatri-arthadipika",
+   "title": {
+    "en": "Shikshapatri Arthadipika Bhashya",
+    "gu": "શિક્ષાપત્રી અર્થદીપિકા ભાષ્ય",
+    "hi": "शिक्षापत्री अर्थदीपिका भाष्य"
+   },
+   "author": {
+    "en": "Shatanand Muni",
+    "gu": "શતાનંદ મુનિ",
+    "hi": "शतानंद मुनि"
+   },
+   "description": {
+    "en": "Shatanand Muni's Sanskrit commentary on the Shikshapatri. Tradition says it was shown to Shreeji Maharaj, who approved it.",
+    "gu": "શિક્ષાપત્રી પર શતાનંદ મુનિનું સંસ્કૃત ભાષ્ય, જે શ્રીજી મહારાજને બતાવતાં તેમણે માન્ય કર્યું હોવાનું કહેવાય છે.",
+    "hi": "शिक्षापत्री पर शतानंद मुनि का संस्कृत भाष्य, जिसे श्रीजी महाराज को दिखाने पर उन्होंने स्वीकृत किया, ऐसा कहा जाता है।"
+   },
+   "categoryId": "other",
+   "language": "sa",
+   "order": 5,
+   "isFeatured": false
+  },
+  {
+   "id": "bhaktachintamani",
+   "title": {
+    "en": "Bhaktachintamani",
+    "gu": "ભક્તચિંતામણિ",
+    "hi": "भक्तचिंतामणि"
+   },
+   "author": {
+    "en": "Sadguru Nishkulanand Swami",
+    "gu": "સદ્‌ગુરુ નિષ્કુળાનંદ સ્વામી",
+    "hi": "सद्गुरु निष्कुलानंद स्वामी"
+   },
+   "description": {
+    "en": "A Gujarati verse biography of Shreeji Maharaj in 164 prakarans, mainly in chopai metre. Prakaran 61 narrates His yagna at Jetalpur.",
+    "gu": "મુખ્યત્વે ચોપાઈ છંદમાં રચાયેલું ૧૬૪ પ્રકરણનું શ્રીજી મહારાજનું ગુજરાતી પદ્ય ચરિત્ર; પ્રકરણ ૬૧માં જેતલપુરના યજ્ઞનું વર્ણન છે.",
+    "hi": "मुख्यतः चौपाई छंद में रचित १६४ प्रकरणों का श्रीजी महाराज का गुजराती पद्य चरित्र; प्रकरण ६१ में जेतलपुर के यज्ञ का वर्णन है।"
+   },
+   "categoryId": "biography",
+   "language": "gu",
+   "order": 6,
+   "isFeatured": false
+  },
+  {
+   "id": "harililamrut",
+   "title": {
+    "en": "Shree Harililamrut",
+    "gu": "શ્રી હરિલીલામૃત",
+    "hi": "श्री हरिलीलामृत"
+   },
+   "author": {
+    "en": "Acharya Shree Viharilalji Maharaj (composed by the poet Dalpatram)",
+    "gu": "આચાર્ય શ્રી વિહારીલાલજી મહારાજ (રચયિતા કવિ દલપતરામ)",
+    "hi": "आचार्य श्री विहारीलालजी महाराज (रचयिता कवि दलपतराम)"
+   },
+   "description": {
+    "en": "A Gujarati verse scripture in ten kalash on the life and divine exploits of Shreeji Maharaj and His devotees. The poet Dalpatram wrote it, and it was issued under the name of Acharya Viharilalji Maharaj.",
+    "gu": "શ્રીજી મહારાજ અને તેમના ભક્તોની દિવ્ય લીલાનું દસ કળશમાં વર્ણન કરતો ગુજરાતી પદ્યગ્રંથ; કવિ દલપતરામે રચેલો આ ગ્રંથ આચાર્ય વિહારીલાલજી મહારાજના નામે પ્રસિદ્ધ થયો.",
+    "hi": "श्रीजी महाराज और उनके भक्तों की दिव्य लीलाओं का दस कलशों में वर्णन करने वाला गुजराती पद्यग्रंथ; कवि दलपतराम द्वारा रचित यह ग्रंथ आचार्य विहारीलालजी महाराज के नाम से प्रसिद्ध हुआ।"
+   },
+   "categoryId": "biography",
+   "language": "gu",
+   "order": 7,
+   "isFeatured": false
+  },
+  {
+   "id": "harilila-kalpataru",
+   "title": {
+    "en": "Shree Harilila Kalpataru",
+    "gu": "શ્રી હરિલીલાકલ્પતરુ",
+    "hi": "श्री हरिलीलाकल्पतरु"
+   },
+   "author": {
+    "en": "Achintyanand Brahmachari",
+    "gu": "અચિંત્યાનંદ બ્રહ્મચારી",
+    "hi": "अचिंत्यानंद ब्रह्मचारी"
+   },
+   "description": {
+    "en": "A vast Sanskrit epic of Shreeji Maharaj's lilas in twelve cantos and about 33,000 verses. It was composed in the name of Acharya Shree Raghuvirji Maharaj.",
+    "gu": "બાર સ્કંધ અને આશરે ૩૩,૦૦૦ શ્લોકોમાં શ્રીજી મહારાજની લીલાનું વિશાળ સંસ્કૃત મહાકાવ્ય, જે આચાર્ય શ્રી રઘુવીરજી મહારાજના નામે રચાયું.",
+    "hi": "बारह स्कंधों और लगभग ३३,००० श्लोकों में श्रीजी महाराज की लीलाओं का विशाल संस्कृत महाकाव्य, जो आचार्य श्री रघुवीरजी महाराज के नाम से रचा गया।"
+   },
+   "categoryId": "biography",
+   "language": "sa",
+   "order": 8,
+   "isFeatured": false
+  },
+  {
+   "id": "satsangi-bhushan",
+   "title": {
+    "en": "Shree Satsangi Bhushan",
+    "gu": "શ્રી સત્સંગિભૂષણ",
+    "hi": "श्री सत्संगिभूषण"
+   },
+   "author": {
+    "en": "Vasudevanand Brahmachari (Varni)",
+    "gu": "વાસુદેવાનંદ બ્રહ્મચારી (વર્ણી)",
+    "hi": "वासुदेवानंद ब्रह्मचारी (वर्णी)"
+   },
+   "description": {
+    "en": "A Sanskrit scripture full of devotion that recounts many lilas of Shreeji Maharaj. It was written at Maharaj's command in the manner of the Satsangi Jivan.",
+    "gu": "શ્રીજી મહારાજની અનેક લીલાઓનું વર્ણન કરતો ભક્તિભર્યો સંસ્કૃત ગ્રંથ, જે મહારાજની આજ્ઞાથી સત્સંગિજીવનની શૈલીએ રચાયો.",
+    "hi": "श्रीजी महाराज की अनेक लीलाओं का वर्णन करने वाला भक्तिपूर्ण संस्कृत ग्रंथ, जो महाराज की आज्ञा से सत्संगिजीवन की शैली में रचा गया।"
+   },
+   "categoryId": "biography",
+   "language": "sa",
+   "order": 9,
+   "isFeatured": false
+  },
+  {
+   "id": "hari-digvijay",
+   "title": {
+    "en": "Shree Hari Digvijay",
+    "gu": "શ્રી હરિદિગ્વિજય",
+    "hi": "श्री हरिदिग्विजय"
+   },
+   "author": {
+    "en": "Nityanand Swami",
+    "gu": "નિત્યાનંદ સ્વામી",
+    "hi": "नित्यानंद स्वामी"
+   },
+   "description": {
+    "en": "A Sanskrit work in 49 chapters, composed at Shreeji Maharaj's instruction. It establishes His supremacy through accounts of philosophical debates.",
+    "gu": "શ્રીજી મહારાજની આજ્ઞાથી રચાયેલો ૪૯ અધ્યાયનો સંસ્કૃત ગ્રંથ, જે શાસ્ત્રાર્થના પ્રસંગો દ્વારા શ્રીહરિની સર્વોપરિતા સ્થાપે છે.",
+    "hi": "श्रीजी महाराज की आज्ञा से रचित ४९ अध्यायों का संस्कृत ग्रंथ, जो शास्त्रार्थ के प्रसंगों द्वारा श्रीहरि की सर्वोपरिता स्थापित करता है।"
+   },
+   "categoryId": "philosophy",
+   "language": "sa",
+   "order": 10,
+   "isFeatured": false
+  },
+  {
+   "id": "haricharitramrut-sagar",
+   "title": {
+    "en": "Shree Haricharitramrut Sagar",
+    "gu": "શ્રી હરિચરિત્રામૃતસાગર",
+    "hi": "श्री हरिचरित्रामृतसागर"
+   },
+   "author": {
+    "en": "Sadguru Adharanand Swami",
+    "gu": "સદ્‌ગુરુ આધારાનંદ સ્વામી",
+    "hi": "सद्गुरु आधारानंद स्वामी"
+   },
+   "description": {
+    "en": "An enormous verse chronicle of Shreeji Maharaj's life in Vraj/Hindi, begun at Vadtal. It has about 2,411 tarangs and over one lakh chhand-chopai.",
+    "gu": "વડતાલમાં આરંભાયેલું શ્રીજી મહારાજના જીવનનું વ્રજ/હિન્દી ભાષામાં વિશાળ પદ્ય ચરિત્ર, જેમાં આશરે ૨,૪૧૧ તરંગ અને એક લાખથી વધુ છંદ-ચોપાઈ છે.",
+    "hi": "वडताल में आरंभ हुआ श्रीजी महाराज के जीवन का व्रज/हिन्दी भाषा में विशाल पद्य चरित्र, जिसमें लगभग २,४११ तरंग और एक लाख से अधिक छंद-चौपाई हैं।"
+   },
+   "categoryId": "biography",
+   "language": "hi",
+   "order": 11,
+   "isFeatured": false
+  },
+  {
+   "id": "purushottam-prakash",
+   "title": {
+    "en": "Purushottam Prakash",
+    "gu": "પુરુષોત્તમ પ્રકાશ",
+    "hi": "पुरुषोत्तम प्रकाश"
+   },
+   "author": {
+    "en": "Sadguru Nishkulanand Swami",
+    "gu": "સદ્‌ગુરુ નિષ્કુળાનંદ સ્વામી",
+    "hi": "सद्गुरु निष्कुलानंद स्वामी"
+   },
+   "description": {
+    "en": "A Gujarati verse granth on the manifestation and glory of Purushottam Bhagwan Shree Swaminarayan and the purpose of His avatar. It is part of the Nishkulanand Kavya.",
+    "gu": "પુરુષોત્તમ ભગવાન શ્રી સ્વામિનારાયણના પ્રાગટ્ય, મહિમા અને અવતારના હેતુ વિશેનો ગુજરાતી પદ્યગ્રંથ; નિષ્કુળાનંદ કાવ્યનો ભાગ.",
+    "hi": "पुरुषोत्तम भगवान श्री स्वामिनारायण के प्राकट्य, महिमा और अवतार के प्रयोजन पर गुजराती पद्यग्रंथ; निष्कुलानंद काव्य का भाग।"
+   },
+   "categoryId": "poetry",
+   "language": "gu",
+   "order": 12,
+   "isFeatured": false
+  },
+  {
+   "id": "yamdand",
+   "title": {
+    "en": "Yamdand",
+    "gu": "યમદંડ",
+    "hi": "यमदंड"
+   },
+   "author": {
+    "en": "Sadguru Nishkulanand Swami",
+    "gu": "સદ્‌ગુરુ નિષ્કુળાનંદ સ્વામી",
+    "hi": "सद्गुरु निष्कुलानंद स्वामी"
+   },
+   "description": {
+    "en": "A Gujarati verse granth describing the sufferings of Yampuri that follow sinful living. It urges seekers to keep dharma and worship God.",
+    "gu": "પાપાચરણનાં ફળરૂપે યમપુરીનાં દુઃખોનું વર્ણન કરી મુમુક્ષુને ધર્મ પાળવા અને ભગવાન ભજવા પ્રેરતો ગુજરાતી પદ્યગ્રંથ.",
+    "hi": "पापाचरण के फलस्वरूप यमपुरी के दुःखों का वर्णन करके मुमुक्षु को धर्म पालन और भगवद्भजन के लिए प्रेरित करने वाला गुजराती पद्यग्रंथ।"
+   },
+   "categoryId": "poetry",
+   "language": "gu",
+   "order": 13,
+   "isFeatured": false
+  },
+  {
+   "id": "nishkulanand-kavya",
+   "title": {
+    "en": "Nishkulanand Kavya",
+    "gu": "નિષ્કુળાનંદ કાવ્ય",
+    "hi": "निष्कुलानंद काव्य"
+   },
+   "author": {
+    "en": "Sadguru Nishkulanand Swami",
+    "gu": "સદ્‌ગુરુ નિષ્કુળાનંદ સ્વામી",
+    "hi": "सद्गुरु निष्कुलानंद स्वामी"
+   },
+   "description": {
+    "en": "The collected granths and kirtans of Nishkulanand Swami, the poet of vairagya. Among them are Purushottam Prakash, Yamdand, Dhiraj Akhyan, Bhakti Nidhi and Chosath Padi.",
+    "gu": "વૈરાગ્યમૂર્તિ નિષ્કુળાનંદ સ્વામીના ગ્રંથો અને કીર્તનોનો સંગ્રહ — પુરુષોત્તમ પ્રકાશ, યમદંડ, ધીરજાખ્યાન, ભક્તિનિધિ, ચોસઠ પદી વગેરે.",
+    "hi": "वैराग्यमूर्ति निष्कुलानंद स्वामी के ग्रंथों और कीर्तनों का संग्रह — पुरुषोत्तम प्रकाश, यमदंड, धीरजाख्यान, भक्तिनिधि, चौसठ पदी आदि।"
+   },
+   "categoryId": "poetry",
+   "language": "gu",
+   "order": 14,
+   "isFeatured": false
+  },
+  {
+   "id": "brahmanand-kavya",
+   "title": {
+    "en": "Brahmanand Kavya",
+    "gu": "બ્રહ્માનંદ કાવ્ય",
+    "hi": "ब्रह्मानंद काव्य"
+   },
+   "author": {
+    "en": "Sadguru Brahmanand Swami",
+    "gu": "સદ્‌ગુરુ બ્રહ્માનંદ સ્વામી",
+    "hi": "सद्गुरु ब्रह्मानंद स्वामी"
+   },
+   "description": {
+    "en": "The collected poetry of Brahmanand Swami, one of the Ashta Kavi (eight poet-saints), in Gujarati and Vraj. It includes kirtans, ashtaks and chhands still sung daily.",
+    "gu": "અષ્ટ કવિઓમાંના એક બ્રહ્માનંદ સ્વામીની ગુજરાતી અને વ્રજ ભાષાની કાવ્યરચનાઓ — આજે પણ નિત્ય ગવાતાં કીર્તનો, અષ્ટકો અને છંદો.",
+    "hi": "अष्ट कवियों में से एक ब्रह्मानंद स्वामी की गुजराती और व्रज भाषा की काव्य-रचनाएँ — आज भी नित्य गाए जाने वाले कीर्तन, अष्टक और छंद।"
+   },
+   "categoryId": "poetry",
+   "language": "gu",
+   "order": 15,
+   "isFeatured": false
+  },
+  {
+   "id": "muktanand-kavya",
+   "title": {
+    "en": "Muktanand Kavya",
+    "gu": "મુક્તાનંદ કાવ્ય",
+    "hi": "मुक्तानंद काव्य"
+   },
+   "author": {
+    "en": "Sadguru Muktanand Swami",
+    "gu": "સદ્‌ગુરુ મુક્તાનંદ સ્વામી",
+    "hi": "सद्गुरु मुक्तानंद स्वामी"
+   },
+   "description": {
+    "en": "The collected poetic works of Muktanand Swami, the senior paramhansa who composed the aarti 'Jay Sadguru Swami' in 1802.",
+    "gu": "૧૮૦૨માં 'જય સદ્‌ગુરુ સ્વામી' આરતીની રચના કરનાર વરિષ્ઠ પરમહંસ મુક્તાનંદ સ્વામીની કાવ્યરચનાઓનો સંગ્રહ.",
+    "hi": "१८०२ में 'जय सद्गुरु स्वामी' आरती की रचना करने वाले वरिष्ठ परमहंस मुक्तानंद स्वामी की काव्य-रचनाओं का संग्रह।"
+   },
+   "categoryId": "poetry",
+   "language": "gu",
+   "order": 16,
+   "isFeatured": false
+  },
+  {
+   "id": "swamini-vato",
+   "title": {
+    "en": "Swamini Vato",
+    "gu": "સ્વામીની વાતો",
+    "hi": "स्वामीनी वातो (स्वामी की बातें)"
+   },
+   "author": {
+    "en": "Gunatitanand Swami (talks compiled by his disciples)",
+    "gu": "ગુણાતીતાનંદ સ્વામી (શિષ્યો દ્વારા સંકલિત)",
+    "hi": "गुणातीतानंद स्वामी (शिष्यों द्वारा संकलित)"
+   },
+   "description": {
+    "en": "Spiritual talks of Gunatitanand Swami, the sadhu Shreeji Maharaj appointed mahant of Junagadh mandir (Vadtal diocese). Note: BAPS treats it as a principal scripture. In the NarNarayan Dev Gadi it is read as a respected work of a great saint, not as one of the core canonical texts, so the app should consider labelling it as such.",
+    "gu": "શ્રીજી મહારાજે જૂનાગઢ મંદિરના મહંત નીમેલા ગુણાતીતાનંદ સ્વામીની આધ્યાત્મિક વાતો. નોંધ: બી.એ.પી.એસ. તેને મુખ્ય શાસ્ત્ર માને છે; નરનારાયણદેવ ગાદીમાં તે મહાન સંતના આદરણીય ગ્રંથ તરીકે વંચાય છે, મૂળ સંપ્રદાયગ્રંથોમાં તેની ગણના થતી નથી.",
+    "hi": "श्रीजी महाराज द्वारा जूनागढ़ मंदिर के महंत नियुक्त गुणातीतानंद स्वामी की आध्यात्मिक वार्ताएँ। टिप्पणी: बी.ए.पी.एस. इसे प्रमुख शास्त्र मानता है; नरनारायणदेव गादी में यह महान संत के आदरणीय ग्रंथ के रूप में पढ़ा जाता है, मूल संप्रदाय-ग्रंथों में इसकी गणना नहीं होती।"
+   },
+   "categoryId": "other",
+   "language": "gu",
+   "order": 17,
+   "isFeatured": false
+  }
+ ]
+}

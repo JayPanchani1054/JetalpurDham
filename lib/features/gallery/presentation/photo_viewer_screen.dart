@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart'
+    show ImageRenderMethodForWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -128,7 +130,10 @@ class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen>
 
   /// Full-resolution image, decoded no larger than needed for sharp zooming.
   ImageProvider _fullImage(String url) => _providers[url] ??= ResizeImage(
-    CachedNetworkImageProvider(url),
+    CachedNetworkImageProvider(
+      url,
+      imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
+    ),
     width: _decodeSize,
     height: _decodeSize,
     policy: ResizeImagePolicy.fit,
@@ -608,6 +613,7 @@ class _PhotoPlaceholder extends ConsumerWidget {
             fit: BoxFit.contain,
             memCacheWidth: width.round().clamp(320, 2048),
             fadeInDuration: Duration.zero,
+            imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
             placeholder: (_, _) => const SizedBox.shrink(),
             errorWidget: (_, _, _) => const SizedBox.shrink(),
           ),
@@ -876,6 +882,7 @@ class _ViewerButton extends StatelessWidget {
         disabledBackgroundColor: Colors.white.withValues(alpha: 0.12),
         disabledForegroundColor: Colors.white70,
         minimumSize: const Size.fromHeight(52),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         textStyle: Theme.of(context).textTheme.titleSmall,
       ),
       onPressed: busy ? null : onPressed,
@@ -888,7 +895,9 @@ class _ViewerButton extends StatelessWidget {
               ),
             )
           : Icon(icon),
-      label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      // Shrinks slightly instead of cutting off long labels
+      // ("Save to Gallery", "ગેલેરીમાં સાચવો") on narrow phones.
+      label: FittedBox(fit: BoxFit.scaleDown, child: Text(label, maxLines: 1)),
     );
   }
 }

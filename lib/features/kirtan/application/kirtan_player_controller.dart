@@ -8,6 +8,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' show Locale;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
@@ -549,6 +550,16 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
     required bool offline,
   }) async {
     try {
+      if (kIsWeb) {
+        // Browser preview: no app file system, so stream directly.
+        final String url = await ref
+            .read(mediaUrlResolverProvider)
+            .resolve(kirtan.audioUrl)
+            .timeout(const Duration(seconds: 12));
+        final Uri? uri = Uri.tryParse(url);
+        if (uri == null || !uri.hasScheme) return null;
+        return AudioSource.uri(uri, tag: tags.build(kirtan));
+      }
       final File? local = await ref
           .read(kirtanDownloadsProvider.notifier)
           .localFileFor(kirtan);

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:path/path.dart' as p;
@@ -84,6 +85,7 @@ class DownloadService {
 
   /// Total bytes used by finished files in [folder].
   Future<int> folderSize(String folder) async {
+    if (kIsWeb) return 0;
     final Directory dir = await directory(folder);
     int total = 0;
     await for (final FileSystemEntity entity in dir.list(recursive: true)) {
@@ -180,8 +182,13 @@ class DownloadManager extends Notifier<Map<DownloadKey, DownloadState>> {
   Future<File> fileFor(DownloadKey key) =>
       _service.fileFor(key.folder, key.id, key.extension);
 
+  /// Whether offline files are supported (not in the browser preview, which
+  /// has no app file system).
+  static bool get isSupported => !kIsWeb;
+
   /// Returns the local file when it has been fully downloaded, else null.
   Future<File?> localFile(DownloadKey key) async {
+    if (!isSupported) return null;
     final File file = await fileFor(key);
     final bool exists = file.existsSync();
     final DownloadState current = state[key] ?? DownloadState.none;
@@ -204,6 +211,10 @@ class DownloadManager extends Notifier<Map<DownloadKey, DownloadState>> {
   /// Starts (or joins) a download. Returns the file, or null if it failed or
   /// was cancelled. [source] may be any media reference (https, gs://, path).
   Future<File?> download(DownloadKey key, String source) async {
+    if (!isSupported) {
+      _set(key, const DownloadState(DownloadStatus.failed));
+      return null;
+    }
     if (_tokens.containsKey(key) || (state[key]?.isDownloading ?? false)) {
       return null;
     }

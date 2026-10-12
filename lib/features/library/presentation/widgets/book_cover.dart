@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -91,7 +93,19 @@ class GeneratedBookCover extends StatelessWidget {
                 : 120;
             final bool compact = width < 80;
             final double inset = (width * 0.055).clamp(3.0, 14.0);
-            final double fontSize = (width * 0.11).clamp(8.0, 30.0);
+            final double padding2 = compact ? 2 : inset * 0.5;
+            final double padding3 = compact ? 2 : inset;
+            final double textWidth = math.max(
+              8,
+              width - 2 * (inset + padding2 + padding3) - 4,
+            );
+            // Never break a word: shrink until the longest word fits.
+            final double fontSize = _fitFontSize(
+              title,
+              base.copyWith(fontWeight: FontWeight.w700),
+              textWidth,
+              (width * 0.11).clamp(8.0, 30.0),
+            );
             final Color gold = AppColors.goldLight.withValues(alpha: 0.85);
             return Padding(
               padding: EdgeInsets.all(inset),
@@ -101,7 +115,7 @@ class GeneratedBookCover extends StatelessWidget {
                   borderRadius: BorderRadius.circular(inset * 0.6),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(compact ? 2 : inset * 0.5),
+                  padding: EdgeInsets.all(padding2),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -112,7 +126,7 @@ class GeneratedBookCover extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: compact ? 2 : inset,
+                        horizontal: padding3,
                         vertical: compact ? 2 : inset * 1.2,
                       ),
                       child: Column(
@@ -171,4 +185,43 @@ class GeneratedBookCover extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Largest font size (<= [start]) at which the longest word of [text] fits in
+/// [maxWidth], so cover titles wrap between words, never inside one.
+double _fitFontSize(
+  String text,
+  TextStyle style,
+  double maxWidth,
+  double start,
+) {
+  final List<String> words = text
+      .split(RegExp(r'\s+'))
+      .where((String w) => w.isNotEmpty)
+      .toList();
+  if (words.isEmpty) return start;
+  double size = start;
+  final TextPainter painter = TextPainter(
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+  );
+  try {
+    while (size > 8) {
+      double widest = 0;
+      for (final String word in words) {
+        painter
+          ..text = TextSpan(
+            text: word,
+            style: style.copyWith(fontSize: size),
+          )
+          ..layout();
+        widest = math.max(widest, painter.width);
+      }
+      if (widest <= maxWidth) break;
+      size -= 1;
+    }
+  } finally {
+    painter.dispose();
+  }
+  return size;
 }

@@ -106,7 +106,7 @@ packages:
     source: hosted
     version: "4.0.4"
   cached_network_image_platform_interface:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: cached_network_image_platform_interface
       sha256: "555e287d3882fbb36cde50d24214cb3f6a272d39c4386e8afe00cb188d35b285"
@@ -308,10 +308,9 @@ packages:
   fake_cloud_firestore:
     dependency: "direct dev"
     description:
-      name: fake_cloud_firestore
-      sha256: "4276eadc5e2c36663fe393e98d14d4cc413ebe8ce0d02edd8cda57ef7a5a8369"
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/fake_cloud_firestore"
+      relative: true
+    source: path
     version: "4.3.0"
   fake_firebase_security_rules:
     dependency: transitive

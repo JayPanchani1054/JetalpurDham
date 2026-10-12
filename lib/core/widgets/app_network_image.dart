@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart'
+    show ImageRenderMethodForWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -94,6 +96,9 @@ class AppNetworkImage extends ConsumerWidget {
       fit: fit,
       alignment: alignment,
       memCacheWidth: cacheWidth,
+      // On the web, decode the bytes instead of using an <img> element, which
+      // does not render inside fades/transforms (hero banners, viewers).
+      imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
       fadeInDuration: AppDurations.medium,
       fadeOutDuration: AppDurations.fast,
       placeholder: (_, _) => const _Loading(),

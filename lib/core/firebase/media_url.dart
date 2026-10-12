@@ -12,10 +12,13 @@ import 'firebase_providers.dart';
 ///  * a full `https://` URL (Storage download URL, YouTube thumbnail, CDN…)
 ///  * a `gs://bucket/path/file.jpg` URL copied from the Storage console
 ///  * a bare Storage path such as `gallery/avsar-200/photo1.jpg`
+///
+/// Firebase Storage is only touched for `gs://` URLs and Storage paths, so
+/// direct `https://` media keeps working even if Firebase failed to start.
 class MediaUrlResolver {
-  MediaUrlResolver(this._storage);
+  MediaUrlResolver(FirebaseStorage Function() storage) : _storage = storage;
 
-  final FirebaseStorage _storage;
+  final FirebaseStorage Function() _storage;
   final Map<String, Future<String>> _cache = <String, Future<String>>{};
 
   /// True when [raw] can be used directly without a Storage lookup.
@@ -31,9 +34,10 @@ class MediaUrlResolver {
 
   Future<String> _lookup(String value) async {
     try {
+      final FirebaseStorage storage = _storage();
       final Reference ref = value.startsWith('gs://')
-          ? _storage.refFromURL(value)
-          : _storage.ref(value.startsWith('/') ? value.substring(1) : value);
+          ? storage.refFromURL(value)
+          : storage.ref(value.startsWith('/') ? value.substring(1) : value);
       return await ref.getDownloadURL();
     } catch (_) {
       // Allow a later retry instead of caching the failure forever.
@@ -45,7 +49,7 @@ class MediaUrlResolver {
 
 final Provider<MediaUrlResolver> mediaUrlResolverProvider =
     Provider<MediaUrlResolver>(
-      (Ref ref) => MediaUrlResolver(ref.watch(firebaseStorageProvider)),
+      (Ref ref) => MediaUrlResolver(() => ref.read(firebaseStorageProvider)),
     );
 
 /// Resolved HTTPS URL for a media reference. Cached for the app session.

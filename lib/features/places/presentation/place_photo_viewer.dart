@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart'
+    show ImageRenderMethodForWeb;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -159,7 +161,10 @@ class _ViewerImage extends ConsumerWidget {
     final int bound = (size.longestSide * dpr * 1.25).round().clamp(1080, 3072);
     return Image(
       image: ResizeImage(
-        CachedNetworkImageProvider(url),
+        CachedNetworkImageProvider(
+          url,
+          imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
+        ),
         width: bound,
         height: bound,
         policy: ResizeImagePolicy.fit,

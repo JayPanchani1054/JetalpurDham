@@ -1,0 +1,94 @@
+name: Build apps
+
+# Compiles the real Android and iOS apps and publishes an installable demo APK.
+#
+#  * jetalpur-dham-demo-apk    — install on any Android phone to try every screen
+#                                with sample content (no Firebase project needed).
+#  * jetalpur-dham-release-apk — the production app (needs the temple's Firebase
+#                                project via `flutterfire configure` to show content).
+#  * jetalpur-dham-web-demo    — the same demo for a browser (serve the folder).
+#  * iOS                       — compile check without code signing.
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths-ignore: ['docs/**', '**.md']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.47.7'
+
+jobs:
+  android:
+    name: Android (demo + release APK)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build demo APK
+        run: flutter build apk --release -t preview/main_preview.dart
+      - run: mv build/app/outputs/flutter-apk/app-release.apk jetalpur-dham-demo.apk
+      - name: Build production APK
+        run: flutter build apk --release
+      - run: mv build/app/outputs/flutter-apk/app-release.apk jetalpur-dham-release.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jetalpur-dham-demo-apk
+          path: jetalpur-dham-demo.apk
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jetalpur-dham-release-apk
+          path: jetalpur-dham-release.apk
+          retention-days: 30
+
+  ios:
+    name: iOS (compile check)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build iOS app (no code signing)
+        run: flutter build ios --release --no-codesign
+
+  web-demo:
+    name: Web demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build web --release -t preview/main_preview.dart --no-web-resources-cdn
+      - run: cp -r preview/demo_media build/web/demo_media
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jetalpur-dham-web-demo
+          path: build/web
+          retention-days: 30
