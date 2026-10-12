@@ -345,6 +345,9 @@
   "donateClearSaved": "सहेजा गया विवरण हटाएँ",
   "donateSavedCleared": "सहेजा गया विवरण इस फ़ोन से हटा दिया गया",
   "settingsAboutApp": "ऐप के बारे में",
+  "settingsSendFeedback": "सुझाव भेजें",
+  "settingsSendFeedbackDesc": "कोई समस्या या सुझाव हो तो हमें बताएँ",
+  "settingsFeedbackSubject": "जेतलपुर धाम ऐप के बारे में सुझाव",
   "shareAppMessage": "जय श्री स्वामिनारायण! श्री जेतलपुर धाम के कीर्तन, प्रसादी स्थान, शास्त्र और उत्सव की जानकारी एक ही ऐप में। {link}",
   "@shareAppMessage": {"placeholders": {"link": {"type": "String"}}}
 }

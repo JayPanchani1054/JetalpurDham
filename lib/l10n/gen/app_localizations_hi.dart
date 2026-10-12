@@ -1052,6 +1052,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get settingsAboutApp => 'ऐप के बारे में';
 
   @override
+  String get settingsSendFeedback => 'सुझाव भेजें';
+
+  @override
+  String get settingsSendFeedbackDesc => 'कोई समस्या या सुझाव हो तो हमें बताएँ';
+
+  @override
+  String get settingsFeedbackSubject => 'जेतलपुर धाम ऐप के बारे में सुझाव';
+
+  @override
   String shareAppMessage(String link) {
     return 'जय श्री स्वामिनारायण! श्री जेतलपुर धाम के कीर्तन, प्रसादी स्थान, शास्त्र और उत्सव की जानकारी एक ही ऐप में। $link';
   }

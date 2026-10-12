@@ -345,6 +345,9 @@
   "donateClearSaved": "સાચવેલી વિગતો દૂર કરો",
   "donateSavedCleared": "સાચવેલી વિગતો આ ફોનમાંથી દૂર થઈ",
   "settingsAboutApp": "એપ વિશે",
+  "settingsSendFeedback": "પ્રતિસાદ મોકલો",
+  "settingsSendFeedbackDesc": "કોઈ તકલીફ હોય કે સૂચન, અમને જણાવો",
+  "settingsFeedbackSubject": "જેતલપુર ધામ એપ વિશે પ્રતિસાદ",
   "shareAppMessage": "જય શ્રી સ્વામિનારાયણ! શ્રી જેતલપુર ધામનાં કીર્તન, પ્રસાદીનાં સ્થાનો, શાસ્ત્ર અને ઉત્સવની માહિતી એક જ એપમાં. {link}",
   "@shareAppMessage": {"placeholders": {"link": {"type": "String"}}}
 }

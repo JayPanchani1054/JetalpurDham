@@ -1948,6 +1948,24 @@ abstract class AppLocalizations {
   /// **'About app'**
   String get settingsAboutApp;
 
+  /// No description provided for @settingsSendFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send feedback'**
+  String get settingsSendFeedback;
+
+  /// No description provided for @settingsSendFeedbackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem or share an idea'**
+  String get settingsSendFeedbackDesc;
+
+  /// No description provided for @settingsFeedbackSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback on the Jetalpur Dham app'**
+  String get settingsFeedbackSubject;
+
   /// No description provided for @shareAppMessage.
   ///
   /// In en, this message translates to:

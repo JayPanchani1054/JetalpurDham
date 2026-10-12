@@ -39,18 +39,26 @@ mostly waiting for Google and Apple.
 | A Google account owned by the temple (e.g. a trust Gmail) | Owns the Firebase project. Add other staff later as members. |
 | A payment card | The Blaze plan needs one (costs stay near zero — see step 3). |
 | A computer with [Flutter 3.47](https://docs.flutter.dev/get-started/install), [Node.js 22](https://nodejs.org) and Git | To configure, build and deploy. |
+| [Android Studio](https://developer.android.com/studio) | Installs the Android SDK and Java that Android builds need. |
 | Firebase CLI | `npm install -g firebase-tools` then `firebase login` |
 | FlutterFire CLI | `dart pub global activate flutterfire_cli` |
-| For iOS: a Mac with Xcode and an [Apple Developer account](https://developer.apple.com/programs/) | Building the iPhone app and push notifications. |
-| For Android: a [Google Play Console](https://play.google.com/console) account | Publishing to the Play Store. |
+| For iOS: a **Mac** with **Xcode 26 or later** and **CocoaPods** (`brew install cocoapods`) | Building the iPhone app. Apple only accepts uploads built with Xcode 26+ (since 28 April 2026). CocoaPods is required because Google Maps for iOS is only available through CocoaPods (Flutter uses Swift Package Manager for the other plugins and CocoaPods for this one); `flutterfire configure` also needs it on the Mac. |
+| For iOS: an [Apple Developer account](https://developer.apple.com/programs/) | TestFlight, the App Store and push notifications. Enrol as an **organization** in the trust's name (needs a free D-U-N-S number) — see [STORE_SUBMISSION.md](STORE_SUBMISSION.md#0-who-publishes-the-app). |
+| For Android: a [Google Play Console](https://play.google.com/console) account | Publishing to the Play Store. Register it as an **organization** in the trust's name (D-U-N-S number). A new *personal* account must first run a 14-day closed test with at least 12 testers — see [BETA_TESTING.md](BETA_TESTING.md#4c-google-play-closed-testing). |
+
+> **D-U-N-S numbers are free but slow** — look up or request the trust's
+> number as early as possible ([Apple's D-U-N-S help](https://developer.apple.com/help/account/membership/D-U-N-S/));
+> allow up to two weeks before you can enrol.
 
 Check your tools:
 
 ```bash
 flutter --version      # 3.47.x
+flutter doctor         # Android toolchain (and Xcode on the Mac) should show ✓
 node --version         # v22.x
 firebase --version
 flutterfire --version
+pod --version          # Mac only — CocoaPods
 ```
 
 ## 2. Create the Firebase project
@@ -60,8 +68,9 @@ flutterfire --version
 3. Name: `Jetalpur Dham`. Firebase suggests a **project id** such as
    `jetalpur-dham` (you can edit it once, now). **Write the project id down** —
    you will type it several times.
-4. Google Analytics: keep it **enabled** (the app uses it for anonymous usage
-   statistics) and pick or create an Analytics account. Click **Create project**.
+4. Google Analytics: switch it **off**. The app does not include Google
+   Analytics (crash reports work without it, and the privacy policy promises
+   no usage tracking). Click **Create project**.
 
 ## 3. Switch to the Blaze plan (pay-as-you-go)
 
@@ -103,9 +112,17 @@ and Cloud Storage both require the Blaze plan.
 
 ## 6. Connect the app to Firebase (`flutterfire configure`)
 
-From the project folder (the one containing `pubspec.yaml`):
+> **Do this step on the Mac** if you will ever build the iPhone app. On
+> Windows or Linux, `flutterfire configure` sets up Android only and silently
+> skips iOS — no `GoogleService-Info.plist` and no Crashlytics symbol upload
+> for iPhone crash reports. If you already ran it on Windows/Linux, simply run
+> it again on the Mac before the first iPhone build.
+
+From the project folder (the one containing `pubspec.yaml`), **first download
+the app's packages**, then connect Firebase:
 
 ```bash
+flutter pub get
 flutterfire configure \
   --project=<your-project-id> \
   --platforms=android,ios \
@@ -115,26 +132,69 @@ flutterfire configure \
 
 (On Windows PowerShell write it on one line without the `\`.)
 
+> **Why `flutter pub get` first?** `flutterfire` looks at the Firebase
+> packages already downloaded on your computer to choose the Android Gradle
+> plugin versions. On a fresh computer it finds none and quietly writes very
+> old versions that break the Android build. The check below catches this.
+
 This registers the Android and iOS apps in Firebase and writes:
 
 * `lib/firebase_options.dart` — replaces the placeholder in the repository,
 * `android/app/google-services.json`,
-* `ios/Runner/GoogleService-Info.plist`,
+* `ios/Runner/GoogleService-Info.plist` *(Mac only)*,
+* the Google Services and Crashlytics plugins in `android/settings.gradle.kts`
+  and `android/app/build.gradle.kts`,
+* *(Mac only)* a **Crashlytics "Upload Symbols" build phase** in the Xcode
+  project, so iPhone crash reports are readable,
+* a `flutter` section in `firebase.json`.
 
-and adds the Google Services / Crashlytics Gradle plugins when needed. Answer
-**yes** if it asks to update Gradle files. Commit these files — they are
-identifiers, not secrets (security comes from the rules in step 9).
+Answer **yes** whenever it asks to update Gradle or Xcode files.
 
-**Android SHA fingerprints** (needed later for Google Maps key restrictions
-and for any future Google sign-in):
+**Check the Android plugin versions** (one minute; saves hours):
 
 ```bash
-cd android && ./gradlew signingReport     # Windows: gradlew signingReport
+grep -nE "google-services|firebase.crashlytics" android/settings.gradle.kts
+# Windows PowerShell:
+# Select-String -Path android\settings.gradle.kts -Pattern "google-services|crashlytics"
 ```
 
-Copy the **SHA-1** of the `debug` variant (and later of your release/upload key
-and of Play App Signing, see step 15) into
-**Firebase console → ⚙ Project settings → Your apps → Android app → Add fingerprint**.
+You should see **`4.4.4`** for `com.google.gms.google-services` and
+**`3.0.7`** for `com.google.firebase.crashlytics` (or newer). If you see
+`4.3.15` or `2.8.1`, edit those two numbers in `android/settings.gradle.kts`
+to `4.4.4` and `3.0.7`. (These are the versions the app's `firebase_core`
+package expects. A custom `PUB_CACHE` folder can also cause the old numbers.)
+
+**Check Xcode** (Mac): open `ios/Runner.xcworkspace` → target **Runner** →
+**Build Phases**. The **last** phase should be
+`[firebase_crashlytics] Crashlytics Upload Symbols`. If it is missing, run
+`flutterfire configure` again on the Mac, or add it by hand as described in
+Firebase's guide
+[*Get readable crash reports*](https://firebase.google.com/docs/crashlytics/flutter/get-deobfuscated-reports).
+
+**Commit** all the files above (including `ios/Runner.xcodeproj/project.pbxproj`
+and the two Gradle files) — they are identifiers, not secrets (security comes
+from the rules in step 9).
+
+**Android SHA fingerprints** (needed for the Google Maps key restriction in
+step 8 and for any future Google sign-in). The Android build tools and the
+debug key only appear after the first Android build, so build once first:
+
+```bash
+flutter build apk --debug        # first time only, takes a few minutes
+keytool -list -v -alias androiddebugkey -storepass android -keypass android \
+  -keystore ~/.android/debug.keystore
+# Windows PowerShell (one line):
+# keytool -list -v -alias androiddebugkey -storepass android -keypass android -keystore "$env:USERPROFILE\.android\debug.keystore"
+```
+
+(Alternative after that first build: `cd android && ./gradlew signingReport`,
+on Windows `gradlew signingReport`. `keytool` comes with Java — if it is not
+found, use the one inside Android Studio's `jbr/bin` folder.)
+
+Copy the **SHA-1** into **Firebase console → ⚙ Project settings → Your apps →
+Android app → Add fingerprint**. Every computer has its own debug key, so add
+the SHA-1 of each computer that builds the app — and later your **upload key**
+(step 14) and **Play App Signing** key (step 15).
 
 ## 7. iOS push notifications (APNs key)
 

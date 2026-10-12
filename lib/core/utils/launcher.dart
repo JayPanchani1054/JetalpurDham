@@ -17,13 +17,22 @@ abstract final class Launcher {
   static Future<bool> phone(String number) =>
       _launch(Uri(scheme: 'tel', path: _digits(number, keepPlus: true)));
 
-  static Future<bool> email(String address, {String? subject}) => _launch(
-    Uri(
+  static Future<bool> email(String address, {String? subject, String? body}) =>
+      _launch(emailUri(address, subject: subject, body: body));
+
+  /// A `mailto:` link. Spaces and line breaks are percent-encoded (not `+`),
+  /// as mail apps expect.
+  static Uri emailUri(String address, {String? subject, String? body}) {
+    final String query = <String>[
+      if (subject != null) 'subject=${Uri.encodeComponent(subject)}',
+      if (body != null) 'body=${Uri.encodeComponent(body)}',
+    ].join('&');
+    return Uri(
       scheme: 'mailto',
       path: address.trim(),
-      query: subject == null ? null : 'subject=${Uri.encodeComponent(subject)}',
-    ),
-  );
+      query: query.isEmpty ? null : query,
+    );
+  }
 
   /// Opens a WhatsApp chat. [number] should include the country code
   /// (e.g. 919876543210); a 10-digit Indian number gets `91` prefixed.

@@ -1048,6 +1048,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAboutApp => 'About app';
 
   @override
+  String get settingsSendFeedback => 'Send feedback';
+
+  @override
+  String get settingsSendFeedbackDesc => 'Report a problem or share an idea';
+
+  @override
+  String get settingsFeedbackSubject => 'Feedback on the Jetalpur Dham app';
+
+  @override
   String shareAppMessage(String link) {
     return 'Jay Shree Swaminarayan! Experience Shree Jetalpur Dham — kirtan, prasadi places, shastra and utsav updates in one app. $link';
   }

@@ -24,6 +24,7 @@ import '../../../core/services/connectivity_service.dart';
 import '../../../core/utils/app_logger.dart';
 import '../domain/kirtan.dart';
 import '../domain/kirtan_queries.dart';
+import 'kirtan_audio_init.dart';
 import 'kirtan_downloads_controller.dart';
 import 'kirtan_player_state.dart';
 import 'kirtan_shuffle_order.dart';
@@ -434,6 +435,9 @@ class KirtanPlayerController extends Notifier<KirtanQueue> {
             source.timeout(_queueGracePeriod, onTimeout: () => null),
         ],
       );
+      // Just after launch, background audio may still be starting; a source
+      // set before it is ready (or rolled back) could never play.
+      await kirtanAudioReady;
       if (!_isCurrent(generation)) return false;
 
       final List<Kirtan> items = <Kirtan>[];

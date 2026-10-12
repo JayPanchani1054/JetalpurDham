@@ -37,7 +37,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// Push notifications (FCM) + local notifications for foreground messages.
 ///
 /// Contract used by the rest of the app (none of these ever throw):
-///  * [initialize] is awaited once in bootstrap after Firebase init.
+///  * [initialize] is started once by bootstrap after Firebase init, right
+///    after the first frame.
 ///  * [syncSubscription] is called on start and whenever the language or the
 ///    notifications toggle changes. Each device follows exactly one topic:
 ///    `lang_en`, `lang_gu` or `lang_hi`.
@@ -54,8 +55,8 @@ class NotificationService {
   static const String _androidIcon = '@drawable/ic_notification';
   static const Duration _platformTimeout = Duration(seconds: 20);
 
-  /// [initialize] runs before the first frame (bootstrap gives it 15 s in
-  /// total), so each local platform step gets only a few seconds.
+  /// A notification tap that opened the app waits for [initialize], so each
+  /// local platform step gets only a few seconds.
   static const Duration _initStepTimeout = Duration(seconds: 4);
 
   FlutterLocalNotificationsPlugin get _local =>
@@ -83,15 +84,17 @@ class NotificationService {
   // ---------------------------------------------------------------------------
 
   /// Where a tap on [message] should land: `data.route` when it is a safe
-  /// in-app location, else the event in `data.eventId`, else the events tab.
+  /// in-app location (see [Routes.deepLinkTarget]), else the event in
+  /// `data.eventId`, else the events tab.
   static String routeFor(RemoteMessage message) => routeForData(message.data);
 
   /// See [routeFor].
   static String routeForData(Map<String, dynamic> data) {
     final Object? route = data['route'];
-    if (route is String && Routes.isSafeDeepLink(route.trim())) {
-      return route.trim();
-    }
+    final String? target = route is String
+        ? Routes.deepLinkTarget(route.trim())
+        : null;
+    if (target != null) return target;
     final Object? eventId = data['eventId'];
     if (eventId is String && eventId.trim().isNotEmpty) {
       return Routes.event(eventId.trim());
@@ -100,10 +103,8 @@ class NotificationService {
   }
 
   /// Route stored in a local notification's payload.
-  static String routeForPayload(String? payload) {
-    final String? route = payload?.trim();
-    return Routes.isSafeDeepLink(route) ? route! : Routes.events;
-  }
+  static String routeForPayload(String? payload) =>
+      Routes.deepLinkTarget(payload?.trim()) ?? Routes.events;
 
   // ---------------------------------------------------------------------------
   // Initialization

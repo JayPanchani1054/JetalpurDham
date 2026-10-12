@@ -346,6 +346,9 @@
   "donateClearSaved": "Clear saved details",
   "donateSavedCleared": "Saved details removed from this phone",
   "settingsAboutApp": "About app",
+  "settingsSendFeedback": "Send feedback",
+  "settingsSendFeedbackDesc": "Report a problem or share an idea",
+  "settingsFeedbackSubject": "Feedback on the Jetalpur Dham app",
   "shareAppMessage": "Jay Shree Swaminarayan! Experience Shree Jetalpur Dham — kirtan, prasadi places, shastra and utsav updates in one app. {link}",
   "@shareAppMessage": {"placeholders": {"link": {"type": "String"}}}
 }

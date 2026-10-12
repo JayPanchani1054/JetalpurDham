@@ -1049,6 +1049,15 @@ class AppLocalizationsGu extends AppLocalizations {
   String get settingsAboutApp => 'એપ વિશે';
 
   @override
+  String get settingsSendFeedback => 'પ્રતિસાદ મોકલો';
+
+  @override
+  String get settingsSendFeedbackDesc => 'કોઈ તકલીફ હોય કે સૂચન, અમને જણાવો';
+
+  @override
+  String get settingsFeedbackSubject => 'જેતલપુર ધામ એપ વિશે પ્રતિસાદ';
+
+  @override
   String shareAppMessage(String link) {
     return 'જય શ્રી સ્વામિનારાયણ! શ્રી જેતલપુર ધામનાં કીર્તન, પ્રસાદીનાં સ્થાનો, શાસ્ત્ર અને ઉત્સવની માહિતી એક જ એપમાં. $link';
   }

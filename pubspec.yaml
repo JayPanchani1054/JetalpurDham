@@ -25,6 +25,9 @@ dependencies:
   flutter_local_notifications: ^22.3.1
   just_audio: ^0.10.6
   just_audio_background: ^0.0.1-beta.17
+  # Restores the plain player when background audio cannot start
+  # (kirtan_audio_init.dart).
+  just_audio_platform_interface: ^4.6.0
   audio_session: ^0.2.4
   dio: ^5.11.1
   path_provider: ^2.1.6

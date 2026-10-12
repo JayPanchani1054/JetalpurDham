@@ -38,20 +38,44 @@ abstract final class Routes {
   static String event(String eventId) =>
       '/events/${Uri.encodeComponent(eventId)}';
 
-  static const List<String> _allowedPrefixes = <String>[
+  /// Locations a push notification may open, with everything below them. A
+  /// root ending in '/' only allows what is below it.
+  static const List<String> _deepLinkRoots = <String>[
     home,
     kirtan,
-    player,
     places,
     library,
     '/reader/',
     events,
   ];
 
-  /// True for internal locations that may be opened from a push notification.
-  static bool isSafeDeepLink(String? location) {
-    if (location == null || !location.startsWith('/')) return false;
-    if (location.startsWith('//')) return false;
-    return _allowedPrefixes.any(location.startsWith);
+  /// Screens that make no sense when a notification opens the app from cold:
+  /// the player needs a queue that only the app can build, so its tab opens
+  /// instead.
+  static const Map<String, String> _deepLinkRedirects = <String, String>{
+    player: kirtan,
+  };
+
+  /// The internal location a push notification for [location] should open,
+  /// or null when [location] must not be opened from outside the app.
+  static String? deepLinkTarget(String? location) {
+    if (location == null || !location.startsWith('/')) return null;
+    if (location.startsWith('//')) return null;
+    bool isUnder(String root) => root.endsWith('/')
+        ? location.length > root.length && location.startsWith(root)
+        : location == root ||
+              location.startsWith('$root/') ||
+              location.startsWith('$root?') ||
+              location.startsWith('$root#');
+    for (final MapEntry<String, String> redirect
+        in _deepLinkRedirects.entries) {
+      if (isUnder(redirect.key)) return redirect.value;
+    }
+    return _deepLinkRoots.any(isUnder) ? location : null;
   }
+
+  /// True for internal locations that a push notification may open as they
+  /// are (see [deepLinkTarget]).
+  static bool isSafeDeepLink(String? location) =>
+      location != null && deepLinkTarget(location) == location;
 }
