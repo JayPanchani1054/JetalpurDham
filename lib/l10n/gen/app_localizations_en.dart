@@ -906,6 +906,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'No UPI app found on this device. Please scan the QR code instead.';
 
   @override
+  String get donateWebsiteMessage =>
+      'Seva offerings are made on the temple website.';
+
+  @override
+  String get donateWebsiteButton => 'Donate on the temple website';
+
+  @override
+  String get donateContactOffice =>
+      'To offer seva, please contact the temple office.';
+
+  @override
   String get donatePurposeGeneral => 'General seva';
 
   @override
@@ -1043,6 +1054,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get donateSavedCleared => 'Saved details removed from this phone';
+
+  @override
+  String get demoBadge => 'Demo';
+
+  @override
+  String get demoIntroTitle => 'Welcome to the demo';
+
+  @override
+  String get demoIntroBody =>
+      'This is a preview of the Jetalpur Dham app. The temple history, the prasadi places and their mahima are real; the photos, kirtan audio and shastra PDF are only samples.';
+
+  @override
+  String get demoIntroDisabled =>
+      'Notifications, the map and donation payments are turned off in this demo.';
+
+  @override
+  String get demoIntroStart => 'Start exploring';
 
   @override
   String get settingsAboutApp => 'About app';

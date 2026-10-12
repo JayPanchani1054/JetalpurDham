@@ -375,8 +375,17 @@ the trust and test with a ₹1 UPI payment before switching it on.
 | `contactEmail` | string | the office e-mail |
 | `notifyEmail` | string | where new donation forms are e-mailed (see the setup guide) — use an official address, as the app can read it |
 | `title`, `message` | map | heading and line shown on the donation screen |
-| `note` | map | small print, e.g. receipt / 80G tax-exemption information (only if confirmed) |
+| `note` | map | small print, e.g. the trust's registration number and receipt / 80G tax-exemption information (only if confirmed — Google Play allows donation details in the app for registered, tax-exempt trusts) |
 | `purposes` | array of maps | choices in the form: General seva, Thal / Annakut, Utsav seva, Gau seva, Mandir maintenance, Sadhu/Brahmin bhojan (each `en`/`gu`/`hi`) |
+
+**iPhone:** Apple does not allow donation payment details (UPI QR, bank
+account, amount form) inside iPhone apps unless the trust is an
+Apple-approved nonprofit — see
+[STORE_SUBMISSION.md § 4.1](STORE_SUBMISSION.md#4-app-store-ios). Before the
+App Store release, the iPhone app must instead send devotees to a **donation
+page on the temple website** (the developer sets this up). Please prepare that
+page, and whenever you change the UPI ID, QR or bank details here, change them
+on that web page too.
 
 ## 9. View donation requests — દાનની વિનંતીઓ જુઓ
 
@@ -393,7 +402,22 @@ When a devotee taps **Contact Now** and submits the form, a document appears in
 * With `notifyEmail` set (and the e-mail extension installed) the office also
   gets an e-mail for every new form.
 * These documents contain personal details — do not share screenshots
-  outside the office; delete very old ones once receipts are issued.
+  outside the office.
+
+**How long to keep them (privacy rule).** The privacy policy promises devotees
+that their details are deleted from the app **[12] months after the receipt
+is issued** (use the same number as in the published policy). Once a month,
+sort by `createdAt` and **delete** the requests that are older than that and
+already handled. Records the trust must keep for accounts or 80G receipts
+belong in the trust's own books, not in Firestore.
+
+**If a devotee asks** to see, correct or delete the details they sent (by
+e-mail to the privacy address, phone or in person), find their request(s) by
+name or phone number, do what they ask **within 30 days**, and reply to
+confirm.
+
+**During the beta test**, testers send practice forms with names starting
+with **TEST** — delete them when the beta ends.
 
 ## 10. Edit a prasadi place and its mahima — પ્રસાદીનું સ્થાન અને મહિમા
 
@@ -537,8 +561,14 @@ Firestore → `config` → **`app`**:
 | `email`, `website` | string | website: `https://jetalpurdarshan.com` |
 | `youtube`, `facebook`, `instagram` | string | full links (https://…) |
 | `shareUrl` | string | Play Store / App Store link for "Share App" (after publishing) |
+| `privacyPolicyUrl` | string | the published privacy policy page, e.g. `https://jetalpurdarshan.com/privacy` — opened by *Settings → Privacy policy* and the donation form (see [STORE_SUBMISSION.md § 1](STORE_SUBMISSION.md#1-privacy-policy-address)) |
 | `featuredAlbumId` | string | album on Home, default `avsar-200` |
 | `heroImageUrl` | string | section 14 |
+
+**Send feedback:** *Settings → Send feedback* in the app opens an e-mail to
+`email` (or, if there is no e-mail, a WhatsApp chat to `whatsapp`) with the
+app version and phone details filled in. The item is hidden until one of the
+two is set — please check this inbox regularly, especially during the beta.
 
 `phone`, `whatsapp` and `email` start empty on purpose. The temple website
 (an older copy) lists **+91 90999 39376**, **+91 93778 70630** and
@@ -558,7 +588,14 @@ published before entering them.
 * [ ] Official murti photograph approved (section 14)
 * [ ] Avsar 200 photos uploaded (section 3)
 * [ ] At least a few kirtans per category and the main shastras uploaded
+* [ ] Permission from the singer / publisher for every recording and shastra edition uploaded
 * [ ] A test notification received on Android and iPhone (setup guide, step 13)
+* [ ] Privacy policy published and `privacyPolicyUrl` set (section 15)
+* [ ] `email` (or `whatsapp`) set, so devotees can *Send feedback* (section 15)
+* [ ] Donation page on the temple website ready for iPhone users (section 8)
+* [ ] Trust's written permission letter signed, or the app published from the
+  trust's own accounts ([STORE_SUBMISSION.md](STORE_SUBMISSION.md#0-who-publishes-the-app))
+* [ ] Beta test finished and test data deleted ([BETA_TESTING.md](BETA_TESTING.md#10-after-the-beta))
 
 ## Help — મુશ્કેલી હોય તો
 
@@ -572,6 +609,8 @@ published before entering them.
 | I need to undo a change | Firestore has no undo — note old values before big edits. Your developer can set up scheduled Firestore backups. |
 
 For anything technical (new features, app updates, publishing), contact the
-app developer and share [FIREBASE_SETUP.md](FIREBASE_SETUP.md).
+app developer and share [FIREBASE_SETUP.md](FIREBASE_SETUP.md). For the test
+period before launch see [BETA_TESTING.md](BETA_TESTING.md); for the Play
+Store and App Store forms see [STORE_SUBMISSION.md](STORE_SUBMISSION.md).
 
 Jay Shree Swaminarayan 🙏

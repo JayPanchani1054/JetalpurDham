@@ -1,13 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { DonationEmailLimits, DonationRetention } from './config';
 import {
   asBool,
   buildDonationEmail,
+  buildDonationPausedEmail,
   buildMessages,
   classifyObject,
+  compactPhone,
   DEFAULT_BODY,
   DEFAULT_TITLE,
+  donationConsoleUrl,
+  donationEmailSkipReason,
+  donationMailId,
+  donationPausedMailId,
   escapeHtml,
   eventRoute,
   extensionOf,
@@ -15,6 +22,7 @@ import {
   hasText,
   httpsUrlOrNull,
   humanize,
+  indiaDateKey,
   isNotificationPending,
   isStaleEvent,
   leadingOrder,
@@ -30,7 +38,10 @@ import {
   photoOrder,
   prettyTitle,
   pushText,
+  retentionCutoff,
+  retentionMonths,
   safeRoute,
+  samePhoneCount,
   scriptLanguage,
   shouldNotifyEvent,
   slug,
@@ -477,5 +488,118 @@ describe('donation e-mail', () => {
     assert.ok(!email.text.includes('Open in Firebase console'));
     assert.equal(email.replyTo, null);
     assert.equal(buildDonationEmail(null, 'r2').subject, 'New donation details: A devotee');
+  });
+});
+
+describe('donation e-mail limits', () => {
+  const limits = { perHour: 3, perDay: 10, perPhonePerDay: 2 };
+
+  it('sends while every count is within its limit (counts include the new form)', () => {
+    assert.equal(donationEmailSkipReason({ lastHour: 1, lastDay: 1, samePhoneLastDay: 1 }, limits), null);
+    assert.equal(donationEmailSkipReason({ lastHour: 3, lastDay: 10, samePhoneLastDay: 2 }, limits), null);
+    assert.equal(donationEmailSkipReason({ lastHour: 3, lastDay: 10 }, limits), null);
+    assert.equal(donationEmailSkipReason({ lastHour: 3, lastDay: 10, samePhoneLastDay: null }, limits), null);
+  });
+
+  it('skips from the form after the limit on, global limits first', () => {
+    assert.equal(donationEmailSkipReason({ lastHour: 4, lastDay: 4, samePhoneLastDay: 1 }, limits), 'hourly-limit');
+    assert.equal(donationEmailSkipReason({ lastHour: 4, lastDay: 11, samePhoneLastDay: 9 }, limits), 'hourly-limit');
+    assert.equal(donationEmailSkipReason({ lastHour: 2, lastDay: 11, samePhoneLastDay: 9 }, limits), 'daily-limit');
+    assert.equal(donationEmailSkipReason({ lastHour: 2, lastDay: 5, samePhoneLastDay: 3 }, limits), 'phone-limit');
+  });
+
+  it('has sane defaults that keep a day under Gmail\'s 500 e-mails', () => {
+    assert.ok(DonationEmailLimits.perPhonePerDay >= 1);
+    assert.ok(DonationEmailLimits.perHour <= DonationEmailLimits.perDay);
+    assert.ok(DonationEmailLimits.perDay < 500);
+    assert.equal(donationEmailSkipReason({ lastHour: 1, lastDay: 1, samePhoneLastDay: 1 }), null);
+    assert.equal(
+      donationEmailSkipReason({ lastHour: DonationEmailLimits.perHour + 1, lastDay: DonationEmailLimits.perHour + 1 }),
+      'hourly-limit',
+    );
+  });
+
+  it('compares phone numbers regardless of formatting', () => {
+    assert.equal(compactPhone(' +91 98765-43210 '), '+919876543210');
+    assert.equal(compactPhone('(022) 1234.5678'), '02212345678');
+    assert.equal(compactPhone(''), null);
+    assert.equal(compactPhone(null), null);
+    const phones = ['+919876543210', '+91 98765 43210', '+919999999999', null, 42];
+    assert.equal(samePhoneCount(phones, '+919876543210'), 2);
+    assert.equal(samePhoneCount(phones, '+15551234567'), 0);
+    assert.equal(samePhoneCount(phones, undefined), 0);
+  });
+
+  it('names mail documents deterministically', () => {
+    assert.equal(donationMailId('abc123'), 'donation-abc123');
+    // 19:00 UTC is already the next day in India (UTC+5:30).
+    assert.equal(indiaDateKey(new Date('2026-10-11T19:00:00Z')), '2026-10-12');
+    assert.equal(indiaDateKey(new Date('2026-10-11T18:00:00Z')), '2026-10-11');
+    assert.equal(donationPausedMailId(new Date('2026-03-05T04:30:00Z')), 'donation-paused-2026-03-05');
+  });
+
+  it('links the console list or one request', () => {
+    assert.equal(donationConsoleUrl(null), null);
+    assert.equal(
+      donationConsoleUrl('jd'),
+      'https://console.firebase.google.com/project/jd/firestore/databases/-default-/data/~2Fdonation_requests',
+    );
+    assert.ok(donationConsoleUrl('jd', 'a b')?.endsWith('~2Fdonation_requests~2Fa%20b'));
+  });
+
+  it('tells staff that e-mails are paused and where to look', () => {
+    const hourly = buildDonationPausedEmail('hourly-limit', { lastHour: 31, lastDay: 40 }, { projectId: 'jd', limits });
+    assert.ok(hourly.text.includes('31 forms in the last hour'));
+    assert.ok(hourly.text.includes('at most 3 an hour and 10 a day'));
+    assert.ok(hourly.text.includes('No form is lost'));
+    assert.ok(hourly.text.includes('~2Fdonation_requests'));
+    assert.ok(hourly.html.includes("temple&#39;s e-mail account"));
+    assert.ok(!/[\r\n]/u.test(hourly.subject));
+    const daily = buildDonationPausedEmail('daily-limit', { lastHour: 2, lastDay: 151 });
+    assert.ok(daily.text.includes('151 forms in the last 24 hours'));
+    assert.ok(!daily.text.includes('Firebase console'));
+  });
+});
+
+describe('donation retention', () => {
+  it('reads the number of months safely', () => {
+    assert.equal(DonationRetention.defaultMonths, 12);
+    assert.equal(retentionMonths(undefined), 12);
+    assert.equal(retentionMonths(''), 12);
+    assert.equal(retentionMonths('18'), 18);
+    assert.equal(retentionMonths(' 6 '), 6);
+    assert.equal(retentionMonths(24), 24);
+    assert.equal(retentionMonths('0'), 12);
+    assert.equal(retentionMonths('-3'), 12);
+    assert.equal(retentionMonths('1.5'), 12);
+    assert.equal(retentionMonths('twelve'), 12);
+    assert.equal(retentionMonths('1000'), 12);
+    assert.equal(retentionMonths('1'), 1);
+    assert.equal(retentionMonths('120'), 120);
+  });
+
+  it('computes the cutoff in calendar months', () => {
+    const now = new Date('2026-10-12T22:00:00.000Z');
+    assert.equal(retentionCutoff(now, 12).toISOString(), '2025-10-12T22:00:00.000Z');
+    assert.equal(retentionCutoff(now, 1).toISOString(), '2026-09-12T22:00:00.000Z');
+    assert.equal(retentionCutoff(now, 22).toISOString(), '2024-12-12T22:00:00.000Z');
+  });
+
+  it('clamps to the end of shorter months', () => {
+    assert.equal(retentionCutoff(new Date('2024-02-29T03:30:00Z'), 12).toISOString(), '2023-02-28T03:30:00.000Z');
+    assert.equal(retentionCutoff(new Date('2026-03-31T00:00:00Z'), 1).toISOString(), '2026-02-28T00:00:00.000Z');
+    assert.equal(retentionCutoff(new Date('2028-03-31T00:00:00Z'), 1).toISOString(), '2028-02-29T00:00:00.000Z');
+    assert.equal(retentionCutoff(new Date('2026-12-31T12:00:00Z'), 6).toISOString(), '2026-06-30T12:00:00.000Z');
+  });
+
+  it('never returns a cutoff at or after now', () => {
+    const now = new Date('2026-10-12T22:00:00Z');
+    for (let months = 1; months <= 120; months++) {
+      assert.ok(retentionCutoff(now, months).getTime() < now.getTime() - 27 * 24 * 60 * 60 * 1000);
+    }
+    assert.throws(() => retentionCutoff(now, 0), RangeError);
+    assert.throws(() => retentionCutoff(now, -1), RangeError);
+    assert.throws(() => retentionCutoff(now, 1.5), RangeError);
+    assert.throws(() => retentionCutoff(new Date('nope'), 12), RangeError);
   });
 });

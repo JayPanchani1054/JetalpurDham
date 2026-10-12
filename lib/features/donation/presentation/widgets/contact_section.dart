@@ -17,10 +17,14 @@ class ContactSection extends StatelessWidget {
     super.key,
     required this.contact,
     required this.purposes,
+    this.showForm = true,
   });
 
   final DonationContact contact;
   final List<LocalizedText> purposes;
+
+  /// False on iPhone, where only call / WhatsApp / e-mail are offered.
+  final bool showForm;
 
   Future<void> _run(
     BuildContext context,
@@ -39,22 +43,23 @@ class ContactSection extends StatelessWidget {
 
     return DonationCard(
       icon: Icons.support_agent_rounded,
-      title: l10n.donateFormTitle,
-      subtitle: l10n.donateContactSubtitle,
+      title: showForm ? l10n.donateFormTitle : l10n.aboutContact,
+      subtitle: showForm ? l10n.donateContactSubtitle : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          FilledButton.icon(
-            style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
-            onPressed: () {
-              DonationHaptics.tap();
-              showDonationFormSheet(context, purposes: purposes);
-            },
-            icon: const Icon(Icons.edit_note_rounded),
-            label: Text(l10n.donateContactNow),
-          ),
+          if (showForm)
+            FilledButton.icon(
+              style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
+              onPressed: () {
+                DonationHaptics.tap();
+                showDonationFormSheet(context, purposes: purposes);
+              },
+              icon: const Icon(Icons.edit_note_rounded),
+              label: Text(l10n.donateContactNow),
+            ),
           if (phone != null || whatsapp != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
+            if (showForm) const SizedBox(height: AppSpacing.md),
             Row(
               children: <Widget>[
                 if (phone != null)

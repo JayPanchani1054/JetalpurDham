@@ -4,8 +4,12 @@ name: Build apps
 #
 #  * jetalpur-dham-demo-apk    — install on any Android phone to try every screen
 #                                with sample content (no Firebase project needed).
+#                                Installs as "Jetalpur Dham Demo", next to the
+#                                real app; newer demo APKs install as updates.
 #  * jetalpur-dham-release-apk — the production app (needs the temple's Firebase
 #                                project via `flutterfire configure` to show content).
+#                                Signed with the debug key here (no upload key in
+#                                CI), so Gradle adds a warning: not for sharing.
 #  * jetalpur-dham-web-demo    — the same demo for a browser (serve the folder).
 #  * iOS                       — compile check without code signing.
 
@@ -42,8 +46,25 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Build demo APK
+        # Gradle property jdDemo (android/app/build.gradle.kts): own package
+        # name com.jetalpurdham.app.demo and launcher label "Jetalpur Dham
+        # Demo", signed with the public demo key in android/app/demo-signing,
+        # so every new demo APK installs as an update and never replaces the
+        # real app.
+        env:
+          ORG_GRADLE_PROJECT_jdDemo: 'true'
         run: flutter build apk --release -t preview/main_preview.dart
       - run: mv build/app/outputs/flutter-apk/app-release.apk jetalpur-dham-demo.apk
+      - name: Check the demo APK's identity
+        run: |
+          build_tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)
+          badging=$("$build_tools/aapt2" dump badging jetalpur-dham-demo.apk)
+          certs=$("$build_tools/apksigner" verify --print-certs jetalpur-dham-demo.apk)
+          grep -E "^package:|^application-label:" <<< "$badging"
+          grep "certificate DN" <<< "$certs"
+          grep -q "package: name='com.jetalpurdham.app.demo'" <<< "$badging"
+          grep -q "application-label:'Jetalpur Dham Demo'" <<< "$badging"
+          grep -q "CN=Jetalpur Dham Demo" <<< "$certs"
       - name: Build production APK
         run: flutter build apk --release
       - run: mv build/app/outputs/flutter-apk/app-release.apk jetalpur-dham-release.apk

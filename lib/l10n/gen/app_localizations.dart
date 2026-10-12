@@ -1690,6 +1690,24 @@ abstract class AppLocalizations {
   /// **'No UPI app found on this device. Please scan the QR code instead.'**
   String get donateNoUpiApp;
 
+  /// No description provided for @donateWebsiteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Seva offerings are made on the temple website.'**
+  String get donateWebsiteMessage;
+
+  /// No description provided for @donateWebsiteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Donate on the temple website'**
+  String get donateWebsiteButton;
+
+  /// No description provided for @donateContactOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'To offer seva, please contact the temple office.'**
+  String get donateContactOffice;
+
   /// No description provided for @donatePurposeGeneral.
   ///
   /// In en, this message translates to:
@@ -1941,6 +1959,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved details removed from this phone'**
   String get donateSavedCleared;
+
+  /// Demo build only (preview/main_preview.dart): label on the first-launch demo sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo'**
+  String get demoBadge;
+
+  /// Demo build only: title of the sheet shown once on first launch.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to the demo'**
+  String get demoIntroTitle;
+
+  /// Demo build only: explains which content is real and which is sample.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a preview of the Jetalpur Dham app. The temple history, the prasadi places and their mahima are real; the photos, kirtan audio and shastra PDF are only samples.'**
+  String get demoIntroBody;
+
+  /// Demo build only: features that do not work in the demo.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications, the map and donation payments are turned off in this demo.'**
+  String get demoIntroDisabled;
+
+  /// Demo build only: button that closes the demo sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Start exploring'**
+  String get demoIntroStart;
 
   /// No description provided for @settingsAboutApp.
   ///

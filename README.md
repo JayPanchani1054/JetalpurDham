@@ -1,12 +1,14 @@
 # Jetalpur Dham
 
-The official app of **Shree Swaminarayan Mandir, Jetalpur Dham** (Gujarat,
-India) — home of **Shree Revati Baldevji Harikrushna Maharaj**, the fifth of
-the nine mandirs Bhagwan Shree Swaminarayan established Himself.
+The app of **Shree Swaminarayan Mandir, Jetalpur Dham** (Gujarat, India),
+made to be published by the temple trust — home of **Shree Revati Baldevji
+Harikrushna Maharaj**, the fifth of the nine mandirs Bhagwan Shree
+Swaminarayan established Himself.
 
 A calm, simple devotional app for Android and iPhone in **English, ગુજરાતી and
-हिन्दी**, designed for devotees of every age. All content is managed by temple
-staff in the Firebase console — there is no separate admin panel.
+हिन्दी**, with large, readable text that elderly devotees find easy to use.
+All content is managed by temple staff in the Firebase console — there is no
+separate admin panel.
 
 ## Features
 
@@ -30,6 +32,25 @@ staff in the Firebase console — there is no separate admin panel.
 |---|---|---|---|
 | _screenshot_ | _screenshot_ | _screenshot_ | _screenshot_ |
 
+## Try the app now (demo)
+
+No Firebase project is needed to look around. The **Build apps** workflow
+([`.github/workflows/build.yml`](.github/workflows/build.yml)) runs on every
+push and produces, under **Actions → Build apps → latest green run →
+Artifacts**:
+
+| Artifact | What it is |
+|---|---|
+| `jetalpur-dham-demo-apk` | Installable **demo app** for any Android phone, with sample content (real temple history, places and mahima; placeholder photos, PDF and tanpura audio). Notifications, the Google map and payments are off. |
+| `jetalpur-dham-web-demo` | The same demo for a browser — serve the unzipped folder, e.g. `python3 -m http.server 8080`. |
+| `jetalpur-dham-release-apk` | The production app; shows no content until the temple's Firebase project is connected. Not for testers. |
+
+The workflow also compiles the iPhone app (without code signing) so iOS build
+problems show up early. Step-by-step install instructions (unknown-apps
+permission, Play Protect, uninstalling before a beta) are in
+[docs/BETA_TESTING.md](docs/BETA_TESTING.md#1-quick-preview--the-demo-apk-no-setup).
+Run the demo locally with `flutter run -t preview/main_preview.dart`.
+
 ## Tech stack
 
 | Area | Choice |
@@ -37,7 +58,7 @@ staff in the Firebase console — there is no separate admin panel.
 | App | Flutter 3.47 · Dart 3.13 · Material 3 (`material_ui`) |
 | State | Riverpod 3 (`Provider`, `StreamProvider`, `NotifierProvider`, families) |
 | Navigation | go_router 18 — `StatefulShellRoute` with five tabs, deep links from notifications |
-| Backend | Firebase: Cloud Firestore, Cloud Storage, Cloud Messaging, Cloud Functions (2nd gen, Node 22, TypeScript), Crashlytics, Analytics |
+| Backend | Firebase: Cloud Firestore, Cloud Storage, Cloud Messaging, Cloud Functions (2nd gen, Node 22, TypeScript), Crashlytics (opt-out in Settings). No analytics, ads or tracking SDKs. |
 | Audio | just_audio + just_audio_background (lock screen / notification controls) |
 | Media | cached_network_image, photo_view, gal (save photos), pdfrx (PDF), panorama_viewer (360°), google_maps_flutter |
 | Localization | ARB files (`lib/l10n/arb/app_{en,gu,hi}.arb`) + `LocalizedText` for Firestore content |
@@ -52,6 +73,7 @@ lib/
     config/                   config/app document (temple info, darshan timings)
     firebase/                 Firestore/Storage providers, FirestorePaths, Fs.* defensive parsing, media URL resolver
     l10n/                     AppLanguage, language controller, context.l10n
+    legal/                    licence notices (Google Maps, fonts) for Settings → Legal notices
     models/                   LocalizedText ({en, gu, hi} with fallbacks)
     router/                   Routes.*, app router, notification deep links
     services/                 downloads (offline files), connectivity, preferences
@@ -60,10 +82,12 @@ lib/
   features/<feature>/         kirtan · places · gallery · library · events · donation · home · about · settings · shell · splash
     data/ domain/ application/ presentation/
   l10n/                       ARB sources and generated localizations
+preview/                      demo build: main_preview.dart + sample content and media (no Firebase needed)
 functions/                    Cloud Functions (TypeScript) — auto content from uploads, push, donation e-mails
 tools/seed/                   one-time starter content loader (temple info, prasadi places, categories, Avsar 200)
 firestore.rules, storage.rules, firestore.indexes.json, firebase.json
-docs/                         DATA_MODEL.md · FIREBASE_SETUP.md · ADMIN_GUIDE.md
+.github/workflows/            ci.yml (analyze, tests, functions) · build.yml (demo APK, Android/iOS builds, web demo)
+docs/                         FIREBASE_SETUP · ADMIN_GUIDE · BETA_TESTING · STORE_SUBMISSION · PRIVACY_POLICY · DATA_MODEL
 ```
 
 * **Feature-first.** Each feature owns its models (`domain`), Firestore access
@@ -107,19 +131,21 @@ rules) and future tools can use an `admin` custom claim.
 ## Quick start
 
 ```bash
-# 1. Firebase project, keys and deploy — follow docs/FIREBASE_SETUP.md, then:
-flutter pub get
+flutter pub get                             # always first — flutterfire needs it too
+# Firebase project, keys and deploy: follow docs/FIREBASE_SETUP.md
+# (flutterfire configure on the Mac if you build for iPhone), then:
 flutter gen-l10n
 flutter run
 
-# Checks
+# Checks (the CI workflow runs the same)
 flutter analyze
 flutter test
 cd functions && npm ci && npm test          # Cloud Functions unit tests
 ```
 
 Until `flutterfire configure` replaces the placeholder `lib/firebase_options.dart`,
-the app starts but shows no remote content.
+the app starts but shows no remote content (use the demo above to look
+around). iPhone builds need a Mac with Xcode 26+ and CocoaPods.
 
 Secrets are never committed: Google Maps keys live in `android/local.properties`
 (`MAPS_API_KEY=…`) and `ios/Flutter/Secrets.xcconfig` (`GOOGLE_MAPS_API_KEY = …`),
@@ -144,6 +170,19 @@ release signing in `android/key.properties`.
    extension so large albums load thumbnails.
 6. **Icons/splash** — if the logo changes: `dart run flutter_launcher_icons` and
    `dart run flutter_native_splash:create`.
+7. **Permission and accounts** — publish from the trust's own organization
+   developer accounts, or get the trust's signed permission letter for the
+   temple name, murti photos, recordings and texts
+   ([docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md#0-who-publishes-the-app)).
+8. **Privacy policy** — complete [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md),
+   publish it on the temple website and set `config/app.privacyPolicyUrl`.
+9. **Beta test** — two to three weeks with devotees on Android and iPhone
+   ([docs/BETA_TESTING.md](docs/BETA_TESTING.md)); a new *personal* Play account
+   needs a 14-day closed test with 12+ testers before production.
+10. **Store forms** — Data safety, App Privacy, content rating, foreground
+    service and review notes are prepared in
+    [docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md). On iPhone, donations
+    must happen on the temple website (Apple guideline 3.2.2).
 
 ## Documentation
 
@@ -153,6 +192,16 @@ release signing in `android/key.properties`.
 * **[docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md)** — for temple staff: add
   kirtans, photos, shastras and utsavs, send notifications, update donation
   details and darshan timings, edit prasadi places (with Gujarati headings).
+* **[docs/BETA_TESTING.md](docs/BETA_TESTING.md)** — the beta plan: demo APK,
+  Firebase App Distribution, Play internal and closed testing, TestFlight,
+  build numbers, checking crash reports, the tester checklist and how testers
+  report problems.
+* **[docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md)** — publishing
+  permission, store listing, Play *App content* and *Data safety* answers,
+  Apple *App Privacy* and age rating, the iPhone donation rule, review notes
+  and the trust's permission-letter template.
+* **[docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md)** — the privacy policy text
+  to complete and publish.
 * **[docs/DATA_MODEL.md](docs/DATA_MODEL.md)** — the Firestore/Storage contract.
 
 ## Credits
@@ -160,7 +209,9 @@ release signing in `android/key.properties`.
 Fonts: Poppins, Hind Vadodara and Hind under the SIL Open Font License (see
 `assets/fonts/LICENSE-OFL.txt`). Starter content compiled from public sources
 of the temple and Shree NarNarayan Dev Gadi (Kalupur); to be confirmed by the
-temple before launch (see the admin guide's checklist). Murti photographs and
-recordings belong to the temple and are used with its permission.
+temple before launch (see the admin guide's checklist). The temple's name,
+murti photographs, recordings and texts belong to the temple trust; the app is
+published only by the trust or with its written permission (see
+[docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md#0-who-publishes-the-app)).
 
 Jay Shree Swaminarayan 🙏

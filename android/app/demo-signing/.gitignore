@@ -1,0 +1,3 @@
+# The repository ignores *.keystore so real signing keys are never committed.
+# This one is the exception: a public, demo-only key (see README.md here).
+!demo.keystore

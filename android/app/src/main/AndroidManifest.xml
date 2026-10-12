@@ -16,7 +16,7 @@
         tools:ignore="ScopedStorage" />
 
     <application
-        android:label="Jetalpur Dham"
+        android:label="${appLabel}"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"

@@ -34,9 +34,9 @@
 		<string>remote-notification</string>
 	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Save utsav photos and the temple's donation QR code to your photo library.</string>
+	<string>Save utsav photos to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Save utsav photos and the temple's donation QR code to your photo library.</string>
+	<string>Save utsav photos to your photo library.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Move your phone to look around in 360° darshan of prasadi places.</string>
 	<key>LSApplicationQueriesSchemes</key>
@@ -46,11 +46,6 @@
 		<string>mailto</string>
 		<string>whatsapp</string>
 		<string>comgooglemaps</string>
-		<string>upi</string>
-		<string>phonepe</string>
-		<string>paytmmp</string>
-		<string>tez</string>
-		<string>gpay</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>

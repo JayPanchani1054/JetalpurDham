@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -7,6 +8,8 @@ import '../../../core/config/app_config.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/models/localized_text.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/launcher.dart';
+import '../../../core/utils/ui_feedback.dart';
 import '../../../core/widgets/language_button.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../data/donation_repository.dart';
@@ -102,6 +105,12 @@ class _DonationBody extends ConsumerWidget {
       fallbackEmail: app.email,
     );
     final bool available = snapshot?.isAvailable ?? false;
+    // App Store guideline 3.2.2(iv): unless the trust is an Apple-approved
+    // nonprofit, an iPhone app may only point to donations made outside the
+    // app (in Safari). Android keeps QR, UPI and bank details.
+    final bool donateOutsideApp =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    final bool loadProblem = failed || (snapshot?.isWaitingForNetwork ?? false);
     final String note = available ? config!.note.of(context) : '';
     const SizedBox gap = SizedBox(height: AppSpacing.lg);
 
@@ -113,7 +122,10 @@ class _DonationBody extends ConsumerWidget {
           message: _orFallback(config?.message, context, l10n.donateSubtitle),
         ),
         gap,
-        if (available) ...<Widget>[
+        if (donateOutsideApp && !loadProblem) ...<Widget>[
+          _WebsiteDonationCard(url: config?.webUrl),
+          gap,
+        ] else if (available && !donateOutsideApp) ...<Widget>[
           if (config!.hasQr) ...<Widget>[QrPayCard(config: config), gap],
           if (config.bank.isUsable) ...<Widget>[
             BankDetailsCard(bank: config.bank),
@@ -127,10 +139,12 @@ class _DonationBody extends ConsumerWidget {
           ),
           gap,
         ],
-        ContactSection(
-          contact: contact,
-          purposes: config?.purposes ?? const <LocalizedText>[],
-        ),
+        if (!donateOutsideApp || contact.hasAny)
+          ContactSection(
+            contact: contact,
+            purposes: config?.purposes ?? const <LocalizedText>[],
+            showForm: !donateOutsideApp,
+          ),
       ],
     );
   }
@@ -175,6 +189,39 @@ class _UnavailableCard extends ConsumerWidget {
     return DonationInfoCard(
       icon: Icons.hourglass_top_rounded,
       message: l10n.donateUnavailable,
+    );
+  }
+}
+
+/// iPhone: donations happen on the temple's website, opened in Safari.
+class _WebsiteDonationCard extends StatelessWidget {
+  const _WebsiteDonationCard({required this.url});
+
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = context.l10n;
+    final String? link = url;
+    if (link == null) {
+      return DonationInfoCard(
+        icon: Icons.support_agent_rounded,
+        message: l10n.donateContactOffice,
+      );
+    }
+    return DonationInfoCard(
+      icon: Icons.language_rounded,
+      message: l10n.donateWebsiteMessage,
+      action: FilledButton.icon(
+        onPressed: () async {
+          DonationHaptics.tap();
+          if (!await Launcher.url(link) && context.mounted) {
+            context.showOpenLinkError();
+          }
+        },
+        icon: const Icon(Icons.open_in_new_rounded),
+        label: Text(l10n.donateWebsiteButton),
+      ),
     );
   }
 }

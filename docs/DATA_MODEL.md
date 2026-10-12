@@ -41,6 +41,7 @@ filters/sorts on the device, so a missing field can never make an item vanish.
 | `bank` | map `{ accountName, accountNumber, ifsc, bankName, branch, accountType }` | All strings |
 | `contactPhone`, `contactWhatsapp`, `contactEmail` | string | "Contact Now" options |
 | `purposes` | array of LocalizedText | Dropdown options in the "Share donation details" form |
+| `webUrl` | string | The temple's own donation web page. **On iPhone** the app shows a "Donate on the temple website" button (opens Safari) instead of the QR, bank details and form — App Store guideline 3.2.2(iv). Without it, iPhone users are asked to contact the office. |
 | `notifyEmail` | string, comma-separated string, or array | Office address(es) e-mailed for every new donation form (needs the *Trigger Email* extension). Publicly readable — use an official address. |
 
 ### `kirtan_categories/{categoryId}`

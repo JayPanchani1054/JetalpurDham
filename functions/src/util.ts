@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 
 import type { TopicMessage } from 'firebase-admin/messaging';
 
-import { DEFAULT_BOOK_LANGUAGE, Push, StorageFolders } from './config';
+import { DEFAULT_BOOK_LANGUAGE, DonationEmailLimits, DonationRetention, Push, StorageFolders } from './config';
 
 // ---------------------------------------------------------------------------
 // Languages & LocalizedText
@@ -686,9 +686,7 @@ export function buildDonationEmail(
     ? `New donation details: ${subjectName} (${formatRupees(amount)})`
     : `New donation details: ${subjectName}`;
 
-  const consoleUrl = options.projectId
-    ? `https://console.firebase.google.com/project/${encodeURIComponent(options.projectId)}/firestore/databases/-default-/data/~2Fdonation_requests~2F${encodeURIComponent(requestId)}`
-    : null;
+  const consoleUrl = donationConsoleUrl(options.projectId, requestId);
 
   const text = [
     'A devotee shared donation details in the Jetalpur Dham app.',
@@ -722,4 +720,162 @@ export function buildDonationEmail(
   const email = field('email', 254);
   const replyTo = email && EMAIL_PATTERN.test(email) ? email : null;
   return { subject: subject.replace(/[\r\n]+/gu, ' '), text, html, replyTo };
+}
+
+/** Firebase console page of the donation_requests list, or of one request. */
+export function donationConsoleUrl(projectId: string | null | undefined, requestId?: string): string | null {
+  if (!projectId) return null;
+  const doc = requestId ? `~2F${encodeURIComponent(requestId)}` : '';
+  return `https://console.firebase.google.com/project/${encodeURIComponent(projectId)}/firestore/databases/-default-/data/~2Fdonation_requests${doc}`;
+}
+
+/** Id of the `mail` document that carries the e-mail about one request. */
+export function donationMailId(requestId: string): string {
+  return `donation-${requestId}`;
+}
+
+// ---------------------------------------------------------------------------
+// Donation e-mail limits (abuse protection)
+// ---------------------------------------------------------------------------
+
+export const HOUR_MS = 60 * 60 * 1000;
+export const DAY_MS = 24 * HOUR_MS;
+
+/** Recent forms, each count including the new form itself. */
+export interface DonationEmailCounts {
+  /** Forms from everyone in the hour up to the new form. */
+  lastHour: number;
+  /** Forms from everyone in the 24 hours up to the new form. */
+  lastDay: number;
+  /** Forms with the same phone number in those 24 hours; null when not counted. */
+  samePhoneLastDay?: number | null;
+}
+
+export type DonationEmailSkipReason = 'hourly-limit' | 'daily-limit' | 'phone-limit';
+
+export interface DonationEmailLimitValues {
+  perHour: number;
+  perDay: number;
+  perPhonePerDay: number;
+}
+
+/**
+ * Why no e-mail should be sent for a new donation form, or null to send it.
+ * The global limits come first: they protect the mail account and are checked
+ * before the (more expensive) per-phone count.
+ */
+export function donationEmailSkipReason(
+  counts: DonationEmailCounts,
+  limits: DonationEmailLimitValues = DonationEmailLimits,
+): DonationEmailSkipReason | null {
+  if (counts.lastHour > limits.perHour) return 'hourly-limit';
+  if (counts.lastDay > limits.perDay) return 'daily-limit';
+  const samePhone = counts.samePhoneLastDay;
+  if (samePhone !== null && samePhone !== undefined && samePhone > limits.perPhonePerDay) return 'phone-limit';
+  return null;
+}
+
+/** Phone number without spaces, dashes, dots or brackets, or null. */
+export function compactPhone(value: unknown): string | null {
+  const phone = asString(value)?.replace(/[\s\-().]/gu, '') ?? '';
+  return phone === '' ? null : phone;
+}
+
+/** How many of [phones] are the same number as [phone] (ignoring formatting). */
+export function samePhoneCount(phones: readonly unknown[], phone: unknown): number {
+  const target = compactPhone(phone);
+  if (target === null) return 0;
+  return phones.filter((p) => compactPhone(p) === target).length;
+}
+
+/** "2026-10-12": the calendar date in India of [date]. */
+export function indiaDateKey(date: Date): string {
+  // en-CA formats dates as YYYY-MM-DD.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+/** One "e-mails paused" notice per day at most: `donation-paused-2026-10-12`. */
+export function donationPausedMailId(date: Date): string {
+  return `donation-paused-${indiaDateKey(date)}`;
+}
+
+/**
+ * Notice for staff that per-form e-mails were paused because too many forms
+ * arrived, so they know to check the console instead of their inbox.
+ */
+export function buildDonationPausedEmail(
+  reason: Exclude<DonationEmailSkipReason, 'phone-limit'>,
+  counts: DonationEmailCounts,
+  options: { projectId?: string | null; limits?: DonationEmailLimitValues } = {},
+): { subject: string; text: string; html: string } {
+  const limits = options.limits ?? DonationEmailLimits;
+  const detail = reason === 'hourly-limit'
+    ? `${counts.lastHour} forms in the last hour`
+    : `${counts.lastDay} forms in the last 24 hours`;
+  const consoleUrl = donationConsoleUrl(options.projectId);
+  const paragraphs = [
+    `Many donation forms arrived in the Jetalpur Dham app in a short time (${detail}). ` +
+      "To protect the temple's e-mail account, the app has stopped sending an e-mail for each new form for now.",
+    'No form is lost: every form is saved in Firestore under donation_requests. ' +
+      'Please check the list there (sort by createdAt, newest first).',
+    `E-mails start again by themselves when fewer forms arrive (at most ${limits.perHour} an hour and ` +
+      `${limits.perDay} a day). You get this notice at most once a day.`,
+    'If you did not expect this many forms, someone may be sending fake forms. ' +
+      'Please tell the app developer (Firebase App Check stops this).',
+  ];
+  const text = [
+    ...paragraphs.flatMap((p) => [p, '']),
+    ...(consoleUrl ? [`Open in Firebase console: ${consoleUrl}`] : []),
+  ].join('\n').trimEnd();
+  const html =
+    '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#1c1917">' +
+    '<h2 style="color:#C2410C;margin:0 0 12px">Donation e-mails paused</h2>' +
+    paragraphs.map((p) => `<p style="margin:0 0 12px">${escapeHtml(p)}</p>`).join('') +
+    (consoleUrl ? `<p style="margin:0"><a href="${escapeHtml(consoleUrl)}">Open donation_requests in the Firebase console</a></p>` : '') +
+    '</div>';
+  return { subject: 'Jetalpur Dham app: donation e-mails paused (many forms received)', text, html };
+}
+
+// ---------------------------------------------------------------------------
+// Donation request retention
+// ---------------------------------------------------------------------------
+
+/**
+ * Months to keep donation forms: a whole number in
+ * [DonationRetention.minMonths, DonationRetention.maxMonths] read from
+ * [value] (the DONATION_RETENTION_MONTHS environment variable), else the
+ * default (12). Never returns 0, so a typo can never delete everything.
+ */
+export function retentionMonths(value: unknown): number {
+  const months = asNumber(value);
+  if (months === null || !Number.isInteger(months)) return DonationRetention.defaultMonths;
+  if (months < DonationRetention.minMonths || months > DonationRetention.maxMonths) return DonationRetention.defaultMonths;
+  return months;
+}
+
+/**
+ * The moment [months] calendar months before [now] (UTC); forms created
+ * before it are deleted. The day is clamped to the end of a shorter month:
+ * 31 March − 1 month = 28/29 February.
+ */
+export function retentionCutoff(now: Date, months: number): Date {
+  if (!Number.isInteger(months) || months < 1) throw new RangeError(`Invalid retention months: ${months}`);
+  if (Number.isNaN(now.getTime())) throw new RangeError('Invalid date');
+  const firstOfMonth = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth() - months,
+    1,
+    now.getUTCHours(),
+    now.getUTCMinutes(),
+    now.getUTCSeconds(),
+    now.getUTCMilliseconds(),
+  ));
+  const daysInMonth = new Date(Date.UTC(firstOfMonth.getUTCFullYear(), firstOfMonth.getUTCMonth() + 1, 0)).getUTCDate();
+  firstOfMonth.setUTCDate(Math.min(now.getUTCDate(), daysInMonth));
+  return firstOfMonth;
 }

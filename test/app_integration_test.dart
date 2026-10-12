@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +15,7 @@ import 'package:jetalpur_dham/core/router/app_router.dart';
 import 'package:jetalpur_dham/core/router/routes.dart';
 import 'package:jetalpur_dham/core/services/connectivity_service.dart';
 import 'package:jetalpur_dham/core/services/preferences.dart';
+import 'package:jetalpur_dham/core/widgets/menu_button.dart';
 import 'package:jetalpur_dham/features/kirtan/application/kirtan_player_controller.dart';
 import 'package:jetalpur_dham/features/kirtan/application/kirtan_player_state.dart';
 import 'package:jetalpur_dham/features/places/application/places_view_mode.dart';
@@ -129,6 +132,7 @@ Future<FakeFirebaseFirestore> _seededFirestore() async {
 Future<GoRouter> _pumpApp(
   WidgetTester tester, {
   String initialLocation = Routes.splash,
+  FakeFirebaseFirestore? firestore,
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{
     // Skip the one-time notification prompt.
@@ -142,7 +146,7 @@ Future<GoRouter> _pumpApp(
     buildSignature: '',
   );
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final FakeFirebaseFirestore db = await _seededFirestore();
+  final FakeFirebaseFirestore db = firestore ?? await _seededFirestore();
   tester.view
     ..physicalSize = const Size(1170, 2532)
     ..devicePixelRatio = 3;
@@ -312,5 +316,112 @@ void main() {
     ]) {
       await _visit(tester, router, location);
     }
+  });
+
+  testWidgets('Android back closes the drawer first, on a tab and on a page', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await _pumpApp(
+      tester,
+      initialLocation: Routes.kirtan,
+    );
+    String path() => router.routerDelegate.currentConfiguration.uri.path;
+    bool drawerOpen() => shellScaffoldKey.currentState!.isDrawerOpen;
+    Future<void> back() async {
+      await tester.binding.handlePopRoute();
+      await _settle(tester);
+    }
+
+    // On a tab other than Home: close the drawer, then go Home.
+    await tester.tap(find.byTooltip('Menu').first);
+    await _settle(tester);
+    expect(drawerOpen(), isTrue);
+    await back();
+    expect(drawerOpen(), isFalse);
+    expect(path(), Routes.kirtan);
+    await back();
+    expect(path(), Routes.home);
+
+    // On a page inside a tab: close the drawer, then leave the page.
+    router.go(Routes.kirtanDownloads);
+    await _settle(tester);
+    shellScaffoldKey.currentState!.openDrawer();
+    await _settle(tester);
+    expect(drawerOpen(), isTrue);
+    await back();
+    expect(drawerOpen(), isFalse);
+    expect(path(), Routes.kirtanDownloads);
+    await back();
+    expect(path(), Routes.kirtan);
+
+    // A full-screen page above the shell is closed first.
+    shellScaffoldKey.currentState!.openDrawer();
+    await _settle(tester);
+    unawaited(router.push<void>(Routes.player));
+    await _settle(tester);
+    expect(router.state.uri.path, Routes.player);
+    await back();
+    expect(router.state.uri.path, Routes.kirtan);
+    expect(drawerOpen(), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Settings sends feedback with app version and platform', (
+    WidgetTester tester,
+  ) async {
+    final List<String> launched = <String>[];
+    const MethodChannel urlLauncher = MethodChannel(
+      'plugins.flutter.io/url_launcher',
+    );
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      urlLauncher,
+      (MethodCall call) async {
+        if (call.method != 'launch') return null;
+        launched.add(
+          (call.arguments as Map<Object?, Object?>)['url']! as String,
+        );
+        return true;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        urlLauncher,
+        null,
+      ),
+    );
+    final FakeFirebaseFirestore db = await _seededFirestore();
+    await _pumpApp(tester, initialLocation: Routes.settings, firestore: db);
+
+    // The seed has no e-mail or WhatsApp number yet.
+    expect(find.text('Send feedback'), findsNothing);
+
+    await db.collection('config').doc('app').update(<String, Object?>{
+      'email': 'office@example.org',
+    });
+    await _settle(tester);
+    await tester.scrollUntilVisible(
+      find.text('Send feedback'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(find.text('Send feedback'));
+    await _settle(tester);
+
+    expect(launched, hasLength(1));
+    final Uri mail = Uri.parse(launched.single);
+    expect(mail.scheme, 'mailto');
+    expect(mail.path, 'office@example.org');
+    expect(
+      mail.queryParameters['subject'],
+      'Feedback on the Jetalpur Dham app',
+    );
+    expect(mail.queryParameters['body'], contains('Version 1.0.0 (1)'));
+    expect(mail.queryParameters['body'], contains('Android · '));
+    expect(tester.takeException(), isNull);
   });
 }

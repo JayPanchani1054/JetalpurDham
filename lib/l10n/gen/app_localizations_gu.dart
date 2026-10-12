@@ -909,6 +909,17 @@ class AppLocalizationsGu extends AppLocalizations {
       'આ ફોનમાં કોઈ UPI એપ મળી નથી. કૃપા કરી QR કોડ સ્કેન કરો.';
 
   @override
+  String get donateWebsiteMessage =>
+      'સેવાનું દાન મંદિરની વેબસાઇટ પર કરી શકાય છે.';
+
+  @override
+  String get donateWebsiteButton => 'મંદિરની વેબસાઇટ પર દાન કરો';
+
+  @override
+  String get donateContactOffice =>
+      'સેવા અર્પણ કરવા કૃપા કરી મંદિર કાર્યાલયનો સંપર્ક કરો.';
+
+  @override
   String get donatePurposeGeneral => 'સામાન્ય સેવા';
 
   @override
@@ -1044,6 +1055,23 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get donateSavedCleared => 'સાચવેલી વિગતો આ ફોનમાંથી દૂર થઈ';
+
+  @override
+  String get demoBadge => 'ડેમો';
+
+  @override
+  String get demoIntroTitle => 'ડેમોમાં આપનું સ્વાગત છે';
+
+  @override
+  String get demoIntroBody =>
+      'આ જેતલપુર ધામ એપની એક ઝલક છે. મંદિરના ઇતિહાસ, પ્રસાદીનાં સ્થાનો અને તેમના મહિમાની માહિતી સાચી છે; તસવીરો, કીર્તનનો ઓડિયો અને શાસ્ત્રની PDF ફક્ત નમૂના માટે છે.';
+
+  @override
+  String get demoIntroDisabled =>
+      'આ ડેમોમાં સૂચનાઓ, નકશો અને દાનની ચુકવણી બંધ છે.';
+
+  @override
+  String get demoIntroStart => 'એપ જુઓ';
 
   @override
   String get settingsAboutApp => 'એપ વિશે';

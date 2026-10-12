@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -118,6 +120,7 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           header(l10n.settingsAboutApp),
+          const _FeedbackTile(),
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: Text(l10n.settingsPrivacyPolicy),
@@ -166,6 +169,72 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Opens an e-mail to the temple (or a WhatsApp chat when no e-mail is set)
+/// with the app version, platform and OS version filled in. Hidden until
+/// `config/app` has an e-mail address or a WhatsApp number.
+class _FeedbackTile extends ConsumerWidget {
+  const _FeedbackTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppConfig config = ref.watch(appConfigValueProvider);
+    final String? email = config.email;
+    final String? whatsApp = config.whatsapp;
+    if (email == null && whatsApp == null) return const SizedBox.shrink();
+    final AppLocalizations l10n = context.l10n;
+    return ListTile(
+      leading: const Icon(Icons.feedback_outlined),
+      title: Text(l10n.settingsSendFeedback),
+      subtitle: Text(l10n.settingsSendFeedbackDesc),
+      trailing: const Icon(Icons.open_in_new_rounded, size: 20),
+      onTap: () async {
+        PackageInfo? info;
+        try {
+          info = await ref.read(_packageInfoProvider.future);
+        } catch (error, stack) {
+          AppLogger.error('Package info unavailable', error, stack);
+        }
+        final String subject = l10n.settingsFeedbackSubject;
+        final String details = _feedbackDetails(l10n, info);
+        bool opened = false;
+        if (email != null) {
+          // Room to write above the details.
+          opened = await Launcher.email(
+            email,
+            subject: subject,
+            body: '\n\n\n---\n$details',
+          );
+        }
+        if (!opened && whatsApp != null) {
+          opened = await Launcher.whatsApp(
+            whatsApp,
+            message: '$subject\n$details\n\n',
+          );
+        }
+        if (!opened && context.mounted) context.showOpenLinkError();
+      },
+    );
+  }
+}
+
+/// App version, platform and OS version, so the temple can reproduce a
+/// problem a devotee reports.
+String _feedbackDetails(AppLocalizations l10n, PackageInfo? info) {
+  final String app = info == null
+      ? l10n.appTitle
+      : '${l10n.appTitle} · '
+            '${l10n.settingsAppVersion('${info.version} (${info.buildNumber})')}';
+  final String platform = switch (defaultTargetPlatform) {
+    TargetPlatform.android => 'Android',
+    TargetPlatform.iOS => 'iOS',
+    final TargetPlatform other => other.name,
+  };
+  final String os = kIsWeb
+      ? 'Web'
+      : '$platform · ${Platform.operatingSystemVersion}';
+  return '$app\n$os';
 }
 
 class _StorageTile extends ConsumerWidget {

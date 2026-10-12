@@ -99,6 +99,7 @@ class DonationConfig {
     this.contactWhatsapp,
     this.contactEmail,
     this.purposes = const <LocalizedText>[],
+    this.webUrl,
   });
 
   /// Parses the document. Never throws; a missing `enabled` counts as `true`.
@@ -117,6 +118,7 @@ class DonationConfig {
       contactWhatsapp: Fs.stringOrNull(map['contactWhatsapp']),
       contactEmail: Fs.stringOrNull(map['contactEmail']),
       purposes: _parsePurposes(map['purposes']),
+      webUrl: _webUrl(map['webUrl']),
     );
   }
 
@@ -132,6 +134,10 @@ class DonationConfig {
   final String? contactWhatsapp;
   final String? contactEmail;
   final List<LocalizedText> purposes;
+
+  /// The temple's own donation web page. On iPhone the app links here instead
+  /// of showing payment details (App Store guideline 3.2.2(iv)).
+  final String? webUrl;
 
   /// `upi://pay?...` link for "Pay with UPI app" and the generated QR.
   String? get upiUri => upiUriWithPayee(null);
@@ -227,3 +233,14 @@ String buildUpiUri(String upiId, [String? payeeName]) {
 /// Plain-text block for "Copy all details", one `Label: value` per line.
 String formatBankDetails(Iterable<(String label, String value)> rows) =>
     rows.map(((String, String) row) => '${row.$1}: ${row.$2}').join('\n');
+
+String? _webUrl(Object? value) {
+  final String? url = Fs.stringOrNull(value);
+  if (url == null) return null;
+  final Uri? uri = Uri.tryParse(url);
+  return uri != null &&
+          (uri.scheme == 'https' || uri.scheme == 'http') &&
+          uri.host.isNotEmpty
+      ? url
+      : null;
+}

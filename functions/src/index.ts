@@ -10,6 +10,10 @@
  *                              app content
  *  * onStorageDelete         – removes that content when the file is deleted
  *  * onDonationRequestCreate – e-mails staff about a new donation form
+ *                              (rate-limited against floods)
+ *  * onDonationRequestDelete – deletes the e-mail copy of a deleted form
+ *  * purgeOldDonationRequests – nightly: deletes donation forms older than
+ *                              the privacy policy's retention (12 months)
  *
  * See docs/FIREBASE_SETUP.md (deploying) and docs/ADMIN_GUIDE.md (daily use).
  */
@@ -25,6 +29,6 @@ setGlobalOptions({
   timeoutSeconds: 120,
 });
 
-export { onDonationRequestCreate } from './donations';
+export { onDonationRequestCreate, onDonationRequestDelete, purgeOldDonationRequests } from './donations';
 export { onEventWrite, onNotificationCreate } from './notifications';
 export { onStorageDelete, onStorageUpload } from './storage';

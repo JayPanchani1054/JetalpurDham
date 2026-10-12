@@ -42,7 +42,7 @@ mostly waiting for Google and Apple.
 | [Android Studio](https://developer.android.com/studio) | Installs the Android SDK and Java that Android builds need. |
 | Firebase CLI | `npm install -g firebase-tools` then `firebase login` |
 | FlutterFire CLI | `dart pub global activate flutterfire_cli` |
-| For iOS: a **Mac** with **Xcode 26 or later** and **CocoaPods** (`brew install cocoapods`) | Building the iPhone app. Apple only accepts uploads built with Xcode 26+ (since 28 April 2026). CocoaPods is required because Google Maps for iOS is only available through CocoaPods (Flutter uses Swift Package Manager for the other plugins and CocoaPods for this one); `flutterfire configure` also needs it on the Mac. |
+| For iOS: a **Mac** with **Xcode 26 or later** and **CocoaPods** (`brew install cocoapods`) | Building the iPhone app. Apple only accepts uploads built with Xcode 26+ (since 28 April 2026). CocoaPods is required because Google Maps for iOS is only available through CocoaPods (Flutter uses Swift Package Manager for the other plugins and CocoaPods for this one). |
 | For iOS: an [Apple Developer account](https://developer.apple.com/programs/) | TestFlight, the App Store and push notifications. Enrol as an **organization** in the trust's name (needs a free D-U-N-S number) — see [STORE_SUBMISSION.md](STORE_SUBMISSION.md#0-who-publishes-the-app). |
 | For Android: a [Google Play Console](https://play.google.com/console) account | Publishing to the Play Store. Register it as an **organization** in the trust's name (D-U-N-S number). A new *personal* account must first run a 14-day closed test with at least 12 testers — see [BETA_TESTING.md](BETA_TESTING.md#4c-google-play-closed-testing). |
 
@@ -69,8 +69,9 @@ pod --version          # Mac only — CocoaPods
    `jetalpur-dham` (you can edit it once, now). **Write the project id down** —
    you will type it several times.
 4. Google Analytics: switch it **off**. The app does not include Google
-   Analytics (crash reports work without it, and the privacy policy promises
-   no usage tracking). Click **Create project**.
+   Analytics — crash reports work without it, and the privacy policy and the
+   store privacy answers assume no usage statistics are collected. Click
+   **Create project**.
 
 ## 3. Switch to the Blaze plan (pay-as-you-go)
 
@@ -198,25 +199,47 @@ the SHA-1 of each computer that builds the app — and later your **upload key**
 
 ## 7. iOS push notifications (APNs key)
 
-Apple delivers iPhone notifications, so Firebase needs an Apple key once.
+Apple delivers iPhone notifications, so Firebase needs an **APNs
+Authentication Key** (a small `.p8` file) from Apple. You do **not** need the
+older `.p12` push certificates, and the key never expires.
 
 1. <https://developer.apple.com/account> → **Certificates, Identifiers & Profiles**.
 2. **Identifiers → +** → App IDs → App → Bundle ID (explicit)
    `com.jetalpurdham.app`, description `Jetalpur Dham`; tick **Push Notifications** → Register.
-   (Skip if Xcode already created it.)
-3. **Keys → +** → name `Jetalpur Dham APNs`, tick **Apple Push Notifications
-   service (APNs)** → Continue → Register → **Download** the `.p8` file (you can
-   download it only once — store it safely). Note the **Key ID** and your
-   **Team ID** (top-right of the developer site).
+   (Skip if Xcode already created it; then just make sure Push Notifications
+   is ticked.)
+3. **Keys → +** → name `Jetalpur Dham APNs` → tick **Apple Push Notifications
+   service (APNs)** → click **Configure** next to it:
+   * **Environment: Sandbox & Production** — one key then works both for test
+     builds run from Xcode (*Sandbox*) and for **TestFlight and App Store**
+     builds (*Production*).
+   * **Key restriction: Team Scoped (All Topics)**.
+   * **Save → Continue → Register/Confirm → Download** the `.p8` file (you can
+     download it only once — store it safely with the upload key from step 14).
+
+   Note the **Key ID** (10 characters, shown with the key) and your **Team ID**
+   (top-right of the developer site, or *Membership details*).
+
+   > If Apple only lets you pick **one** environment, choose **Production** —
+   > TestFlight and App Store builds use Production, and a Sandbox-only key
+   > makes iPhone notifications silently fail for every tester. Create a
+   > second, Sandbox key only if you also want notifications on builds run
+   > straight from Xcode.
+
 4. Firebase console → ⚙ **Project settings → Cloud Messaging → Apple app
    configuration → APNs Authentication Key → Upload**: choose the `.p8`, enter
-   Key ID and Team ID.
-5. In Xcode open `ios/Runner.xcworkspace` → target **Runner** →
-   **Signing & Capabilities**:
-   * pick your **Team**;
-   * **+ Capability → Push Notifications**;
-   * **+ Capability → Background Modes** and tick **Audio, AirPlay, and Picture
-     in Picture** and **Remote notifications** (already listed in `Info.plist`).
+   the Key ID and Team ID. If Firebase shows separate **development** and
+   **production** slots, upload a *Sandbox & Production* key to **both**
+   (or each single-environment key to its matching slot).
+5. Push Notifications and Background Modes are already set up in the project
+   (`ios/Runner/Runner.entitlements` and `Info.plist`). In Xcode open
+   `ios/Runner.xcworkspace` → target **Runner** → **Signing & Capabilities**:
+   * pick your **Team** (the trust's organization team);
+   * check that **Push Notifications** and **Background Modes** (with **Audio,
+     AirPlay, and Picture in Picture** and **Remote notifications** ticked)
+     are listed;
+   * commit `ios/Runner.xcodeproj/project.pbxproj` afterwards — it now holds
+     your Team ID, so builds on other Macs sign without extra clicks.
 
 > Pictures in iOS notifications additionally need a *Notification Service
 > Extension* (see the FlutterFire Messaging docs, "Displaying an image").
@@ -293,6 +316,26 @@ answer **yes** with the suggested 1 day; it avoids small storage charges.
 > If the very first deploy fails with a permission error mentioning
 > *Eventarc* or *Pub/Sub service agent*, Google is still setting up the
 > project. Wait 5 minutes and run the same command again.
+>
+> If it fails with **"Could not build the function due to a missing
+> permission on the build service account"** (common when the project
+> belongs to a Google Workspace organization), give the build account the
+> role it needs, then deploy again:
+>
+> 1. Google Cloud console → **IAM & Admin → IAM** (project selected at the top).
+> 2. Find **Compute Engine default service account**
+>    (`<PROJECT_NUMBER>-compute@developer.gserviceaccount.com`; the project
+>    number is in Firebase ⚙ *Project settings*) → ✏ **Edit**.
+> 3. **Add another role → Cloud Build Service Account** → **Save**. If the
+>    next deploy says the build cannot write logs, also add **Logs Writer**.
+>
+> Or with one command (developers):
+>
+> ```bash
+> gcloud projects add-iam-policy-binding <your-project-id> \
+>   --member="serviceAccount:<PROJECT_NUMBER>-compute@developer.gserviceaccount.com" \
+>   --role="roles/cloudbuild.builds.builder"
+> ```
 
 Check: **Build → Functions** lists five functions in `asia-south1`.
 
@@ -402,11 +445,20 @@ breaks — staff still see every request in the console.
 > `config/donation` is readable by the app, so use the temple's official
 > address for `notifyEmail`, not a personal one.
 
+> **During the beta**, testers will submit practice forms. Leave `notifyEmail`
+> empty or point it to a test address so the office inbox is not filled with
+> test requests, and delete the test `donation_requests` afterwards. Before
+> public launch, turn on **App Check** (Play Integrity / App Attest) for
+> Firestore so nobody can flood the form — and the office inbox — from outside
+> the app.
+
 ## 13. Test a push notification
 
 Install the app on a phone (step 15 or `flutter run`), open it once and allow
 notifications. Each phone subscribes to one topic for its language:
-`lang_en`, `lang_gu` or `lang_hi`.
+`lang_en`, `lang_gu` or `lang_hi`. On iPhone use a real device; TestFlight
+builds only receive notifications when the APNs key includes **Production**
+(step 7).
 
 * **Quick test from the console:** **Messaging** (left menu, under *Run* or
   *Engage* depending on the console version) → **New campaign →
@@ -424,8 +476,10 @@ Delete your test documents afterwards.
 
 ## 14. Android release signing
 
-Create an upload key once and keep it (and its passwords) safe — you need the
-same key for every future update.
+Create an upload key once, **before the first beta build**, and keep it (and
+its passwords) safe — you need the same key for every future update. Keep two
+copies (for example an encrypted USB drive in the trust office and a password
+manager); never commit it or send it by e-mail.
 
 ```bash
 keytool -genkey -v -keystore ~/jetalpur-upload.jks -keyalg RSA -keysize 2048 \
@@ -441,8 +495,13 @@ keyAlias=upload
 storeFile=/absolute/path/to/jetalpur-upload.jks
 ```
 
-`android/app/build.gradle.kts` picks it up automatically (without it, release
-builds fall back to debug signing so `flutter run --release` still works).
+`android/app/build.gradle.kts` picks it up automatically. Without it, a
+release build is signed with your computer's **debug** key — fine for trying
+the app on your own phone, but **Play rejects** such bundles ("signed in debug
+mode"), and testers who install a debug-signed APK cannot update it to a
+properly signed build without uninstalling first. So sign **every** tester
+build (Play bundles *and* App Distribution APKs) with this upload key.
+
 Add the upload key's SHA-1 (`keytool -list -v -keystore ~/jetalpur-upload.jks -alias upload`)
 to Firebase and to the Android Maps key.
 
@@ -454,29 +513,64 @@ flutter gen-l10n
 flutter analyze && flutter test
 ```
 
+**Version and build number — raise it for every upload.** `pubspec.yaml`
+has `version: 1.0.0+1`. The part before `+` is the version devotees see
+(`1.0.0`); the number after `+` is the **build number** (Android *version
+code*, iOS *bundle version*). Every build you upload anywhere — Play,
+TestFlight or Firebase App Distribution — needs a **higher** build number than
+the one before, otherwise Play says *"Version code 1 has already been used"*
+and App Store Connect refuses the upload. Either change it in `pubspec.yaml`
+(`1.0.0+2`, `1.0.0+3`, …) and commit, or pass it when building:
+`--build-number=2`. Use the same number for the Android and iPhone builds made
+from the same code, so tester reports are easy to match. Raise the version
+(`1.0.1`, `1.1.0`) only for public updates after launch.
+
 **Android (Play Store)**
 
+Before the first tester build: `android/key.properties` exists (step 14) and
+the Maps key is set (step 8) — without it the Prasadi map is blank.
+
 ```bash
-flutter build appbundle --release
-# → build/app/outputs/bundle/release/app-release.aab
+flutter build appbundle --release --build-number=<N>
+# → build/app/outputs/bundle/release/app-release.aab   (Play Console)
+flutter build apk --release --build-number=<N>
+# → build/app/outputs/flutter-apk/app-release.apk      (Firebase App Distribution)
 ```
 
-Create the app in Play Console, upload the `.aab` to an internal testing track
-first, and enrol in **Play App Signing**. Then copy the **App signing key
-certificate SHA-1** (Play Console → *Test and release → App integrity*) into
-Firebase (Android app fingerprints) and into the Android Maps key restriction.
-Once published, put the Play Store link in `config/app.shareUrl` so "Share App"
-works.
+*Developer check, once after step 6:* `flutter build appbundle --release --verbose`
+should list the task `uploadCrashlyticsMappingFileRelease` — it uploads the
+file that makes Android crash reports readable.
 
-**iOS (App Store)**
+Create the app in Play Console, upload the `.aab` to the **internal testing**
+track first (Play App Signing is switched on automatically for new apps). Then
+copy the **App signing key certificate SHA-1** (Play Console → *Test and
+release → App integrity*) into Firebase (Android app fingerprints) and into
+the Android Maps key restriction. Once published, put the Play Store link in
+`config/app.shareUrl` so "Share App" works.
+
+**iOS (App Store)** — on the Mac, with Xcode 26+ and CocoaPods. Create the app
+record in App Store Connect first
+([BETA_TESTING.md § 5](BETA_TESTING.md#5-iphone-testers--testflight)).
 
 ```bash
-flutter build ipa --release
+flutter build ipa --release --build-number=<N>
 # → build/ios/ipa/*.ipa  (and build/ios/archive/Runner.xcarchive)
 ```
 
-Upload with Xcode → *Window → Organizer → Distribute App*, or with Apple's
-**Transporter** app, then test through TestFlight before submitting for review.
+The **first** iOS build creates `ios/Podfile` and `ios/Podfile.lock` (CocoaPods,
+for Google Maps) and adds CocoaPods lines to `ios/Flutter/Debug.xcconfig`,
+`ios/Flutter/Release.xcconfig` and `ios/Runner.xcodeproj/project.pbxproj`.
+**Commit these files** so every build is the same. (`ios/Pods/` itself is
+git-ignored.)
+
+Upload the `.ipa` with Apple's free **Transporter** app (drag and drop) or
+Xcode → *Window → Organizer → Distribute App*, then test through TestFlight
+before submitting for review.
+
+**Next:** [BETA_TESTING.md](BETA_TESTING.md) — getting builds to testers
+(App Distribution, Play testing tracks, TestFlight) and checking crash
+reports; [STORE_SUBMISSION.md](STORE_SUBMISSION.md) — store listing, privacy
+answers, content rating and review notes.
 
 **App icon and splash** (already generated; regenerate after changing the
 artwork in `assets/icons/`):
@@ -496,4 +590,13 @@ dart run flutter_native_splash:create
 | Map is blank/grey | Maps key missing or restricted to the wrong package/SHA-1/bundle id (step 8). |
 | "Missing or insufficient permissions" in logs | Rules not deployed (step 9), or a donation form field outside the allowed list. |
 | Functions deploy fails with a region/location error | Firestore and Storage must be in `asia-south1`, or change `REGION` in `functions/src/config.ts` to their location. |
+| Functions deploy fails: "missing permission on the build service account" | Give the *Compute Engine default service account* the **Cloud Build Service Account** role (step 9), then deploy again. |
 | Need to re-send an event notification | Delete the event's `notifiedAt` field — it is sent again once. |
+| `./gradlew: No such file or directory` / `gradlew is not recognized` | The Gradle wrapper is created by the first Android build: run `flutter build apk --debug` once (step 6). |
+| Android build fails right after `flutterfire configure` | Old Gradle plugin versions were written — check `android/settings.gradle.kts` for `4.4.4` / `3.0.7` (step 6). |
+| `CocoaPods not installed or not in valid state` | Mac: `brew install cocoapods`, then build again (step 1). |
+| `cannot load such file -- xcodeproj` when running `flutterfire configure` | The Mac's Ruby lacks the `xcodeproj` gem that flutterfire uses to edit the Xcode project: `sudo gem install xcodeproj`, then run `flutterfire configure` again. |
+| iPhone gets notifications from Xcode builds but not from TestFlight | The APNs key must include **Production** and be uploaded to Firebase (step 7). |
+| Play: "You uploaded an APK or Android App Bundle that was signed in debug mode" | `android/key.properties` is missing or wrong (step 14). |
+| Play: "Version code 1 has already been used" / App Store Connect: bundle version must be higher | Raise the build number (step 15). |
+| Crashlytics shows "missing dSYM" for iPhone crashes | Run `flutterfire configure` on the Mac and check the Crashlytics build phase is last (step 6). |

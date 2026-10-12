@@ -471,4 +471,48 @@ void main() {
     expect(find.text(_receivedText), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  group('iPhone (App Store guideline 3.2.2(iv))', () {
+    testWidgets('links to the temple website instead of payment details', (
+      WidgetTester tester,
+    ) async {
+      final DonationConfig config = DonationConfig.fromMap(<String, Object?>{
+        'enabled': true,
+        'upiId': 'jetalpurdham@sbi',
+        'bank': <String, Object?>{
+          'accountName': 'Shree Swaminarayan Mandir Jetalpur Trust',
+          'accountNumber': '1234 5678 9012',
+          'ifsc': 'SBIN0001234',
+        },
+        'contactPhone': '9876543210',
+        'webUrl': 'https://example.org/donate',
+      });
+      await _pump(
+        tester,
+        snapshot: DonationConfigSnapshot(config: config, fromCache: false),
+      );
+
+      expect(find.text('Donate on the temple website'), findsOneWidget);
+      expect(find.text('Scan & Pay'), findsNothing);
+      expect(find.text('Bank Transfer'), findsNothing);
+      expect(find.text('jetalpurdham@sbi'), findsNothing);
+      expect(find.text('Contact Now'), findsNothing);
+      // Call / WhatsApp stay available.
+      expect(find.text('Call'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+    testWidgets('without a website it asks devotees to contact the office', (
+      WidgetTester tester,
+    ) async {
+      await _pump(tester);
+      expect(
+        find.text('To offer seva, please contact the temple office.'),
+        findsOneWidget,
+      );
+      expect(find.text('Scan & Pay'), findsNothing);
+      expect(find.text('Contact Now'), findsNothing);
+      expect(tester.takeException(), isNull);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+  });
 }

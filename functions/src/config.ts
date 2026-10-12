@@ -50,3 +50,50 @@ export const Push = {
 
 /** Default language of PDFs uploaded to books/ (most shastras are Gujarati). */
 export const DEFAULT_BOOK_LANGUAGE = 'gu';
+
+/**
+ * Limits on the staff e-mail sent for each new `donation_requests` form.
+ *
+ * Anyone can create a (strictly validated) form without signing in, and each
+ * one sends an e-mail through the temple's mail account (Gmail allows about
+ * 500 a day). Above these limits the form is still saved — staff see it in the
+ * console — but no e-mail is sent. Every count includes the new form itself,
+ * so the e-mail is skipped from the (limit + 1)-th form on.
+ *
+ * These limits only protect the inbox. The real protection against scripted
+ * forms is Firebase App Check enforced for Cloud Firestore (see
+ * onDonationRequestCreate).
+ */
+export const DonationEmailLimits = {
+  /** Forms from everyone in the last hour. */
+  perHour: 30,
+  /** Forms from everyone in the last 24 hours (well under Gmail's daily cap). */
+  perDay: 150,
+  /** Forms with the same phone number in the last 24 hours. */
+  perPhonePerDay: 5,
+} as const;
+
+/**
+ * Automatic deletion of old `donation_requests` (and their `mail` copies), as
+ * promised in docs/PRIVACY_POLICY.md ("deleted ... within [12] months").
+ */
+export const DonationRetention = {
+  /**
+   * Months a form is kept after it was submitted. Override it by putting
+   * `DONATION_RETENTION_MONTHS=18` (for example) in `functions/.env` and
+   * deploying again; keep it equal to the number in the privacy policy.
+   */
+  defaultMonths: 12,
+  /** Environment variable read by purgeOldDonationRequests. */
+  envVar: 'DONATION_RETENTION_MONTHS',
+  /** Values outside this range are ignored (the default is used instead). */
+  minMonths: 1,
+  maxMonths: 120,
+  /** Every day at 03:30 India time, when nobody is working in the console. */
+  schedule: '30 3 * * *',
+  timeZone: 'Asia/Kolkata',
+  /** Forms deleted per batch; each also deletes its mail copy (2 writes, < 500). */
+  batchSize: 200,
+  /** Upper bound per daily run; anything left over is deleted the next day. */
+  maxDeletesPerRun: 2000,
+} as const;

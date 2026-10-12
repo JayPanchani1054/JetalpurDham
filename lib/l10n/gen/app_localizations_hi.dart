@@ -911,6 +911,17 @@ class AppLocalizationsHi extends AppLocalizations {
       'इस फ़ोन में कोई UPI ऐप नहीं मिला। कृपया QR कोड स्कैन करें।';
 
   @override
+  String get donateWebsiteMessage =>
+      'सेवा का दान मंदिर की वेबसाइट पर किया जा सकता है।';
+
+  @override
+  String get donateWebsiteButton => 'मंदिर की वेबसाइट पर दान करें';
+
+  @override
+  String get donateContactOffice =>
+      'सेवा अर्पित करने के लिए कृपया मंदिर कार्यालय से संपर्क करें।';
+
+  @override
   String get donatePurposeGeneral => 'सामान्य सेवा';
 
   @override
@@ -1047,6 +1058,23 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get donateSavedCleared => 'सहेजा गया विवरण इस फ़ोन से हटा दिया गया';
+
+  @override
+  String get demoBadge => 'डेमो';
+
+  @override
+  String get demoIntroTitle => 'डेमो में आपका स्वागत है';
+
+  @override
+  String get demoIntroBody =>
+      'यह जेतलपुर धाम ऐप की एक झलक है। मंदिर के इतिहास, प्रसादी स्थानों और उनकी महिमा की जानकारी वास्तविक है; तस्वीरें, कीर्तन का ऑडियो और शास्त्र की PDF केवल नमूने के लिए हैं।';
+
+  @override
+  String get demoIntroDisabled =>
+      'इस डेमो में सूचनाएँ, नक्शा और दान का भुगतान बंद हैं।';
+
+  @override
+  String get demoIntroStart => 'ऐप देखें';
 
   @override
   String get settingsAboutApp => 'ऐप के बारे में';

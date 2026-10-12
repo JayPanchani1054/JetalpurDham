@@ -32,8 +32,6 @@ import 'firebase_options.dart';
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  unawaited(initKirtanAudio());
-
   final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
   final Future<void> firebase = _initFirebase(prefs);
   await Future.wait(<Future<void>>[
@@ -42,6 +40,9 @@ Future<void> bootstrap() async {
     _guard('Date formats', initializeDateFormatting),
     _guard('Firebase', () => firebase, timeout: const Duration(seconds: 8)),
   ]);
+
+  // Started after Firebase so that a failure reaches Crashlytics.
+  unawaited(initKirtanAudio());
 
   runApp(
     ProviderScope(
