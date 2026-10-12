@@ -1387,7 +1387,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationAllow.
   ///
   /// In en, this message translates to:
-  /// **'Allow'**
+  /// **'Continue'**
   String get notificationAllow;
 
   /// No description provided for @notificationLater.
@@ -1899,6 +1899,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String settingsAppVersion(String version);
+
+  /// No description provided for @settingsPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get settingsPrivacyPolicy;
+
+  /// No description provided for @settingsLegalNotices.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal notices & licences'**
+  String get settingsLegalNotices;
+
+  /// No description provided for @settingsCrashReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Share crash reports'**
+  String get settingsCrashReports;
+
+  /// No description provided for @settingsCrashReportsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps fix problems in the app. Never includes your name, phone or e-mail.'**
+  String get settingsCrashReportsDesc;
+
+  /// No description provided for @donatePrivacyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details go only to the temple office, to confirm your offering and send a receipt.'**
+  String get donatePrivacyNotice;
+
+  /// No description provided for @donateClearSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear saved details'**
+  String get donateClearSaved;
+
+  /// No description provided for @donateSavedCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved details removed from this phone'**
+  String get donateSavedCleared;
 
   /// No description provided for @settingsAboutApp.
   ///

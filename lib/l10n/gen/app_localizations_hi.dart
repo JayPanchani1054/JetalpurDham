@@ -750,7 +750,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'आगामी उत्सव, कथा और मंदिर के समाचारों की सूचना पाएँ।';
 
   @override
-  String get notificationAllow => 'अनुमति दें';
+  String get notificationAllow => 'आगे बढ़ें';
 
   @override
   String get notificationLater => 'अभी नहीं';
@@ -1024,6 +1024,29 @@ class AppLocalizationsHi extends AppLocalizations {
   String settingsAppVersion(String version) {
     return 'संस्करण $version';
   }
+
+  @override
+  String get settingsPrivacyPolicy => 'गोपनीयता नीति';
+
+  @override
+  String get settingsLegalNotices => 'कानूनी सूचनाएँ और लाइसेंस';
+
+  @override
+  String get settingsCrashReports => 'क्रैश रिपोर्ट भेजें';
+
+  @override
+  String get settingsCrashReportsDesc =>
+      'ऐप की खामियाँ सुधारने में मदद करता है। इसमें आपका नाम, फ़ोन या ईमेल कभी नहीं होता।';
+
+  @override
+  String get donatePrivacyNotice =>
+      'आपका विवरण केवल मंदिर कार्यालय तक जाता है — आपके दान की पुष्टि करने और रसीद भेजने के लिए।';
+
+  @override
+  String get donateClearSaved => 'सहेजा गया विवरण हटाएँ';
+
+  @override
+  String get donateSavedCleared => 'सहेजा गया विवरण इस फ़ोन से हटा दिया गया';
 
   @override
   String get settingsAboutApp => 'ऐप के बारे में';

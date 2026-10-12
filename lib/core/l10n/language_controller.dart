@@ -40,3 +40,22 @@ class NotificationsEnabledController extends Notifier<bool> {
     await _prefs.setBool(PrefKeys.notificationsEnabled, enabled);
   }
 }
+
+/// Whether anonymous crash reports (Firebase Crashlytics) may be sent.
+/// Defaults to on; the user can turn it off in Settings.
+final NotifierProvider<CrashReportsController, bool>
+crashReportsEnabledProvider = NotifierProvider<CrashReportsController, bool>(
+  CrashReportsController.new,
+);
+
+class CrashReportsController extends Notifier<bool> {
+  SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
+
+  @override
+  bool build() => _prefs.getBool(PrefKeys.crashReportsEnabled) ?? true;
+
+  Future<void> setEnabled(bool enabled) async {
+    state = enabled;
+    await _prefs.setBool(PrefKeys.crashReportsEnabled, enabled);
+  }
+}

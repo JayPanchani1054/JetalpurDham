@@ -5,6 +5,11 @@ import '../firebase/firebase_providers.dart';
 import '../firebase/firestore_parsing.dart';
 import '../models/localized_text.dart';
 
+/// Privacy policy shown until the temple publishes its own page and sets
+/// `config/app.privacyPolicyUrl` (see docs/PRIVACY_POLICY.md).
+const String kDefaultPrivacyPolicyUrl =
+    'https://github.com/JayPanchani1054/JetalpurDham/blob/HEAD/docs/PRIVACY_POLICY.md';
+
 /// One row of the darshan timetable, e.g. "Mangla Aarti — 5:30 AM".
 class DarshanTiming {
   const DarshanTiming({required this.label, required this.time});
@@ -39,6 +44,7 @@ class AppConfig {
     this.heroImageUrl,
     this.featuredAlbumId,
     this.shareUrl,
+    this.privacyPolicyUrl,
   });
 
   factory AppConfig.fromMap(Map<String, Object?> map) {
@@ -64,6 +70,7 @@ class AppConfig {
       heroImageUrl: Fs.stringOrNull(map['heroImageUrl']),
       featuredAlbumId: Fs.stringOrNull(map['featuredAlbumId']),
       shareUrl: Fs.stringOrNull(map['shareUrl']),
+      privacyPolicyUrl: Fs.stringOrNull(map['privacyPolicyUrl']),
     );
   }
 
@@ -98,6 +105,9 @@ class AppConfig {
 
   /// Store/landing page link used by "Share App".
   final String? shareUrl;
+
+  /// Public privacy policy page; falls back to [kDefaultPrivacyPolicyUrl].
+  final String? privacyPolicyUrl;
 
   bool get hasLocation => latitude != null && longitude != null;
 }

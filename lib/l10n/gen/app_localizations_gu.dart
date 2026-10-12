@@ -748,7 +748,7 @@ class AppLocalizationsGu extends AppLocalizations {
       'આગામી ઉત્સવ, કથા અને મંદિરના સમાચારની સૂચના મેળવો.';
 
   @override
-  String get notificationAllow => 'મંજૂરી આપો';
+  String get notificationAllow => 'આગળ વધો';
 
   @override
   String get notificationLater => 'હમણાં નહીં';
@@ -1021,6 +1021,29 @@ class AppLocalizationsGu extends AppLocalizations {
   String settingsAppVersion(String version) {
     return 'આવૃત્તિ $version';
   }
+
+  @override
+  String get settingsPrivacyPolicy => 'ગોપનીયતા નીતિ';
+
+  @override
+  String get settingsLegalNotices => 'કાનૂની સૂચનાઓ અને લાઇસન્સ';
+
+  @override
+  String get settingsCrashReports => 'ક્રેશ રિપોર્ટ મોકલો';
+
+  @override
+  String get settingsCrashReportsDesc =>
+      'એપની ખામીઓ સુધારવામાં મદદ કરે છે. તેમાં તમારું નામ, ફોન કે ઇમેઇલ ક્યારેય હોતાં નથી.';
+
+  @override
+  String get donatePrivacyNotice =>
+      'આપની વિગતો ફક્ત મંદિર કાર્યાલય સુધી જ જાય છે — આપના દાનની પુષ્ટિ કરવા અને પહોંચ મોકલવા માટે.';
+
+  @override
+  String get donateClearSaved => 'સાચવેલી વિગતો દૂર કરો';
+
+  @override
+  String get donateSavedCleared => 'સાચવેલી વિગતો આ ફોનમાંથી દૂર થઈ';
 
   @override
   String get settingsAboutApp => 'એપ વિશે';

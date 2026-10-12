@@ -46,7 +46,7 @@ Future<void> bootstrap() async {
     );
 
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-      !kDebugMode,
+      !kDebugMode && (prefs.getBool(PrefKeys.crashReportsEnabled) ?? true),
     );
     AppLogger.crashlyticsReady = true;
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

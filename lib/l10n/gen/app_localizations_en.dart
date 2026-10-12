@@ -745,7 +745,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Get notified about upcoming utsav, katha and temple updates.';
 
   @override
-  String get notificationAllow => 'Allow';
+  String get notificationAllow => 'Continue';
 
   @override
   String get notificationLater => 'Not now';
@@ -1020,6 +1020,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsAppVersion(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get settingsLegalNotices => 'Legal notices & licences';
+
+  @override
+  String get settingsCrashReports => 'Share crash reports';
+
+  @override
+  String get settingsCrashReportsDesc =>
+      'Helps fix problems in the app. Never includes your name, phone or e-mail.';
+
+  @override
+  String get donatePrivacyNotice =>
+      'Your details go only to the temple office, to confirm your offering and send a receipt.';
+
+  @override
+  String get donateClearSaved => 'Clear saved details';
+
+  @override
+  String get donateSavedCleared => 'Saved details removed from this phone';
 
   @override
   String get settingsAboutApp => 'About app';

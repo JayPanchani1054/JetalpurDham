@@ -264,8 +264,14 @@ void main() {
     await _pump(tester, repository: repository);
     await _openForm(tester);
 
-    final Finder submit = find.text('Submit details');
+    final Finder submit = find.widgetWithText(FilledButton, 'Submit details');
+    // Focus changes animate the sheet's scroll, and a scroll view ignores
+    // taps until that animation ends: settle first, like a devotee would.
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.ensureVisible(submit);
+    await tester.pump();
     await tester.tap(submit);
     await _settle(tester);
     expect(find.text('This field is required'), findsWidgets);
@@ -273,7 +279,13 @@ void main() {
 
     await tester.enterText(_field('Full name *'), 'Ramesh Patel');
     await tester.enterText(_field('Mobile number *'), '12345');
+    // Focus changes animate the sheet's scroll, and a scroll view ignores
+    // taps until that animation ends: settle first, like a devotee would.
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.ensureVisible(submit);
+    await tester.pump();
     await tester.tap(submit);
     await _settle(tester);
     expect(find.text('Enter a valid 10-digit mobile number'), findsOneWidget);
@@ -282,7 +294,13 @@ void main() {
     await tester.ensureVisible(find.text('Bank transfer'));
     await tester.tap(find.text('Bank transfer'));
     await tester.pump();
+    // Focus changes animate the sheet's scroll, and a scroll view ignores
+    // taps until that animation ends: settle first, like a devotee would.
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.ensureVisible(submit);
+    await tester.pump();
     await tester.tap(submit);
     await tester.pump();
     expect(find.text('Submitting…'), findsOneWidget);
@@ -323,8 +341,14 @@ void main() {
     await tester.pump();
     expect(_field('Transaction / UTR no. (optional)'), findsNothing);
 
-    final Finder submit = find.text('Submit details');
+    final Finder submit = find.widgetWithText(FilledButton, 'Submit details');
+    // Focus changes animate the sheet's scroll, and a scroll view ignores
+    // taps until that animation ends: settle first, like a devotee would.
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.ensureVisible(submit);
+    await tester.pump();
     await tester.tap(submit);
     await _settle(tester);
     expect(
@@ -332,7 +356,13 @@ void main() {
       findsOneWidget,
     );
 
+    // Focus changes animate the sheet's scroll, and a scroll view ignores
+    // taps until that animation ends: settle first, like a devotee would.
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.ensureVisible(submit);
+    await tester.pump();
     await tester.tap(submit);
     await _settle(tester);
     expect(find.text('Thank you!'), findsOneWidget);
@@ -419,8 +449,14 @@ void main() {
     await tester.ensureVisible(find.text('UPI'));
     await tester.tap(find.text('UPI'));
     await tester.pump();
-    final Finder submit = find.text('Submit details');
+    final Finder submit = find.widgetWithText(FilledButton, 'Submit details');
+    // Focus changes animate the sheet's scroll, and a scroll view ignores
+    // taps until that animation ends: settle first, like a devotee would.
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     await tester.ensureVisible(submit);
+    await tester.pump();
     await tester.tap(submit);
     await tester.pump();
     expect(repository.calls, 1);

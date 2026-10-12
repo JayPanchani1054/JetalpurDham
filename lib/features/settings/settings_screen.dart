@@ -1,15 +1,21 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../core/config/app_config.dart';
 import '../../core/l10n/app_language.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/language_controller.dart';
 import '../../core/services/download_service.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/utils/app_logger.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/launcher.dart';
 import '../../core/utils/ui_feedback.dart';
 import '../../core/widgets/language_button.dart';
 import '../events/application/notification_service.dart';
@@ -99,7 +105,49 @@ class SettingsScreen extends ConsumerWidget {
               if (context.mounted) context.showSnack(l10n.settingsCacheCleared);
             },
           ),
+          SwitchListTile(
+            secondary: const Icon(Icons.bug_report_outlined),
+            title: Text(l10n.settingsCrashReports),
+            subtitle: Text(l10n.settingsCrashReportsDesc),
+            value: ref.watch(crashReportsEnabledProvider),
+            onChanged: (bool value) async {
+              await ref
+                  .read(crashReportsEnabledProvider.notifier)
+                  .setEnabled(value);
+              await _applyCrashReports(value);
+            },
+          ),
           header(l10n.settingsAboutApp),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(l10n.settingsPrivacyPolicy),
+            trailing: const Icon(Icons.open_in_new_rounded, size: 20),
+            onTap: () async {
+              final String url =
+                  ref.read(appConfigValueProvider).privacyPolicyUrl ??
+                  kDefaultPrivacyPolicyUrl;
+              if (!await Launcher.url(url) && context.mounted) {
+                context.showOpenLinkError();
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.gavel_rounded),
+            title: Text(l10n.settingsLegalNotices),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              final PackageInfo? info = ref.read(_packageInfoProvider).value;
+              showLicensePage(
+                context: context,
+                applicationName: l10n.appTitle,
+                applicationVersion: info?.version,
+                applicationIcon: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Image.asset('assets/icons/splash_logo.png', width: 72),
+                ),
+              );
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
             title: Text(l10n.templeName),
@@ -203,5 +251,18 @@ class _StreamCacheTile extends ConsumerWidget {
               child: Text(l10n.settingsRemoveAll),
             ),
     );
+  }
+}
+
+/// Turns Crashlytics collection on/off right away (no-op until Firebase is
+/// configured, and always off in debug builds).
+Future<void> _applyCrashReports(bool enabled) async {
+  try {
+    if (Firebase.apps.isEmpty) return;
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+      enabled && !kDebugMode,
+    );
+  } catch (error, stack) {
+    AppLogger.error('Updating crash report setting failed', error, stack);
   }
 }

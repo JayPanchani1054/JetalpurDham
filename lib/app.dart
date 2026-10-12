@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'core/l10n/app_language.dart';
 import 'core/l10n/l10n.dart';
 import 'core/l10n/language_controller.dart';
+import 'core/legal/licenses.dart';
 import 'core/router/app_router.dart';
 import 'core/router/deep_links.dart';
 import 'core/theme/app_theme.dart';
@@ -27,6 +28,7 @@ class _JetalpurDhamAppState extends ConsumerState<JetalpurDhamApp> {
   void initState() {
     super.initState();
     DeepLinks.attach(_router);
+    registerAppLicenses();
     _syncNotifications();
   }
 

@@ -16,6 +16,7 @@ abstract final class PrefKeys {
   static const String language = 'app.language';
   static const String notificationsEnabled = 'app.notificationsEnabled';
   static const String notificationPromptShown = 'app.notificationPromptShown';
+  static const String crashReportsEnabled = 'app.crashReportsEnabled';
   static const String kirtanDownloadsIndex = 'kirtan.downloadsIndex';
   static const String kirtanLastQueue = 'kirtan.lastQueue';
   static const String libraryDownloadsIndex = 'library.downloadsIndex';

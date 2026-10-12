@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -54,12 +55,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     await prefs.setBool(PrefKeys.notificationPromptShown, true);
     if (!mounted) return;
+    // Apple's guidance for pre-permission screens: one "Continue" button that
+    // always leads to the system alert, with no way to skip it. Android keeps
+    // a "Not now" option.
+    final bool apple = defaultTargetPlatform == TargetPlatform.iOS;
     final bool? allow = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
-      builder: (BuildContext context) => const _NotificationPrompt(),
+      isDismissible: !apple,
+      enableDrag: !apple,
+      builder: (BuildContext context) => _NotificationPrompt(allowSkip: !apple),
     );
-    if (allow ?? false) await NotificationService.instance.requestPermission();
+    if (apple || (allow ?? false)) {
+      await NotificationService.instance.requestPermission();
+    }
   }
 
   @override
@@ -455,7 +464,9 @@ class _DarshanTimingsCard extends ConsumerWidget {
 }
 
 class _NotificationPrompt extends StatelessWidget {
-  const _NotificationPrompt();
+  const _NotificationPrompt({required this.allowSkip});
+
+  final bool allowSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -505,14 +516,16 @@ class _NotificationPrompt extends StatelessWidget {
               child: Text(l10n.notificationAllow),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l10n.notificationLater),
+          if (allowSkip) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(l10n.notificationLater),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/models/localized_text.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/services/preferences.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../../core/utils/launcher.dart';
+import '../../../../core/utils/ui_feedback.dart';
 import '../../data/donation_repository.dart';
 import '../../domain/donation_request.dart';
 import '../donation_haptics.dart';
@@ -81,6 +84,24 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
       _phone.text = prefs.getString(_DonorPrefs.phone) ?? '';
       _email.text = prefs.getString(_DonorPrefs.email) ?? '';
     }
+  }
+
+  /// Forgets the donor details remembered on this phone and empties the
+  /// fields they filled.
+  Future<void> _clearSavedDetails() async {
+    final SharedPreferences? prefs = _prefs;
+    if (prefs != null) {
+      await prefs.remove(_DonorPrefs.name);
+      await prefs.remove(_DonorPrefs.phone);
+      await prefs.remove(_DonorPrefs.email);
+    }
+    if (!mounted) return;
+    setState(() {
+      _name.clear();
+      _phone.clear();
+      _email.clear();
+    });
+    context.showSnack(context.l10n.donateSavedCleared);
   }
 
   @override
@@ -434,6 +455,34 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
                     : const SizedBox(width: double.infinity),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Text(
+                '${l10n.donatePrivacyNotice} ${l10n.donateRememberHint}',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              Wrap(
+                alignment: WrapAlignment.center,
+                children: <Widget>[
+                  TextButton(
+                    onPressed: () async {
+                      final String url =
+                          ref.read(appConfigValueProvider).privacyPolicyUrl ??
+                          kDefaultPrivacyPolicyUrl;
+                      if (!await Launcher.url(url) && context.mounted) {
+                        context.showOpenLinkError();
+                      }
+                    },
+                    child: Text(l10n.settingsPrivacyPolicy),
+                  ),
+                  TextButton(
+                    onPressed: _submitting ? null : _clearSavedDetails,
+                    child: Text(l10n.donateClearSaved),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
               FilledButton(
                 style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
                 onPressed: _submitting ? null : _submit,
@@ -465,14 +514,8 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
                         ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.donateRememberHint,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
+              // Room below the button so it never sits on the sheet's edge.
+              const SizedBox(height: AppSpacing.lg),
             ],
           ),
         ),
