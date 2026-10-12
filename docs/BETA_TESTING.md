@@ -62,9 +62,10 @@ photos, a sample PDF and tanpura audio).
 
 **Good to know**
 
-* The demo needs **no internet setup** and no Firebase project. Notifications,
-  the Google map (places open as a list) and donation payments are switched
-  off; everything else can be explored. A short welcome message says so the
+* The demo needs **no internet setup** and no Firebase project. Notifications
+  and the Google map (places open as a list) are switched off, and the
+  donation page shows **sample** UPI and bank details — never send money to
+  them. Everything else can be explored. A short welcome message says so the
   first time it opens.
 * It is **for looking only** — do not report the sample photos, audio or PDF
   as bugs.
